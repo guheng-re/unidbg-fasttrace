@@ -1,5 +1,6 @@
 package com.github.unidbg.linux.android.dvm;
 
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.linux.android.dvm.api.ApplicationInfo;
 import com.github.unidbg.linux.android.dvm.api.AssetManager;
 import com.github.unidbg.linux.android.dvm.api.Binder;
@@ -45,6 +46,10 @@ public abstract class AbstractJni implements Jni {
     @Override
     public DvmObject<?> getStaticObjectField(BaseVM vm, DvmClass dvmClass, String signature) {
         log.info("getStaticObjectField [Unidbg]: {}", signature);
+        String androidBuildString = getAndroidBuildString(vm, signature);
+        if (androidBuildString != null) {
+            return new StringObject(vm, androidBuildString);
+        }
         switch (signature) {
             // ==================== Android 系统服务名称常量 ====================
             // 这些字符串用于 context.getSystemService(name) 获取系统服务
@@ -129,6 +134,10 @@ public abstract class AbstractJni implements Jni {
     @Override
     public int getStaticIntField(BaseVM vm, DvmClass dvmClass, String signature) {
         log.info("getStaticIntField [Unidbg]: {}", signature);
+        Integer androidBuildInt = getAndroidBuildInt(vm, signature);
+        if (androidBuildInt != null) {
+            return androidBuildInt;
+        }
         switch (signature) {
             // MODE_PRIVATE=0: 文件私有模式，只有本应用可访问
             // 其他值: MODE_WORLD_READABLE=1(废弃), MODE_WORLD_WRITEABLE=2(废弃), MODE_MULTI_PROCESS=4(废弃), MODE_APPEND=32768
@@ -161,9 +170,31 @@ public abstract class AbstractJni implements Jni {
             case "android/content/pm/ApplicationInfo->sourceDir:Ljava/lang/String;":
             case "android/content/pm/ApplicationInfo->publicSourceDir:Ljava/lang/String;": {
                 // 两个字段合并处理，返回完全一样的、且做过缓存的路径
-                String apkPath = "/data/app/~~qpHWxYkAy6LDczEHNqq4AA==/" + vm.getPackageName() + "-8yo317Fk7bcx-AAPKMuTjg==/base.apk";
+                TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+                String fallback = "/data/app/~~qpHWxYkAy6LDczEHNqq4AA==/" + vm.getPackageName() + "-8yo317Fk7bcx-AAPKMuTjg==/base.apk";
+                String apkPath = config == null ? fallback : config.getApkPath(fallback);
                 log.info("注意：这里在 读取 APK 路径， 已被固定为: {}", apkPath);
                 return new StringObject(vm, apkPath);
+            }
+            case "android/content/pm/ApplicationInfo->dataDir:Ljava/lang/String;": {
+                TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+                String fallback = "/data/user/0/" + vm.getPackageName();
+                String dataDir = config == null ? fallback : config.getDataDir(fallback);
+                return new StringObject(vm, dataDir);
+            }
+            case "android/content/pm/ApplicationInfo->nativeLibraryDir:Ljava/lang/String;": {
+                TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+                String abi = vm.getEmulator().is64Bit() ? "arm64" : "arm";
+                String fallback = "/data/app/~~qpHWxYkAy6LDczEHNqq4AA==/" + vm.getPackageName() + "-8yo317Fk7bcx-AAPKMuTjg==/lib/" + abi;
+                String nativeLibraryDir = config == null ? fallback : config.getNativeLibraryDir(vm.getEmulator().is64Bit(), fallback);
+                return new StringObject(vm, nativeLibraryDir);
+            }
+            case "android/content/pm/ApplicationInfo->packageName:Ljava/lang/String;": {
+                String packageName = vm.getPackageName();
+                if (packageName != null) {
+                    return new StringObject(vm, packageName);
+                }
+                break;
             }
 
             // 应用签名数组，用于签名校验/防篡改检测
@@ -754,7 +785,11 @@ public abstract class AbstractJni implements Jni {
                 }
             }
             case "java/util/UUID->randomUUID()Ljava/util/UUID;": {
-                UUID uuid = UUID.randomUUID();
+                TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+                UUID uuid = config == null ? null : config.getUuid(null);
+                if (uuid == null) {
+                    uuid = UUID.randomUUID();
+                }
                 log.info("[随机点] 随机uuid: {}", uuid.toString());
                 return dvmClass.newObject(uuid);
             }
@@ -1171,7 +1206,7 @@ public abstract class AbstractJni implements Jni {
             // 变化点: 使用当前系统时间，每次调用结果不同
             // 如果需要固定时间，可在子类覆盖返回 new Date(固定时间戳)
             case "java/util/Date-><init>()V": {
-                java.util.Date date = new java.util.Date();
+                java.util.Date date = new java.util.Date(getConfiguredCurrentTimeMillis(vm));
                 log.info("[随机点] new Date() 时间戳: {}", date.getTime());
                 return ProxyDvmObject.createObject(vm, date);
             }
@@ -1208,7 +1243,7 @@ public abstract class AbstractJni implements Jni {
             // Date: 有无参构造，创建当前时间实例
             // 指纹风险: 低。时间戳可能参与签名，但通常不校验
             case "java/util/Date->allocObject":
-                return dvmClass.newObject(new java.util.Date());
+                return dvmClass.newObject(new java.util.Date(getConfiguredCurrentTimeMillis(vm)));
             
             // SimpleDateFormat: 有无参构造，创建默认格式实例
             case "java/text/SimpleDateFormat->allocObject":
@@ -1708,6 +1743,48 @@ public abstract class AbstractJni implements Jni {
     public long getStaticLongField(BaseVM vm, DvmClass dvmClass, String signature) {
         log.info("getStaticLongField [Unidbg]: {}", signature);
         throw new UnsupportedOperationException(signature);
+    }
+
+    private String getAndroidBuildString(BaseVM vm, String signature) {
+        if (!signature.endsWith(":Ljava/lang/String;")) {
+            return null;
+        }
+        String key = getAndroidBuildKey(signature, ":Ljava/lang/String;");
+        if (key == null) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        return config == null ? null : config.getAndroidBuildString(key);
+    }
+
+    private Integer getAndroidBuildInt(BaseVM vm, String signature) {
+        if (!signature.endsWith(":I")) {
+            return null;
+        }
+        String key = getAndroidBuildKey(signature, ":I");
+        if (key == null) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        return config == null ? null : config.getAndroidBuildInt(key);
+    }
+
+    private String getAndroidBuildKey(String signature, String suffix) {
+        final String buildPrefix = "android/os/Build->";
+        final String versionPrefix = "android/os/Build$VERSION->";
+        if (signature.startsWith(buildPrefix) && signature.endsWith(suffix)) {
+            return signature.substring(buildPrefix.length(), signature.length() - suffix.length());
+        }
+        if (signature.startsWith(versionPrefix) && signature.endsWith(suffix)) {
+            return "VERSION." + signature.substring(versionPrefix.length(), signature.length() - suffix.length());
+        }
+        return null;
+    }
+
+    private long getConfiguredCurrentTimeMillis(BaseVM vm) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        Long configured = config == null ? null : config.getCurrentTimeMillis();
+        return configured == null ? System.currentTimeMillis() : configured;
     }
 
     @Override

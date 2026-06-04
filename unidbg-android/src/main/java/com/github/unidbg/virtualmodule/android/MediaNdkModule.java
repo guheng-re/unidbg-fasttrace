@@ -4,6 +4,7 @@ import com.github.unidbg.Emulator;
 import com.github.unidbg.arm.Arm64Svc;
 import com.github.unidbg.arm.ArmSvc;
 import com.github.unidbg.arm.context.RegisterContext;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.linux.android.dvm.VM;
 import com.github.unidbg.memory.MemoryBlock;
 import com.github.unidbg.memory.SvcMemory;
@@ -104,8 +105,12 @@ public class MediaNdkModule extends VirtualModule<VM> {
         String propertyName = propertyNamePtr.getString(0);
         if(propertyName.equals("deviceUniqueId")){
             MemoryBlock memoryBlock = emulator.getMemory().malloc(0x20, true);
-            byte[] b = new byte[0x20];
-            new Random().nextBytes(b);
+            TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+            byte[] b = config == null ? null : config.getRandomBytes("mediaDrmDeviceUniqueIdHex", 0x20);
+            if (b == null) {
+                b = new byte[0x20];
+                new Random().nextBytes(b);
+            }
             memoryBlock.getPointer().write(0, b, 0, 0x20);
             propertyValuePtr.setPointer(0, memoryBlock.getPointer());
             propertyValuePtr.setLong(emulator.getPointerSize(), 0x20);
@@ -122,9 +127,11 @@ public class MediaNdkModule extends VirtualModule<VM> {
         Pointer propertyValuePtr = context.getPointerArg(2);
         String propertyName = propertyNamePtr.getString(0);
         if ("vendor".equals(propertyName)) {
-            final String value = "Google";
+            TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+            String manufacturer = config == null ? null : config.getAndroidBuildString("MANUFACTURER");
+            final String value = manufacturer == null ? "Google" : manufacturer;
             if (vendorPropertyBlock == null) {
-                vendorPropertyBlock = emulator.getMemory().malloc(value.length(), true);
+                vendorPropertyBlock = emulator.getMemory().malloc(value.length() + 1, true);
             }
             vendorPropertyBlock.getPointer().setString(0, value);
 

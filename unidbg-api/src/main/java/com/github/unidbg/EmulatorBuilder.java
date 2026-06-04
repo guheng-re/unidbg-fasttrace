@@ -2,6 +2,7 @@ package com.github.unidbg;
 
 import com.github.unidbg.arm.ARMEmulator;
 import com.github.unidbg.arm.backend.BackendFactory;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -27,6 +28,27 @@ public abstract class EmulatorBuilder<T extends ARMEmulator<?>> {
     public EmulatorBuilder<T> setRootDir(File rootDir) {
         this.rootDir = rootDir;
         return this;
+    }
+
+    protected TraceEnvironmentConfig environmentConfig;
+
+    public EmulatorBuilder<T> setEnvironmentConfig(TraceEnvironmentConfig environmentConfig) {
+        this.environmentConfig = environmentConfig;
+        return this;
+    }
+
+    public EmulatorBuilder<T> setEnvironmentConfig(File environmentConfigFile) {
+        this.environmentConfig = environmentConfigFile == null ? null : TraceEnvironmentConfig.load(environmentConfigFile);
+        return this;
+    }
+
+    public EmulatorBuilder<T> setEnvironmentConfig(String environmentConfigPath) {
+        this.environmentConfig = environmentConfigPath == null ? null : TraceEnvironmentConfig.load(environmentConfigPath);
+        return this;
+    }
+
+    protected TraceEnvironmentConfig resolveEnvironmentConfig() {
+        return environmentConfig != null ? environmentConfig : TraceEnvironmentConfig.fromSystemProperty();
     }
 
     protected final List<BackendFactory> backendFactories = new ArrayList<>(5);

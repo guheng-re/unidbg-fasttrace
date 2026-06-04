@@ -2,6 +2,7 @@ package com.github.unidbg.linux.android;
 
 import com.github.unidbg.AndroidEmulator;
 import com.github.unidbg.EmulatorBuilder;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 
 public class AndroidEmulatorBuilder extends EmulatorBuilder<AndroidEmulator> {
 
@@ -19,7 +20,8 @@ public class AndroidEmulatorBuilder extends EmulatorBuilder<AndroidEmulator> {
 
     @Override
     public AndroidEmulator build() {
-        return is64Bit ? new AndroidARM64Emulator(processName, rootDir, backendFactories) : new AndroidARMEmulator(processName, rootDir, backendFactories);
+        TraceEnvironmentConfig environmentConfig = resolveEnvironmentConfig();
+        return is64Bit ? new AndroidARM64Emulator(processName, rootDir, backendFactories, environmentConfig) : new AndroidARMEmulator(processName, rootDir, backendFactories, environmentConfig);
     }
 
 }

@@ -3,6 +3,7 @@ package com.github.unidbg.linux.android.dvm;
 import com.github.unidbg.AndroidEmulator;
 import com.github.unidbg.Emulator;
 import com.github.unidbg.Module;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.linux.android.ElfLibraryFile;
 import com.github.unidbg.linux.android.ElfLibraryRawFile;
 import com.github.unidbg.linux.android.dvm.apk.Apk;
@@ -288,7 +289,8 @@ public abstract class BaseVM implements VM, DvmClassFactory {
             return null;
         }
 
-        return new ApkLibraryFile(this, apk, soName, libData, apk.getPackageName(), emulator.is64Bit());
+        String packageName = getPackageName();
+        return new ApkLibraryFile(this, apk, soName, libData, packageName == null ? apk.getPackageName() : packageName, emulator.is64Bit());
     }
 
     @Override
@@ -298,7 +300,8 @@ public abstract class BaseVM implements VM, DvmClassFactory {
 
     @Override
     public String getPackageName() {
-        return apk == null ? null : apk.getPackageName();
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? (apk == null ? null : apk.getPackageName()) : config.getAndroidPackageName(apk == null ? null : apk.getPackageName());
     }
 
     @Override
@@ -335,12 +338,14 @@ public abstract class BaseVM implements VM, DvmClassFactory {
 
     @Override
     public final String getVersionName() {
-        return apk == null ? null : apk.getVersionName();
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? (apk == null ? null : apk.getVersionName()) : config.getVersionName(apk == null ? null : apk.getVersionName());
     }
 
     @Override
     public long getVersionCode() {
-        return apk == null ? 0 : apk.getVersionCode();
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? (apk == null ? 0 : apk.getVersionCode()) : config.getVersionCode(apk == null ? 0 : apk.getVersionCode());
     }
 
     @Override

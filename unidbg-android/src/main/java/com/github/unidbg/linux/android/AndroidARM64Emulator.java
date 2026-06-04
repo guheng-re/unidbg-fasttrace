@@ -2,6 +2,7 @@ package com.github.unidbg.linux.android;
 
 import com.github.unidbg.AndroidEmulator;
 import com.github.unidbg.Family;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.arm.AbstractARM64Emulator;
 import com.github.unidbg.arm.backend.BackendFactory;
 import com.github.unidbg.file.FileSystem;
@@ -30,7 +31,11 @@ import java.util.Collection;
 public class AndroidARM64Emulator extends AbstractARM64Emulator<AndroidFileIO> implements AndroidEmulator {
 
     protected AndroidARM64Emulator(String processName, File rootDir, Collection<BackendFactory> backendFactories) {
-        super(processName, rootDir, Family.Android64, backendFactories);
+        this(processName, rootDir, backendFactories, TraceEnvironmentConfig.fromSystemProperty());
+    }
+
+    protected AndroidARM64Emulator(String processName, File rootDir, Collection<BackendFactory> backendFactories, TraceEnvironmentConfig environmentConfig) {
+        super(processName, rootDir, Family.Android64, backendFactories, environmentConfig);
     }
 
     @Override

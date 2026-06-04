@@ -13,6 +13,7 @@ import com.github.unidbg.arm.backend.Backend;
 import com.github.unidbg.arm.backend.BackendException;
 import com.github.unidbg.arm.context.Arm32RegisterContext;
 import com.github.unidbg.arm.context.RegisterContext;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.file.FileIO;
 import com.github.unidbg.file.FileResult;
 import com.github.unidbg.file.IOResolver;
@@ -179,7 +180,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
                     return;
                 case 224: // gettid
                     Task task = emulator.get(Task.TASK_KEY);
-                    backend.reg_write(ArmConst.UC_ARM_REG_R0, task == null ? 0 : task.getId());
+                    backend.reg_write(ArmConst.UC_ARM_REG_R0, getConfiguredTid(emulator, task == null ? 0 : task.getId()));
                     return;
                 case 33:
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, access(emulator));
@@ -360,10 +361,16 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, fstat(backend, emulator));
                     return;
                 case 199: // getuid
+                    backend.reg_write(ArmConst.UC_ARM_REG_R0, getConfiguredUid(emulator, 0));
+                    return;
                 case 200: // getgid
+                    backend.reg_write(ArmConst.UC_ARM_REG_R0, getConfiguredGid(emulator, 0));
+                    return;
                 case 201: // geteuid
+                    backend.reg_write(ArmConst.UC_ARM_REG_R0, getConfiguredEuid(emulator, 0));
+                    return;
                 case 202: // getegid
-                    backend.reg_write(ArmConst.UC_ARM_REG_R0, 0);
+                    backend.reg_write(ArmConst.UC_ARM_REG_R0, getConfiguredEgid(emulator, 0));
                     return;
                 case 205:
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, getgroups(backend, emulator));
@@ -547,7 +554,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         Pointer buf = context.getPointerArg(0);
         int bufSize = context.getIntArg(1);
         int flags = context.getIntArg(2);
-        return getrandom(buf, bufSize, flags);
+        return getrandom(emulator, buf, bufSize, flags);
     }
 
     private int clone(Emulator<?> emulator) {
@@ -595,7 +602,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         if (log.isDebugEnabled()) {
             log.debug("getsid pid={}", pid);
         }
-        return emulator.getPid();
+        return getConfiguredPpid(emulator, emulator.getPid());
     }
 
     private int readlinkat(Emulator<AndroidFileIO> emulator) {
@@ -624,7 +631,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         if (log.isDebugEnabled()) {
             log.debug("getppid");
         }
-        return emulator.getPid();
+        return getConfiguredPpid(emulator, emulator.getPid());
     }
 
     private int getcpu(Emulator<?> emulator) {
@@ -1600,23 +1607,25 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
 
         final int SYS_NMLN = 65;
 
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+
         Pointer sysname = buf.share(0);
-        sysname.setString(0, "Linux");
+        sysname.setString(0, config == null ? "Linux" : config.getUnameSysname("Linux"));
 
         Pointer nodename = sysname.share(SYS_NMLN);
-        nodename.setString(0, "android");
+        nodename.setString(0, config == null ? "android" : config.getUnameNodename("android"));
 
         Pointer release = nodename.share(SYS_NMLN);
-        release.setString(0, "5.4.210-qgki-g991c3066d5a8");
+        release.setString(0, config == null ? "5.4.210-qgki-g991c3066d5a8" : config.getUnameRelease("5.4.210-qgki-g991c3066d5a8"));
 
         Pointer version = release.share(SYS_NMLN);
-        version.setString(0, "#1 SMP PREEMPT Mon Jun 10 15:32:28 CST 2024");
+        version.setString(0, config == null ? "#1 SMP PREEMPT Mon Jun 10 15:32:28 CST 2024" : config.getUnameVersion("#1 SMP PREEMPT Mon Jun 10 15:32:28 CST 2024"));
 
         Pointer machine = version.share(SYS_NMLN);
-        machine.setString(0, "armv7l");
+        machine.setString(0, config == null ? "armv7l" : config.getUnameMachine(false, "armv7l"));
 
         Pointer domainname = machine.share(SYS_NMLN);
-        domainname.setString(0, "(none)");
+        domainname.setString(0, config == null ? "(none)" : config.getUnameDomainname("(none)"));
 
         return 0;
     }
@@ -1690,7 +1699,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
                 return 0;
             }
             case PR_GET_NAME: {
-                String name = java.lang.Thread.currentThread().getName();
+                String name = getConfiguredThreadName(emulator, java.lang.Thread.currentThread().getName());
                 if (name.length() > 15) {
                     name = name.substring(0, 15);
                 }
@@ -1732,12 +1741,14 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         int clk_id = backend.reg_read(ArmConst.UC_ARM_REG_R0).intValue();
         Pointer tp = UnidbgPointer.register(emulator, ArmConst.UC_ARM_REG_R1);
 
-        long currentTime = System.currentTimeMillis();
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        Long configuredMonotonic = config == null ? null : config.getMonotonicNanos();
+        long currentTime = currentTimeMillis(emulator);
         log.info("[随机点] clock_gettime 获取当前时间戳: {}, 可在此处固定为固定时间戳!", currentTime);
-        long nanoTime_new = System.nanoTime();
+        long nanoTime_new = configuredMonotonic == null ? System.nanoTime() : configuredMonotonic + nanoTime;
         log.info("[随机点] clock_gettime 获取系统开机时间: {}, 可在此处固定为固定时间!", nanoTime_new);
 
-        long offset = clk_id == CLOCK_REALTIME ? currentTime * 1000000L : nanoTime_new - nanoTime;
+        long offset = clk_id == CLOCK_REALTIME ? currentTime * 1000000L : (configuredMonotonic == null ? nanoTime_new - nanoTime : configuredMonotonic);
         log.info("[随机点] clock_gettime 获取系统开机时间 偏移: {}, 可在此处固定为固定时间偏移(前面固定后这里就没事了)!", offset);
 
         long tv_sec = offset / 1000000000L;

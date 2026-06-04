@@ -2,6 +2,7 @@ package com.github.unidbg.linux.file;
 
 import com.github.unidbg.Emulator;
 import com.github.unidbg.arm.backend.Backend;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.file.NewFileIO;
 import com.github.unidbg.file.linux.AndroidFileIO;
 import com.github.unidbg.file.linux.BaseAndroidFileIO;
@@ -37,6 +38,11 @@ public class DriverFileIO extends BaseAndroidFileIO implements NewFileIO, Androi
         super(oflags);
         this.emulator = emulator;
         this.path = path;
+    }
+
+    @Override
+    public final String getPath() {
+        return path;
     }
 
     @Override
@@ -105,7 +111,9 @@ public class DriverFileIO extends BaseAndroidFileIO implements NewFileIO, Androi
 
     private int androidAlarm(long dir, long c, AndroidAlarmType type, long size, long argp) {
         if (dir == _IOC_WRITE && c == ANDROID_ALARM_GET_TIME && type == AndroidAlarmType.ANDROID_ALARM_ELAPSED_REALTIME) {
-            long offset = System.currentTimeMillis();
+            TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+            Long configured = config == null ? null : config.getMonotonicNanos();
+            long offset = configured == null ? System.currentTimeMillis() : configured;
             long tv_sec = offset / 1000000000L;
             long tv_nsec = offset % 1000000000L;
             Pointer pointer = UnidbgPointer.pointer(emulator, argp);

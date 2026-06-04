@@ -1,13 +1,16 @@
 package com.github.unidbg.linux;
 
 import com.github.unidbg.*;
+import com.github.unidbg.Module;
 import com.github.unidbg.arm.ARM;
 import com.github.unidbg.arm.ARMEmulator;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.file.FileIO;
 import com.github.unidbg.file.linux.AndroidFileIO;
 import com.github.unidbg.file.linux.IOConstants;
 import com.github.unidbg.hook.HookListener;
 import com.github.unidbg.linux.android.ElfLibraryFile;
+import com.github.unidbg.linux.android.SystemPropertyHook;
 import com.github.unidbg.linux.thread.PThreadInternal;
 import com.github.unidbg.memory.MemRegion;
 import com.github.unidbg.memory.Memory;
@@ -61,6 +64,10 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
 
     public AndroidElfLoader(Emulator<AndroidFileIO> emulator, UnixSyscallHandler<AndroidFileIO> syscallHandler) {
         super(emulator, syscallHandler);
+        TraceEnvironmentConfig environmentConfig = TraceEnvironmentConfig.get(emulator);
+        if (environmentConfig != null && environmentConfig.hasAndroidProperties()) {
+            addHookListener(new SystemPropertyHook(emulator));
+        }
 
         // init stack
         stackSize = STACK_SIZE_OF_PAGE * emulator.getPageAlign();
@@ -94,12 +101,17 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
     }
 
     private UnidbgPointer initializeTLS(String[] envs) {
+        TraceEnvironmentConfig environmentConfig = TraceEnvironmentConfig.get(emulator);
         final Pointer thread = allocateStack(0x400); // reserve space for pthread_internal_t
         PThreadInternal pThread = PThreadInternal.create(emulator, thread);
-        pThread.tid = emulator.getPid();
+        pThread.tid = environmentConfig == null ? emulator.getPid() : environmentConfig.getTid(emulator.getPid());
         pThread.pack();
 
         final Pointer __stack_chk_guard = allocateStack(emulator.getPointerSize());
+        byte[] stackGuard = environmentConfig == null ? null : environmentConfig.getRandomBytes("stackGuardHex", emulator.getPointerSize());
+        if (stackGuard != null) {
+            __stack_chk_guard.write(0, stackGuard, 0, stackGuard.length);
+        }
 
         final Pointer programName = writeStackString(emulator.getProcessName());
 
@@ -110,8 +122,14 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
         final Pointer auxv = allocateStack(0x100);
         assert auxv != null;
         final int AT_RANDOM = 25; // AT_RANDOM is a pointer to 16 bytes of randomness on the stack.
+        Pointer atRandom = __stack_chk_guard;
+        byte[] atRandomBytes = environmentConfig == null ? null : environmentConfig.getRandomBytes("atRandomHex", 16);
+        if (atRandomBytes != null) {
+            atRandom = allocateStack(atRandomBytes.length);
+            atRandom.write(0, atRandomBytes, 0, atRandomBytes.length);
+        }
         auxv.setPointer(0, UnidbgPointer.pointer(emulator, AT_RANDOM));
-        auxv.setPointer(emulator.getPointerSize(), __stack_chk_guard);
+        auxv.setPointer(emulator.getPointerSize(), atRandom);
         final int AT_PAGESZ = 6;
         auxv.setPointer(emulator.getPointerSize() * 2L, UnidbgPointer.pointer(emulator, AT_PAGESZ));
         auxv.setPointer(emulator.getPointerSize() * 3L, UnidbgPointer.pointer(emulator, ARMEmulator.PAGE_ALIGN));

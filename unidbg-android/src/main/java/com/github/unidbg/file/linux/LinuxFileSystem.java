@@ -1,9 +1,11 @@
 package com.github.unidbg.file.linux;
 
 import com.github.unidbg.Emulator;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.file.BaseFileSystem;
 import com.github.unidbg.file.FileResult;
 import com.github.unidbg.file.FileSystem;
+import com.github.unidbg.linux.file.ByteArrayFileIO;
 import com.github.unidbg.linux.android.LogCatHandler;
 import com.github.unidbg.linux.file.DirectoryFileIO;
 import com.github.unidbg.linux.file.MapsFileIO;
@@ -25,6 +27,17 @@ public class LinuxFileSystem extends BaseFileSystem<AndroidFileIO> implements Fi
 
     @Override
     public FileResult<AndroidFileIO> open(String pathname, int oflags) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        byte[] configuredFile = config == null ? null : config.getLinuxFileBytes(pathname);
+        if (configuredFile == null && config != null) {
+            String pidPrefix = "/proc/" + emulator.getPid() + "/";
+            if (pathname.startsWith(pidPrefix)) {
+                configuredFile = config.getLinuxFileBytes("/proc/self/" + pathname.substring(pidPrefix.length()));
+            }
+        }
+        if (configuredFile != null) {
+            return FileResult.<AndroidFileIO>success(new ByteArrayFileIO(oflags, pathname, configuredFile));
+        }
         if ("/dev/tty".equals(pathname)) {
             return FileResult.<AndroidFileIO>success(new NullFileIO(pathname));
         }

@@ -1,6 +1,7 @@
 package com.github.unidbg.linux.android;
 
 import com.github.unidbg.AndroidEmulator;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.Family;
 import com.github.unidbg.arm.AbstractARMEmulator;
 import com.github.unidbg.arm.backend.BackendFactory;
@@ -32,7 +33,11 @@ import java.util.Collection;
 public class AndroidARMEmulator extends AbstractARMEmulator<AndroidFileIO> implements AndroidEmulator {
 
     protected AndroidARMEmulator(String processName, File rootDir, Collection<BackendFactory> backendFactories) {
-        super(processName, rootDir, Family.Android32, backendFactories);
+        this(processName, rootDir, backendFactories, TraceEnvironmentConfig.fromSystemProperty());
+    }
+
+    protected AndroidARMEmulator(String processName, File rootDir, Collection<BackendFactory> backendFactories, TraceEnvironmentConfig environmentConfig) {
+        super(processName, rootDir, Family.Android32, backendFactories, environmentConfig);
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.github.unidbg.Family;
 import com.github.unidbg.Module;
 import com.github.unidbg.arm.backend.UnHook;
 import com.github.unidbg.debugger.Breaker;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.file.FileIO;
 import com.github.unidbg.file.FileResult;
 import com.github.unidbg.file.IOResolver;
@@ -183,6 +184,24 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
         return System.currentTimeMillis();
     }
 
+    protected long currentTimeMillis(Emulator<?> emulator) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        Long configured = config == null ? null : config.getCurrentTimeMillis();
+        return configured == null ? currentTimeMillis() : configured;
+    }
+
+    protected long monotonicNanos(Emulator<?> emulator, long fallback) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? fallback : config.getMonotonicNanos(fallback);
+    }
+
+    protected int timezoneMinutesWest(Emulator<?> emulator) {
+        Calendar calendar = Calendar.getInstance();
+        int fallback = -(calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET)) / (60 * 1000);
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? fallback : config.getTimezoneMinutesWest(fallback);
+    }
+
     @SuppressWarnings("unused")
     protected int gettimeofday(Emulator<?> emulator, Pointer tv, Pointer tz) {
         if (log.isDebugEnabled()) {
@@ -198,7 +217,7 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
             Inspector.inspect(before, "gettimeofday tz");
         }
 
-        long currentTimeMillis = currentTimeMillis();
+        long currentTimeMillis = currentTimeMillis(emulator);
         long tv_sec = currentTimeMillis / 1000;
         long tv_usec = (currentTimeMillis % 1000) * 1000;
         TimeVal32 timeVal = new TimeVal32(tv);
@@ -207,10 +226,8 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
         timeVal.pack();
 
         if (tz != null) {
-            Calendar calendar = Calendar.getInstance();
-            int tz_minuteswest = -(calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET)) / (60 * 1000);
             TimeZone timeZone = new TimeZone(tz);
-            timeZone.tz_minuteswest = tz_minuteswest;
+            timeZone.tz_minuteswest = timezoneMinutesWest(emulator);
             timeZone.tz_dsttime = 0;
             timeZone.pack();
         }
@@ -226,7 +243,7 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
         return 0;
     }
 
-    protected int gettimeofday64(Pointer tv, Pointer tz) {
+    protected int gettimeofday64(Emulator<?> emulator, Pointer tv, Pointer tz) {
         if (log.isDebugEnabled()) {
             log.debug("gettimeofday64 tv={}, tz={}", tv, tz);
         }
@@ -240,7 +257,7 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
             Inspector.inspect(before, "gettimeofday tz");
         }
 
-        long currentTimeMillis = currentTimeMillis();
+        long currentTimeMillis = currentTimeMillis(emulator);
         long tv_sec = currentTimeMillis / 1000;
         long tv_usec = (currentTimeMillis % 1000) * 1000;
         TimeVal64 timeVal = new TimeVal64(tv);
@@ -249,10 +266,8 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
         timeVal.pack();
 
         if (tz != null) {
-            Calendar calendar = Calendar.getInstance();
-            int tz_minuteswest = -(calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET)) / (60 * 1000);
             TimeZone timeZone = new TimeZone(tz);
-            timeZone.tz_minuteswest = tz_minuteswest;
+            timeZone.tz_minuteswest = timezoneMinutesWest(emulator);
             timeZone.tz_dsttime = 0;
             timeZone.pack();
         }
@@ -572,10 +587,14 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
         return write;
     }
 
-    protected int getrandom(Pointer buf, int bufSize, int flags) {
-        Random random = new Random();
-        byte[] bytes = new byte[bufSize];
-        random.nextBytes(bytes);
+    protected int getrandom(Emulator<?> emulator, Pointer buf, int bufSize, int flags) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        byte[] bytes = config == null ? null : config.getRandomBytes("getrandomHex", bufSize);
+        if (bytes == null) {
+            Random random = new Random();
+            bytes = new byte[bufSize];
+            random.nextBytes(bytes);
+        }
         buf.write(0, bytes, 0, bytes.length);
         if (log.isDebugEnabled()) {
             log.debug(Inspector.inspectString(bytes, "[随机点] getrandom buf=" + buf + ", bufSize=" + bufSize + ", flags=0x" + Integer.toHexString(flags)));

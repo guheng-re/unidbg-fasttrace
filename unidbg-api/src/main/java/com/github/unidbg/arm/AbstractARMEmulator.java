@@ -14,6 +14,7 @@ import com.github.unidbg.arm.backend.UnHook;
 import com.github.unidbg.arm.context.BackendArm32RegisterContext;
 import com.github.unidbg.arm.context.RegisterContext;
 import com.github.unidbg.debugger.Debugger;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.file.NewFileIO;
 import com.github.unidbg.memory.Memory;
 import com.github.unidbg.pointer.UnidbgPointer;
@@ -56,7 +57,11 @@ public abstract class AbstractARMEmulator<T extends NewFileIO> extends AbstractE
     private final Dlfcn dlfcn;
 
     public AbstractARMEmulator(String processName, File rootDir, Family family, Collection<BackendFactory> backendFactories, String... envs) {
-        super(false, processName, 0xfffe0000L, 0x10000, rootDir, family, backendFactories);
+        this(processName, rootDir, family, backendFactories, null, envs);
+    }
+
+    public AbstractARMEmulator(String processName, File rootDir, Family family, Collection<BackendFactory> backendFactories, TraceEnvironmentConfig environmentConfig, String... envs) {
+        super(false, processName, 0xfffe0000L, 0x10000, rootDir, family, backendFactories, environmentConfig);
 
         backend.switchUserMode();
 

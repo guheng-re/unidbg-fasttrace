@@ -13,6 +13,7 @@ import com.github.unidbg.debugger.Debugger;
 import com.github.unidbg.debugger.DebuggerType;
 import com.github.unidbg.debugger.gdb.GdbStub;
 import com.github.unidbg.debugger.ida.AndroidServer;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.file.FileSystem;
 import com.github.unidbg.file.NewFileIO;
 import com.github.unidbg.listener.TraceCodeListener;
@@ -71,8 +72,16 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
     protected final DateFormat dateFormat = new SimpleDateFormat("[HH:mm:ss SSS]");
 
     public AbstractEmulator(boolean is64Bit, String processName, long svcBase, int svcSize, File rootDir, Family family, Collection<BackendFactory> backendFactories) {
+        this(is64Bit, processName, svcBase, svcSize, rootDir, family, backendFactories, null);
+    }
+
+    public AbstractEmulator(boolean is64Bit, String processName, long svcBase, int svcSize, File rootDir, Family family, Collection<BackendFactory> backendFactories, TraceEnvironmentConfig environmentConfig) {
         super();
         this.family = family;
+        this.environmentConfig = environmentConfig;
+        if (environmentConfig != null) {
+            context.put(TraceEnvironmentConfig.KEY, environmentConfig);
+        }
 
         File targetDir = new File("target");
         if (!targetDir.exists()) {
@@ -89,13 +98,15 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
         }
         this.fileSystem = createFileSystem(rootDir);
         this.backend = BackendFactory.createBackend(this, is64Bit, backendFactories);
-        this.processName = processName == null ? "unidbg" : processName;
+        String configuredProcessName = environmentConfig == null ? null : environmentConfig.getProcessName(null);
+        this.processName = configuredProcessName == null ? (processName == null ? "unidbg" : processName) : configuredProcessName;
         this.registerContext = createRegisterContext(backend);
 
         String name = ManagementFactory.getRuntimeMXBean().getName();
         String pid = name.split("@")[0];
-        this.pid = Integer.parseInt(pid) & 0x7fff;
-        log.info("[随机点] 这里的pid随机，为{}", pid);
+        int runtimePid = Integer.parseInt(pid) & 0x7fff;
+        this.pid = environmentConfig == null ? runtimePid : environmentConfig.getPid(runtimePid);
+        log.info("[随机点] 这里的pid随机，为{}", this.pid);
 
         this.svcMemory = new ARMSvcMemory(svcBase, svcSize, this);
         this.threadDispatcher = createThreadDispatcher();
@@ -453,6 +464,8 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
     }
 
     private final String processName;
+
+    private final TraceEnvironmentConfig environmentConfig;
 
     @Override
     public String getProcessName() {

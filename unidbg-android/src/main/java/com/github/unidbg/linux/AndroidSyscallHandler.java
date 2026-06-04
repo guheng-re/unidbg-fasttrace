@@ -4,6 +4,7 @@ import com.github.unidbg.AbstractEmulator;
 import com.github.unidbg.Emulator;
 import com.github.unidbg.arm.backend.BackendException;
 import com.github.unidbg.arm.context.RegisterContext;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.file.FileResult;
 import com.github.unidbg.file.linux.AndroidFileIO;
 import com.github.unidbg.file.linux.IOConstants;
@@ -61,6 +62,41 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
     static final int MREMAP_FIXED = 2;
 
     private byte[] sched_cpu_mask;
+
+    protected final int getConfiguredPpid(Emulator<?> emulator, int fallback) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? fallback : config.getPpid(fallback);
+    }
+
+    protected final int getConfiguredTid(Emulator<?> emulator, int fallback) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? fallback : config.getTid(fallback);
+    }
+
+    protected final int getConfiguredUid(Emulator<?> emulator, int fallback) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? fallback : config.getUid(fallback);
+    }
+
+    protected final int getConfiguredGid(Emulator<?> emulator, int fallback) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? fallback : config.getGid(fallback);
+    }
+
+    protected final int getConfiguredEuid(Emulator<?> emulator, int fallback) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? fallback : config.getEuid(fallback);
+    }
+
+    protected final int getConfiguredEgid(Emulator<?> emulator, int fallback) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? fallback : config.getEgid(fallback);
+    }
+
+    protected final String getConfiguredThreadName(Emulator<?> emulator, String fallback) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? fallback : config.getThreadName(fallback);
+    }
 
     final int mlock(Emulator<?> emulator) {
         RegisterContext context = emulator.getContext();
