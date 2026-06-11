@@ -4,6 +4,7 @@ import com.github.unidbg.Emulator;
 import com.github.unidbg.arm.backend.Backend;
 import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.file.linux.IOConstants;
+import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import com.sun.jna.Pointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +15,12 @@ public class RandomFileIO extends DriverFileIO {
     static int num = 0;
     private static final Logger log = LoggerFactory.getLogger(RandomFileIO.class);
 
+    private final Emulator<?> emulator;
     private final TraceEnvironmentConfig environmentConfig;
 
     public RandomFileIO(Emulator<?> emulator, String path) {
         super(emulator, IOConstants.O_RDONLY, path);
+        this.emulator = emulator;
         this.environmentConfig = TraceEnvironmentConfig.get(emulator);
     }
 
@@ -27,6 +30,8 @@ public class RandomFileIO extends DriverFileIO {
         if (configured != null) {
             buffer.write(0, configured, 0, configured.length);
             log.info("[随机点] RandomFileIO.read path={}, count={}, bytes={}", getPath(), count, toHex(configured));
+            TraceEnvironmentEventSink.emit(emulator, "random", "read(\"" + getPath() + "\")", configured,
+                    "json-config", "读取随机设备 " + getPath());
             return count;
         }
 
@@ -45,6 +50,8 @@ public class RandomFileIO extends DriverFileIO {
             total += read;
             pointer = pointer.share(read);
         }
+        TraceEnvironmentEventSink.emit(emulator, "random", "read(\"" + getPath() + "\")", buf,
+                "unidbg-default", "读取随机设备 " + getPath());
         return total;
     }
 

@@ -11,12 +11,16 @@ import com.github.unidbg.arm.backend.CodeHook;
 import com.github.unidbg.arm.backend.ReadHook;
 import com.github.unidbg.arm.backend.WriteHook;
 import com.github.unidbg.arm.backend.UnHook;
+import com.github.unidbg.trace.TraceEnvironmentEventSink;
 
 import com.github.unidbg.Symbol;
 import com.github.unidbg.Module;
 import com.github.unidbg.unwind.Unwinder;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -30,7 +34,7 @@ import java.util.Locale;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
+public class AssemblyCodeTextDumper implements CodeHook, TraceHook, TraceEnvironmentEventSink {
 
     private final Emulator<?> emulator;
     private final long traceBegin, traceEnd;
@@ -65,6 +69,13 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
         public long[] args;
         public String moduleName;
         public String funcAlias;
+        public String callSiteModule;
+        public long callSiteBase;
+        public long callSiteAddress;
+        public long callSiteOffset;
+        public long callSiteTraceLineNo;
+        public String callSiteTraceNeedle;
+        public String callSiteMnemonic;
 
         public PendingCall(String moduleName, String funcName, long returnAddress, boolean isJni, long[] args) {
             this.moduleName = moduleName;
@@ -188,6 +199,16 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
 
     private final StringBuilder asyncBlockBuffer = new StringBuilder(8388608); // 8MB装甲缓冲区
     private int linesInBlock = 0;
+    private long traceLineNo = 0;
+    private long currentInstructionTraceLineNo = 0;
+    private String currentInstructionTraceNeedle = null;
+    private String currentInstructionModule = null;
+    private String currentInstructionMnemonic = null;
+
+    private java.util.concurrent.LinkedBlockingQueue<String> sidecarQueue;
+    private Thread sidecarThread;
+    private PrintStream sidecarRedirect;
+    private long sidecarSeq = 0;
 
     private void checkFlushAsyncBlockBuffer() {
         if (this.linesInBlock > 50000) {
@@ -197,6 +218,25 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
             this.asyncBlockBuffer.setLength(0);
             this.linesInBlock = 0;
         }
+    }
+
+    private void appendTraceLine(CharSequence line) {
+        CharSequence text = line == null ? "null" : line;
+        asyncBlockBuffer.append(text).append('\n');
+        int physicalLines = countPhysicalLines(text);
+        traceLineNo += physicalLines;
+        linesInBlock += physicalLines;
+        checkFlushAsyncBlockBuffer();
+    }
+
+    private static int countPhysicalLines(CharSequence line) {
+        int count = 1;
+        for (int i = 0; line != null && i < line.length(); i++) {
+            if (line.charAt(i) == '\n') {
+                count++;
+            }
+        }
+        return count;
     }
 
     private final PrintStream queueOut = new PrintStream(new java.io.OutputStream() {
@@ -209,9 +249,7 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
         }
         @Override
         public void println(String s) {
-            asyncBlockBuffer.append(s == null ? "null" : s).append('\n');
-            linesInBlock++;
-            checkFlushAsyncBlockBuffer();
+            appendTraceLine(s);
         }
     };
     
@@ -219,10 +257,18 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
     private boolean traceStopped = false;
 
     public AssemblyCodeTextDumper(Emulator<?> emulator, long begin, long end, PrintStream redirect, TraceCodeListener listener) {
-        this(emulator, begin, end, null, redirect, listener);
+        this(emulator, begin, end, null, redirect, listener, null);
+    }
+
+    public AssemblyCodeTextDumper(Emulator<?> emulator, long begin, long end, PrintStream redirect, TraceCodeListener listener, File sidecarFile) {
+        this(emulator, begin, end, null, redirect, listener, sidecarFile);
     }
 
     public AssemblyCodeTextDumper(Emulator<?> emulator, long begin, long end, String[] moduleNames, PrintStream redirect, TraceCodeListener listener) {
+        this(emulator, begin, end, moduleNames, redirect, listener, null);
+    }
+
+    public AssemblyCodeTextDumper(Emulator<?> emulator, long begin, long end, String[] moduleNames, PrintStream redirect, TraceCodeListener listener, File sidecarFile) {
         this.startTime = System.currentTimeMillis();
         this.emulator = emulator;
         this.traceBegin = begin;
@@ -235,6 +281,7 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
         }
         this.redirect = redirect;
         this.listener = listener;
+        initSidecar(sidecarFile);
 
         this.loggerThread = new Thread(new Runnable() {
             @Override
@@ -268,11 +315,6 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
         parsers.add(new DefaultJniParser());
         parsers.add(new DefaultLibcParser());
         parsers.add(new DefaultLibcppParser());
-        
-        try {
-            emulator.getBackend().hook_add_new((ReadHook) this, begin, end, emulator);
-            emulator.getBackend().hook_add_new((WriteHook) this, begin, end, emulator);
-        } catch (Exception ignored) {}
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
@@ -282,6 +324,49 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
                 }
             }
         }));
+    }
+
+    private void initSidecar(File sidecarFile) {
+        if (sidecarFile == null) {
+            return;
+        }
+        File parent = sidecarFile.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+        if (sidecarFile.exists()) {
+            sidecarFile.delete();
+        }
+        try {
+            this.sidecarRedirect = new PrintStream(sidecarFile, "UTF-8");
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
+        this.sidecarQueue = new java.util.concurrent.LinkedBlockingQueue<>(100000);
+        this.sidecarThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    while (true) {
+                        String msg = sidecarQueue.take();
+                        if (POISON_PILL.equals(msg)) {
+                            break;
+                        }
+                        sidecarRedirect.println(msg);
+                    }
+                } catch (InterruptedException ignored) {
+                } finally {
+                    if (sidecarRedirect != null) {
+                        sidecarRedirect.flush();
+                        sidecarRedirect.close();
+                    }
+                }
+            }
+        });
+        this.sidecarThread.setName("Unidbg-Trace-Environment-Sidecar");
+        this.sidecarThread.setDaemon(true);
+        this.sidecarThread.start();
+        TraceEnvironmentEventSink.register(emulator, this);
     }
 
     public void registerParser(TraceCallParser parser) {
@@ -325,8 +410,277 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
             logQueue.put(POISON_PILL);
             loggerThread.join();
         } catch (InterruptedException ignored) {}
+        closeSidecar();
+        TraceEnvironmentEventSink.unregister(emulator, this);
         IOUtils.close(redirect);
         redirect = null;
+    }
+
+    private void closeSidecar() {
+        if (sidecarQueue == null || sidecarThread == null) {
+            return;
+        }
+        try {
+            sidecarQueue.put(POISON_PILL);
+            sidecarThread.join();
+        } catch (InterruptedException ignored) {
+        }
+        sidecarQueue = null;
+        sidecarThread = null;
+        sidecarRedirect = null;
+    }
+
+    @Override
+    public synchronized void emitEnvironmentEvent(String kind, String api, Object value, String source, String note) {
+        if (sidecarQueue == null) {
+            return;
+        }
+        try {
+            EventValue eventValue = formatEventValue(value);
+            EventTarget target = resolveEventTarget();
+            CallerInfo caller = resolveCallerInfo();
+
+            StringBuilder json = new StringBuilder(512);
+            json.append('{');
+            appendJsonNumber(json, "seq", ++sidecarSeq);
+            appendJsonString(json, "kind", kind);
+            appendJsonString(json, "api", api);
+            appendJsonString(json, "value", eventValue.value);
+            appendJsonBoolean(json, "truncated", eventValue.truncated);
+            appendJsonString(json, "source", source == null ? "fallback" : source);
+            appendTarget(json, target);
+            appendCaller(json, caller);
+            appendJsonString(json, "note", note);
+            json.append('}');
+            sidecarQueue.offer(json.toString());
+        } catch (Throwable ignored) {
+        }
+    }
+
+    private EventTarget resolveEventTarget() {
+        PendingCall call = pendingCalls.peek();
+        if (call != null && isTargetCallSite(call)) {
+            return new EventTarget(call.callSiteModule, call.callSiteBase, call.callSiteAddress, call.callSiteOffset,
+                    call.callSiteTraceLineNo, call.callSiteTraceNeedle, call.callSiteMnemonic);
+        }
+        Long address = currentInstructionAddress;
+        if (address == null || !canTrace(address)) {
+            return null;
+        }
+        Module module = emulator.getMemory().findModuleByAddress(address);
+        if (module == null || isSystemModule(module.name)) {
+            return null;
+        }
+        return new EventTarget(module.name, module.base, address, address - module.base,
+                currentInstructionTraceLineNo, currentInstructionTraceNeedle, currentInstructionMnemonic);
+    }
+
+    private boolean isTargetCallSite(PendingCall call) {
+        return call.callSiteModule != null && call.callSiteAddress != 0 && call.callSiteTraceNeedle != null &&
+                canTrace(call.callSiteAddress) && !isSystemModule(call.callSiteModule);
+    }
+
+    private CallerInfo resolveCallerInfo() {
+        long pc = readProgramCounter();
+        if (pc == 0) {
+            return null;
+        }
+        Module module = emulator.getMemory().findModuleByAddress(pc);
+        String moduleName = module == null ? null : module.name;
+        String symbolName = null;
+        if (module != null) {
+            try {
+                Symbol symbol = module.findClosestSymbolByAddress(pc, false);
+                if (symbol != null && Math.abs(pc - symbol.getAddress()) <= SYMBOL_MAX_OFFSET) {
+                    symbolName = symbol.getName();
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        return new CallerInfo(moduleName, symbolName, pc);
+    }
+
+    private long readProgramCounter() {
+        try {
+            int reg = emulator.is32Bit() ? unicorn.ArmConst.UC_ARM_REG_PC : unicorn.Arm64Const.UC_ARM64_REG_PC;
+            return emulator.getBackend().reg_read(reg).longValue();
+        } catch (Throwable ignored) {
+            return 0;
+        }
+    }
+
+    private static boolean isSystemModule(String moduleName) {
+        if (moduleName == null) {
+            return false;
+        }
+        return "libc.so".equals(moduleName) || "libandroid.so".equals(moduleName) || "libdl.so".equals(moduleName) ||
+                "libm.so".equals(moduleName) || "liblog.so".equals(moduleName) || "libsystemproperties.so".equals(moduleName) ||
+                "libunwindstack.so".equals(moduleName) || "libnativebridge.so".equals(moduleName) ||
+                "linker".equals(moduleName) || "linker64".equals(moduleName) || moduleName.startsWith("libunidbg");
+    }
+
+    private static EventValue formatEventValue(Object value) {
+        if (value instanceof byte[]) {
+            byte[] bytes = (byte[]) value;
+            boolean truncated = bytes.length > 128;
+            return new EventValue(toHexLower(truncated ? Arrays.copyOf(bytes, 128) : bytes), truncated);
+        }
+        String text = String.valueOf(value);
+        boolean truncated = false;
+        if (text.length() > 256) {
+            text = text.substring(0, 256);
+            truncated = true;
+        }
+        return new EventValue(text, truncated);
+    }
+
+    private static String toHexLower(byte[] bytes) {
+        StringBuilder sb = new StringBuilder(bytes == null ? 0 : bytes.length * 2);
+        if (bytes != null) {
+            for (byte b : bytes) {
+                int v = b & 0xff;
+                sb.append(HEX_ARRAY[v >>> 4]).append(HEX_ARRAY[v & 0x0f]);
+            }
+        }
+        return sb.toString();
+    }
+
+    private static void appendJsonNumber(StringBuilder json, String key, long value) {
+        appendJsonSeparator(json);
+        json.append('"').append(key).append("\":").append(value);
+    }
+
+    private static void appendJsonBoolean(StringBuilder json, String key, boolean value) {
+        appendJsonSeparator(json);
+        json.append('"').append(key).append("\":").append(value);
+    }
+
+    private static void appendJsonString(StringBuilder json, String key, String value) {
+        appendJsonSeparator(json);
+        json.append('"').append(key).append("\":");
+        appendJsonStringValue(json, value);
+    }
+
+    private static void appendTarget(StringBuilder json, EventTarget target) {
+        appendJsonSeparator(json);
+        json.append("\"target\":");
+        if (target == null) {
+            json.append("null");
+            return;
+        }
+        json.append('{');
+        appendJsonString(json, "module", target.module);
+        appendJsonString(json, "base", "0x" + Long.toHexString(target.base));
+        appendJsonString(json, "address", "0x" + Long.toHexString(target.address));
+        appendJsonString(json, "offset", "0x" + Long.toHexString(target.offset));
+        appendJsonNumber(json, "traceLineNo", target.traceLineNo);
+        appendJsonString(json, "traceNeedle", target.traceNeedle);
+        appendJsonString(json, "mnemonic", target.mnemonic);
+        json.append('}');
+    }
+
+    private static void appendCaller(StringBuilder json, CallerInfo caller) {
+        appendJsonSeparator(json);
+        json.append("\"caller\":");
+        if (caller == null) {
+            json.append("null");
+            return;
+        }
+        json.append('{');
+        appendJsonString(json, "module", caller.module);
+        appendJsonString(json, "symbol", caller.symbol);
+        appendJsonString(json, "address", "0x" + Long.toHexString(caller.address));
+        json.append('}');
+    }
+
+    private static void appendJsonSeparator(StringBuilder json) {
+        int len = json.length();
+        if (len > 0 && json.charAt(len - 1) != '{' && json.charAt(len - 1) != '[' && json.charAt(len - 1) != ':') {
+            json.append(',');
+        }
+    }
+
+    private static void appendJsonStringValue(StringBuilder json, String value) {
+        if (value == null) {
+            json.append("null");
+            return;
+        }
+        json.append('"');
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            switch (c) {
+                case '"':
+                    json.append("\\\"");
+                    break;
+                case '\\':
+                    json.append("\\\\");
+                    break;
+                case '\b':
+                    json.append("\\b");
+                    break;
+                case '\f':
+                    json.append("\\f");
+                    break;
+                case '\n':
+                    json.append("\\n");
+                    break;
+                case '\r':
+                    json.append("\\r");
+                    break;
+                case '\t':
+                    json.append("\\t");
+                    break;
+                default:
+                    if (c < 0x20) {
+                        json.append(String.format("\\u%04x", (int) c));
+                    } else {
+                        json.append(c);
+                    }
+            }
+        }
+        json.append('"');
+    }
+
+    private static class EventValue {
+        final String value;
+        final boolean truncated;
+
+        EventValue(String value, boolean truncated) {
+            this.value = value;
+            this.truncated = truncated;
+        }
+    }
+
+    private static class EventTarget {
+        final String module;
+        final long base;
+        final long address;
+        final long offset;
+        final long traceLineNo;
+        final String traceNeedle;
+        final String mnemonic;
+
+        EventTarget(String module, long base, long address, long offset, long traceLineNo, String traceNeedle, String mnemonic) {
+            this.module = module;
+            this.base = base;
+            this.address = address;
+            this.offset = offset;
+            this.traceLineNo = traceLineNo;
+            this.traceNeedle = traceNeedle;
+            this.mnemonic = mnemonic;
+        }
+    }
+
+    private static class CallerInfo {
+        final String module;
+        final String symbol;
+        final long address;
+
+        CallerInfo(String module, String symbol, long address) {
+            this.module = module;
+            this.symbol = symbol;
+            this.address = address;
+        }
     }
 
     private boolean canTrace(long address) {
@@ -360,22 +714,19 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
             if (lastInstructionWritePrinter != null) {
                 lastInstructionWritePrinter.print(emulator, emulator.getBackend(), bufferedInstruction, lastAddress);
             }
-            this.asyncBlockBuffer.append(bufferedInstruction).append('\n');
-            this.linesInBlock++;
+            appendTraceLine(bufferedInstruction);
             
             if (this.manualMemDumpAddress != 0) {
                 try {
                     byte[] data = emulator.getBackend().mem_read(this.manualMemDumpAddress, this.manualMemDumpSize);
-                    this.asyncBlockBuffer.append(formatMemDump(this.manualMemDumpType, this.manualMemDumpAddress, data)).append('\n');
-                    this.linesInBlock++;
+                    appendTraceLine(formatMemDump(this.manualMemDumpType, this.manualMemDumpAddress, data));
                 } catch (Exception ignored) {}
                 this.manualMemDumpAddress = 0;
                 this.pendingMemoryDumps.clear(); // Suppress scattered Unicorn hook dumps
             }
 
             for (String dump : pendingMemoryDumps) {
-                this.asyncBlockBuffer.append(dump).append('\n');
-                this.linesInBlock++;
+                appendTraceLine(dump);
             }
             bufferedInstruction = null;
             pendingMemoryDumps.clear();
@@ -431,15 +782,13 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
                         Long lAddr = this.lastAddress;
                         lastPrinter.print(emulator, backend, instructionBuffer, lAddr != null ? lAddr : 0);
                     }
-                    this.asyncBlockBuffer.append(instructionBuffer).append('\n');
-                    this.linesInBlock++;
+                    appendTraceLine(instructionBuffer);
 
                     if (this.manualMemDumpAddress != 0) {
                         if (!disableHexdump) {
                             try {
                                 byte[] data = backend.mem_read(this.manualMemDumpAddress, this.manualMemDumpSize);
-                                this.asyncBlockBuffer.append(formatMemDump(this.manualMemDumpType, this.manualMemDumpAddress, data)).append('\n');
-                                this.linesInBlock++;
+                                appendTraceLine(formatMemDump(this.manualMemDumpType, this.manualMemDumpAddress, data));
                             } catch (Exception ignored) {}
                         }
                         this.manualMemDumpAddress = 0;
@@ -447,12 +796,9 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
                     }
 
                     for (String dump : this.pendingMemoryDumps) {
-                        this.asyncBlockBuffer.append(dump).append('\n');
-                        this.linesInBlock++;
+                        appendTraceLine(dump);
                     }
                     this.pendingMemoryDumps.clear();
-
-                    checkFlushAsyncBlockBuffer();
                 }
 
                 // 2. Check if we just returned from a function to print the result EXACTLY before the NEXT instruction executes
@@ -531,10 +877,15 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
                 }
                 
                 instructionBuffer.append(cachedIns.precomputedPrefix);
+                this.currentInstructionTraceNeedle = cachedIns.precomputedPrefix;
+                this.currentInstructionModule = moduleNameAt(address);
+                this.currentInstructionMnemonic = cachedIns.mnemonic;
+                this.currentInstructionTraceLineNo = traceLineNo + 1;
 
                 // 4. Semantic Parsing: Add C-style call inline
                 if (!disableFunctionCall && cachedIns.isCallOrSvc && insForRareFeatures != null) {
                     handleCallAndSvcInstructions(insForRareFeatures, backend, emulator.is64Bit());
+                    this.currentInstructionTraceLineNo = traceLineNo + 1;
                 }
 
                 // --- Fix for Unicorn Engine's Vector Memory Hook Missing Bug ---
@@ -634,6 +985,7 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
                 long[] args = new long[4];
                 for (int i=0; i<4; i++) args[i] = getArgRegValue(backend, i, is64Bit);
                 PendingCall call = new PendingCall(symbol.moduleName, symbol.funcName, returnAddr, symbol.isJni, args);
+                fillCallSite(call, ins.getAddress());
 
                 // Formatting C-style
                 String callString = null;
@@ -653,6 +1005,7 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
 
                 PrintStream out = queueOut;
                 out.println("=============== -> call: " + callString + " =================");
+                fillCallSite(call, ins.getAddress());
                 pendingCalls.push(call);
             }
         } else if (lowerMnem.equals("svc") && ins.getOpStr().contains("#0")) {
@@ -664,6 +1017,7 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
             for (int i=0; i<6; i++) args[i] = getArgRegValue(backend, i, is64Bit);
             
             PendingCall call = new PendingCall("syscall", "syscall_" + syscallNum, returnAddr, false, args);
+            fillCallSite(call, ins.getAddress());
             // Re-assign name from maps is handled inside SyscallParser now via formatCall override, 
             // but SyscallParser matching uses the funcName properly.
             // Oh wait, SyscallParser can look up the true syscall name.
@@ -685,8 +1039,29 @@ public class AssemblyCodeTextDumper implements CodeHook, TraceHook {
             
             PrintStream out = queueOut;
             out.println("=============== -> call: " + callString + " =================");
+            fillCallSite(call, ins.getAddress());
             pendingCalls.push(call);
         }
+    }
+
+    private void fillCallSite(PendingCall call, long address) {
+        Module module = emulator.getMemory().findModuleByAddress(address);
+        if (module != null) {
+            call.callSiteModule = module.name;
+            call.callSiteBase = module.base;
+            call.callSiteAddress = address;
+            call.callSiteOffset = address - module.base;
+        } else {
+            call.callSiteAddress = address;
+        }
+        call.callSiteTraceLineNo = traceLineNo + 1;
+        call.callSiteTraceNeedle = currentInstructionTraceNeedle;
+        call.callSiteMnemonic = currentInstructionMnemonic;
+    }
+
+    private String moduleNameAt(long address) {
+        Module module = emulator.getMemory().findModuleByAddress(address);
+        return module == null ? null : module.name;
     }
 
     // --- Argument / Return Helpers (Public for custom parsers) ---

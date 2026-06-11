@@ -59,6 +59,13 @@ public abstract class AbstractBackend implements Backend {
         }
     }
 
+    protected static int normalizeVectorRegId(int regId, boolean is64Bit) {
+        if (is64Bit && regId >= Arm64Const.UC_ARM64_REG_V0 && regId <= Arm64Const.UC_ARM64_REG_V31) {
+            return Arm64Const.UC_ARM64_REG_Q0 + (regId - Arm64Const.UC_ARM64_REG_V0);
+        }
+        return regId;
+    }
+
     protected static void checkVectorRegId(int regId, boolean is64Bit) {
         if (is64Bit) {
             if (regId < Arm64Const.UC_ARM64_REG_Q0 || regId > Arm64Const.UC_ARM64_REG_Q31) {
@@ -68,6 +75,17 @@ public abstract class AbstractBackend implements Backend {
             if (regId < ArmConst.UC_ARM_REG_D0 || regId > ArmConst.UC_ARM_REG_D15) {
                 throw new UnsupportedOperationException("regId=" + regId);
             }
+        }
+    }
+
+    protected static void checkScalarRegId(int regId, boolean is64Bit) {
+        if (is64Bit) {
+            if ((regId >= Arm64Const.UC_ARM64_REG_Q0 && regId <= Arm64Const.UC_ARM64_REG_Q31) ||
+                    (regId >= Arm64Const.UC_ARM64_REG_V0 && regId <= Arm64Const.UC_ARM64_REG_V31)) {
+                throw new UnsupportedOperationException("regId=" + regId + " is a 128-bit vector register, use reg_read_vector");
+            }
+        } else if (regId >= ArmConst.UC_ARM_REG_Q0 && regId <= ArmConst.UC_ARM_REG_Q15) {
+            throw new UnsupportedOperationException("regId=" + regId + " is a 128-bit vector register, use reg_read_vector");
         }
     }
 

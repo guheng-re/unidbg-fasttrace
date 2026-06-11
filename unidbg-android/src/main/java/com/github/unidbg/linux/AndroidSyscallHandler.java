@@ -35,6 +35,7 @@ import com.github.unidbg.thread.ThreadContextSwitchException;
 import com.github.unidbg.thread.ThreadDispatcher;
 import com.github.unidbg.thread.ThreadTask;
 import com.github.unidbg.thread.Waiter;
+import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import com.github.unidbg.unix.IO;
 import com.github.unidbg.unix.UnixEmulator;
 import com.github.unidbg.unix.UnixSyscallHandler;
@@ -96,6 +97,95 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
     protected final String getConfiguredThreadName(Emulator<?> emulator, String fallback) {
         TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
         return config == null ? fallback : config.getThreadName(fallback);
+    }
+
+    protected final int emitProcessIdentity(Emulator<?> emulator, String api, int value) {
+        TraceEnvironmentEventSink.emit(emulator, "process_identity", api, String.valueOf(value),
+                processIdentitySource(emulator, api), "读取进程身份 " + api);
+        return value;
+    }
+
+    private static String processIdentitySource(Emulator<?> emulator, String api) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        if (config == null) {
+            return "unidbg-default";
+        }
+        final int sentinel = Integer.MIN_VALUE;
+        boolean configured;
+        if ("getpid".equals(api)) {
+            configured = config.getPid(sentinel) != sentinel;
+        } else if ("getppid".equals(api)) {
+            configured = config.getPpid(sentinel) != sentinel;
+        } else if ("gettid".equals(api)) {
+            configured = config.getTid(sentinel) != sentinel;
+        } else if ("getuid".equals(api)) {
+            configured = config.getUid(sentinel) != sentinel;
+        } else if ("getgid".equals(api)) {
+            configured = config.getGid(sentinel) != sentinel;
+        } else if ("geteuid".equals(api)) {
+            configured = config.getEuid(sentinel) != sentinel;
+        } else if ("getegid".equals(api)) {
+            configured = config.getEgid(sentinel) != sentinel;
+        } else {
+            configured = false;
+        }
+        return configured ? "json-config" : "unidbg-default";
+    }
+
+    protected final void emitNetworkDeviceIoctl(Emulator<?> emulator, int fd, long request, long argp, int ret) {
+        String requestName = networkDeviceRequestName(request);
+        if (requestName == null) {
+            return;
+        }
+        StringBuilder value = new StringBuilder();
+        value.append("fd=").append(fd).append(",request=0x").append(Long.toHexString(request)).append(",ret=").append(ret);
+        Pointer ifreq = UnidbgPointer.pointer(emulator, argp);
+        if (ifreq != null) {
+            try {
+                String ifname = ifreq.getString(0);
+                if (ifname != null && !ifname.isEmpty()) {
+                    value.append(",ifname=").append(ifname);
+                }
+                if (request == AndroidFileIO.SIOCGIFFLAGS && ret == 0) {
+                    value.append(",flags=0x").append(Integer.toHexString(ifreq.getShort(16) & 0xffff));
+                } else if (request == AndroidFileIO.SIOCGIFADDR && ret == 0) {
+                    value.append(",addr=").append(toHex(ifreq.getByteArray(16, 16)));
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        TraceEnvironmentEventSink.emit(emulator, "network_device", "ioctl(" + requestName + ")",
+                value.toString(), ret == 0 ? "unidbg-default" : "fallback", "读取网卡信息 " + requestName);
+    }
+
+    private static String networkDeviceRequestName(long request) {
+        if (request == AndroidFileIO.SIOCGIFFLAGS) {
+            return "SIOCGIFFLAGS";
+        }
+        if (request == AndroidFileIO.SIOCGIFADDR) {
+            return "SIOCGIFADDR";
+        }
+        if (request == AndroidFileIO.SIOCGIFCONF) {
+            return "SIOCGIFCONF";
+        }
+        if (request == AndroidFileIO.SIOCGIFNAME) {
+            return "SIOCGIFNAME";
+        }
+        return null;
+    }
+
+    private static String toHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder(bytes == null ? 0 : bytes.length * 2);
+        if (bytes != null) {
+            for (byte b : bytes) {
+                int v = b & 0xff;
+                if (v < 0x10) {
+                    sb.append('0');
+                }
+                sb.append(Integer.toHexString(v));
+            }
+        }
+        return sb.toString();
     }
 
     final int mlock(Emulator<?> emulator) {

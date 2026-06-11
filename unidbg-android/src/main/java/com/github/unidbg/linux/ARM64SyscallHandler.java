@@ -37,6 +37,7 @@ import com.github.unidbg.pointer.UnidbgPointer;
 import com.github.unidbg.thread.PopContextException;
 import com.github.unidbg.thread.Task;
 import com.github.unidbg.thread.ThreadContextSwitchException;
+import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import com.github.unidbg.unix.IO;
 import com.github.unidbg.unix.UnixEmulator;
 import com.github.unidbg.utils.Inspector;
@@ -150,11 +151,11 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
                     backend.reg_write(Arm64Const.UC_ARM64_REG_X0, lseek(emulator));
                     return;
                 case 172: // getpid
-                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, emulator.getPid());
+                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, emitProcessIdentity(emulator, "getpid", emulator.getPid()));
                     return;
                 case 178: // gettid
                     Task task = emulator.get(Task.TASK_KEY);
-                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, getConfiguredTid(emulator, task == null ? 0 : task.getId()));
+                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, emitProcessIdentity(emulator, "gettid", getConfiguredTid(emulator, task == null ? 0 : task.getId())));
                     return;
                 case 129:
                     backend.reg_write(Arm64Const.UC_ARM64_REG_X0, kill(emulator));
@@ -287,16 +288,16 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
                     backend.reg_write(Arm64Const.UC_ARM64_REG_X0, getppid(emulator));
                     return;
                 case 174: // getuid
-                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, getConfiguredUid(emulator, 0));
+                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, emitProcessIdentity(emulator, "getuid", getConfiguredUid(emulator, 0)));
                     return;
                 case 175: // geteuid
-                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, getConfiguredEuid(emulator, 0));
+                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, emitProcessIdentity(emulator, "geteuid", getConfiguredEuid(emulator, 0)));
                     return;
                 case 176: // getgid
-                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, getConfiguredGid(emulator, 0));
+                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, emitProcessIdentity(emulator, "getgid", getConfiguredGid(emulator, 0)));
                     return;
                 case 177: // getegid
-                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, getConfiguredEgid(emulator, 0));
+                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, emitProcessIdentity(emulator, "getegid", getConfiguredEgid(emulator, 0)));
                     return;
                 case 200:
                     backend.reg_write(Arm64Const.UC_ARM64_REG_X0, bind(emulator));
@@ -1104,24 +1105,34 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
 
         TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
 
+        String sysnameValue = config == null ? "Linux" : config.getUnameSysname("Linux");
         Pointer sysName = buf.share(0);
-        sysName.setString(0, config == null ? "Linux" : config.getUnameSysname("Linux")); /* Operating system name (e.g., "Linux") */
+        sysName.setString(0, sysnameValue); /* Operating system name (e.g., "Linux") */
 
+        String nodenameValue = config == null ? "android" : config.getUnameNodename("android");
         Pointer nodeName = sysName.share(SYS_NMLN);
-        nodeName.setString(0, config == null ? "android" : config.getUnameNodename("android"));
+        nodeName.setString(0, nodenameValue);
 
+        String releaseValue = config == null ? "5.4.210-qgki-g991c3066d5a8" : config.getUnameRelease("5.4.210-qgki-g991c3066d5a8");
         Pointer release = nodeName.share(SYS_NMLN);
-        release.setString(0, config == null ? "5.4.210-qgki-g991c3066d5a8" : config.getUnameRelease("5.4.210-qgki-g991c3066d5a8"));
+        release.setString(0, releaseValue);
 
+        String versionValue = config == null ? "#1 SMP PREEMPT Mon Jun 10 15:32:28 CST 2024" : config.getUnameVersion("#1 SMP PREEMPT Mon Jun 10 15:32:28 CST 2024");
         Pointer version = release.share(SYS_NMLN);
-        version.setString(0, config == null ? "#1 SMP PREEMPT Mon Jun 10 15:32:28 CST 2024" : config.getUnameVersion("#1 SMP PREEMPT Mon Jun 10 15:32:28 CST 2024"));
+        version.setString(0, versionValue);
 
+        String machineValue = config == null ? "aarch64" : config.getUnameMachine(true, "aarch64");
         Pointer machine = version.share(SYS_NMLN);
-        machine.setString(0, config == null ? "aarch64" : config.getUnameMachine(true, "aarch64")); /* Hardware identifier */
+        machine.setString(0, machineValue); /* Hardware identifier */
 
+        String domainNameValue = config == null ? "(none)" : config.getUnameDomainname("(none)");
         Pointer domainName = machine.share(SYS_NMLN);
-        domainName.setString(0, config == null ? "(none)" : config.getUnameDomainname("(none)"));
+        domainName.setString(0, domainNameValue);
 
+        TraceEnvironmentEventSink.emit(emulator, "linux_identity", "uname",
+                "sysname=" + sysnameValue + ",nodename=" + nodenameValue + ",release=" + releaseValue +
+                        ",version=" + versionValue + ",machine=" + machineValue + ",domainname=" + domainNameValue,
+                config == null ? "unidbg-default" : "json-config", "读取 Linux uname 设备/内核信息");
         return 0;
     }
 
@@ -1129,7 +1140,7 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
         if (log.isDebugEnabled()) {
             log.debug("getppid");
         }
-        return getConfiguredPpid(emulator, emulator.getPid());
+        return emitProcessIdentity(emulator, "getppid", getConfiguredPpid(emulator, emulator.getPid()));
     }
 
     private void exit_group(Emulator<?> emulator) {
@@ -1315,21 +1326,28 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
             case CLOCK_BOOTTIME:
                 tp.setLong(0, tv_sec);
                 tp.setLong(8, tv_nsec);
-                return 0;
+                return emitClockGettime(emulator, clk_id, tv_sec, tv_nsec);
             case CLOCK_THREAD_CPUTIME_ID:
                 tp.setLong(0, 0);
                 tp.setLong(8, 1);
-                return 0;
+                return emitClockGettime(emulator, clk_id, 0, 1);
             case CLOCK_PROCESS_CPUTIME_ID: // 2
                 tp.setLong(0, tv_sec);
                 tp.setLong(8, tv_nsec);
                 log.warn("click_id=2, you should check normal and code");
-                return 0;
+                return emitClockGettime(emulator, clk_id, tv_sec, tv_nsec);
         }
         if (log.isDebugEnabled()) {
             emulator.attach().debug("Unsupported clock_gettime clk_id=" + clk_id);
         }
         throw new UnsupportedOperationException("clk_id=" + clk_id);
+    }
+
+    private int emitClockGettime(Emulator<?> emulator, int clk_id, long tv_sec, long tv_nsec) {
+        TraceEnvironmentEventSink.emit(emulator, "time", "clock_gettime",
+                "clk_id=" + clk_id + ",tv_sec=" + tv_sec + ",tv_nsec=" + tv_nsec,
+                timeEventSource(emulator, clk_id != CLOCK_REALTIME), "读取系统时间 clock_gettime");
+        return 0;
     }
 
     protected long ptrace(Emulator<?> emulator) {
@@ -1633,6 +1651,7 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
             return -1;
         }
         int ret = file.ioctl(emulator, request, argp);
+        emitNetworkDeviceIoctl(emulator, fd, request, argp, ret);
         if (ret == -1) {
             emulator.getMemory().setErrno(UnixEmulator.ENOTTY);
         }

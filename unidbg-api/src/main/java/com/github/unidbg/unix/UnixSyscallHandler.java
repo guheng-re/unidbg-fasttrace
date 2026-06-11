@@ -13,6 +13,7 @@ import com.github.unidbg.file.NewFileIO;
 import com.github.unidbg.memory.MemRegion;
 import com.github.unidbg.spi.SyscallHandler;
 import com.github.unidbg.thread.MainTask;
+import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import com.github.unidbg.unix.struct.TimeVal32;
 import com.github.unidbg.unix.struct.TimeVal64;
 import com.github.unidbg.unix.struct.TimeZone;
@@ -202,6 +203,18 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
         return config == null ? fallback : config.getTimezoneMinutesWest(fallback);
     }
 
+    protected final String timeEventSource(Emulator<?> emulator, boolean monotonic) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        if (config == null) {
+            return "host";
+        }
+        boolean configured = config.getCurrentTimeMillis() != null || config.getTimezoneMinutesWest() != null;
+        if (monotonic) {
+            configured = configured || config.getMonotonicNanos() != null;
+        }
+        return configured ? "json-config" : "host";
+    }
+
     @SuppressWarnings("unused")
     protected int gettimeofday(Emulator<?> emulator, Pointer tv, Pointer tz) {
         if (log.isDebugEnabled()) {
@@ -240,6 +253,9 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
             byte[] after = tz.getByteArray(0, 8);
             Inspector.inspect(after, "gettimeofday tz after");
         }
+        TraceEnvironmentEventSink.emit(emulator, "time", "gettimeofday",
+                "tv_sec=" + tv_sec + ",tv_usec=" + tv_usec, timeEventSource(emulator, false),
+                "读取系统时间 gettimeofday");
         return 0;
     }
 
@@ -280,6 +296,9 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
             byte[] after = tz.getByteArray(0, 8);
             Inspector.inspect(after, "gettimeofday tz after");
         }
+        TraceEnvironmentEventSink.emit(emulator, "time", "gettimeofday",
+                "tv_sec=" + tv_sec + ",tv_usec=" + tv_usec, timeEventSource(emulator, false),
+                "读取系统时间 gettimeofday");
         return 0;
     }
 
@@ -590,6 +609,7 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
     protected int getrandom(Emulator<?> emulator, Pointer buf, int bufSize, int flags) {
         TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
         byte[] bytes = config == null ? null : config.getRandomBytes("getrandomHex", bufSize);
+        boolean configured = bytes != null;
         if (bytes == null) {
             Random random = new Random();
             bytes = new byte[bufSize];
@@ -599,6 +619,8 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
         if (log.isDebugEnabled()) {
             log.debug(Inspector.inspectString(bytes, "[随机点] getrandom buf=" + buf + ", bufSize=" + bufSize + ", flags=0x" + Integer.toHexString(flags)));
         }
+        TraceEnvironmentEventSink.emit(emulator, "random", "getrandom", bytes,
+                configured ? "json-config" : "host", "读取随机数 getrandom");
         return bufSize;
     }
 

@@ -5,6 +5,9 @@ import com.github.unidbg.arm.backend.Backend;
 import com.github.unidbg.file.linux.AndroidFileIO;
 import com.github.unidbg.file.linux.BaseAndroidFileIO;
 import com.github.unidbg.file.linux.IOConstants;
+import com.github.unidbg.linux.struct.IFConf;
+import com.github.unidbg.linux.struct.IFReq;
+import com.github.unidbg.pointer.UnidbgPointer;
 import com.github.unidbg.unix.IO;
 import com.github.unidbg.unix.struct.SockAddr;
 import com.sun.jna.Pointer;
@@ -12,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.BufferOverflowException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -23,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class SocketIO extends BaseAndroidFileIO implements AndroidFileIO {
 
@@ -81,6 +86,23 @@ public abstract class SocketIO extends BaseAndroidFileIO implements AndroidFileI
         super(IOConstants.O_RDWR);
     }
 
+    @Override
+    public int ioctl(Emulator<?> emulator, long request, long argp) {
+        if (request == SIOCGIFCONF) {
+            return getIFaceList(emulator, argp);
+        }
+        if (request == SIOCGIFFLAGS) {
+            return getIFaceFlags(emulator, argp);
+        }
+        if (request == SIOCGIFNAME) {
+            return getIFaceName(emulator, argp);
+        }
+        if (request == SIOCGIFADDR) {
+            return getIFaceAddr(emulator, argp);
+        }
+        return super.ioctl(emulator, request, argp);
+    }
+
     protected List<NetworkIF> getNetworkIFs(Emulator<?> emulator) throws SocketException {
         Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
         List<NetworkIF> list = new ArrayList<>();
@@ -109,6 +131,136 @@ public abstract class SocketIO extends BaseAndroidFileIO implements AndroidFileI
             System.out.println(getClass().getSimpleName() + " return host network ifs: " + list + " from " + emulator.getContext().getLRPointer());
         }
         return list;
+    }
+
+    private int getIFaceAddr(Emulator<?> emulator, long argp) {
+        IFReq req = IFReq.createIFReq(emulator, UnidbgPointer.pointer(emulator, argp));
+        req.unpack();
+        String ifName = new String(req.ifrn_name).trim();
+        if (log.isDebugEnabled()) {
+            log.debug("get iface addr: {}", ifName);
+        }
+        try {
+            for (NetworkIF networkIF : getNetworkIFs(emulator)) {
+                if (ifName.equals(networkIF.ifName)) {
+                    SockAddr sockAddr = new SockAddr(req.getAddrPointer());
+                    sockAddr.sin_family = AF_INET;
+                    sockAddr.sin_port = 0;
+                    sockAddr.sin_addr = Arrays.copyOf(networkIF.ipv4.getAddress(), IPV4_ADDR_LEN - 4);
+                    sockAddr.pack();
+                    return 0;
+                }
+            }
+        } catch (SocketException e) {
+            throw new IllegalStateException(e);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("getIFaceAddr not found: {}", ifName);
+        }
+        emulator.getMemory().setErrno(19); // ENODEV
+        return -1;
+    }
+
+    private int getIFaceList(Emulator<?> emulator, long argp) {
+        try {
+            List<NetworkIF> list = getNetworkIFs(emulator);
+            IFConf conf = IFConf.create(emulator, UnidbgPointer.pointer(emulator, argp));
+            Pointer ifcu_req = UnidbgPointer.pointer(emulator, conf.getIfcuReq());
+            IFReq ifReq = IFReq.createIFReq(emulator, ifcu_req);
+            if (list.size() * ifReq.size() > conf.ifc_len) {
+                throw new BufferOverflowException();
+            }
+
+            conf.ifc_len = list.size() * ifReq.size();
+            conf.pack();
+
+            Pointer pointer = Objects.requireNonNull(ifcu_req);
+            for (NetworkIF networkIF : list) {
+                ifReq = IFReq.createIFReq(emulator, pointer);
+                ifReq.setName(networkIF.ifName);
+                ifReq.pack();
+
+                SockAddr sockAddr = new SockAddr(ifReq.getAddrPointer());
+                sockAddr.sin_family = AF_INET;
+                sockAddr.sin_port = 0;
+                sockAddr.sin_addr = Arrays.copyOf(networkIF.ipv4.getAddress(), IPV4_ADDR_LEN - 4);
+                sockAddr.pack();
+
+                pointer = pointer.share(ifReq.size());
+            }
+
+            return 0;
+        } catch (SocketException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    protected int getIFaceFlags(Emulator<?> emulator, long argp) {
+        IFReq req = IFReq.createIFReq(emulator, UnidbgPointer.pointer(emulator, argp));
+        req.unpack();
+        String ifName = new String(req.ifrn_name).trim();
+        if (log.isDebugEnabled()) {
+            log.debug("get iface flags: {}", ifName);
+        }
+        NetworkIF selected = null;
+        try {
+            for (NetworkIF networkIF : getNetworkIFs(emulator)) {
+                if (ifName.equals(networkIF.ifName)) {
+                    selected = networkIF;
+                    break;
+                }
+            }
+        } catch (SocketException e) {
+            throw new IllegalStateException(e);
+        }
+        int flags;
+        if (selected == null) {
+            flags = getFallbackInterfaceFlags(ifName);
+        } else {
+            flags = IFF_UP | IFF_RUNNING;
+            if (selected.isLoopback()) {
+                flags |= IFF_LOOPBACK;
+            } else if (selected.broadcast != null) {
+                flags |= IFF_BROADCAST;
+                flags |= IFF_MULTICAST;
+            }
+        }
+        Pointer ptr = req.getAddrPointer();
+        ptr.setShort(0, (short) flags);
+        return 0;
+    }
+
+    protected int getFallbackInterfaceFlags(String ifName) {
+        int flags = IFF_UP | IFF_RUNNING;
+        if (ifName.startsWith("lo")) {
+            flags |= IFF_LOOPBACK;
+        } else {
+            flags |= IFF_BROADCAST;
+            flags |= IFF_MULTICAST;
+        }
+        return flags;
+    }
+
+    protected int getIFaceName(Emulator<?> emulator, long argp) {
+        IFReq req = IFReq.createIFReq(emulator, UnidbgPointer.pointer(emulator, argp));
+        Pointer ptr = req.getAddrPointer();
+        int ifindex = ptr.getInt(0);
+        if (log.isDebugEnabled()) {
+            log.debug("get iface name: {}", ifindex);
+        }
+        try {
+            List<NetworkIF> list = getNetworkIFs(emulator);
+            for (NetworkIF networkIF : list) {
+                if (ifindex == networkIF.index) {
+                    req.setName(networkIF.ifName);
+                    req.pack();
+                    return 0;
+                }
+            }
+            throw new IllegalStateException("ifindex=" + ifindex);
+        } catch (SocketException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Override

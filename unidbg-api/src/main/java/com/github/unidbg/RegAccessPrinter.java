@@ -8,14 +8,15 @@ import unicorn.ArmConst;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.HashMap;
 
 public final class RegAccessPrinter {
 
     private final long address;
     private final short[] accessRegs;
     private boolean forWriteRegs;
-    private final Map<Integer, Long> oldValues = new HashMap<>();
+    private final int[] oldValueRegIds;
+    private final long[] oldValues;
+    private int oldValueCount;
     
     private final Map<Short, Integer> unicornRegIds;
     private final Map<Short, String> regNames;
@@ -26,25 +27,19 @@ public final class RegAccessPrinter {
         this.unicornRegIds = unicornRegIds;
         this.regNames = regNames;
         this.forWriteRegs = forWriteRegs;
+        this.oldValueRegIds = forWriteRegs ? new int[accessRegs.length] : new int[0];
+        this.oldValues = forWriteRegs ? new long[accessRegs.length] : new long[0];
 
         if (forWriteRegs && backend != null) {
             for (short reg : accessRegs) {
                 Integer regIdBoxed = unicornRegIds.get(reg);
                 int regId = regIdBoxed != null ? regIdBoxed : 0;
-                if (regId != 0 && regId != ArmConst.UC_ARM_REG_CPSR && regId != Arm64Const.UC_ARM64_REG_NZCV) {
-                    // Prevent JVM crash: JNI reading >64 bits into a 64-bit Number pointer causes memory corruption
-                    // if ((regId >= Arm64Const.UC_ARM64_REG_Q0 && regId <= Arm64Const.UC_ARM64_REG_Q31) ||
-                    //     (regId >= Arm64Const.UC_ARM64_REG_V0 && regId <= Arm64Const.UC_ARM64_REG_V31) ||
-                    //     (regId >= Arm64Const.UC_ARM64_REG_D0 && regId <= Arm64Const.UC_ARM64_REG_D31) ||
-                    //     (regId >= Arm64Const.UC_ARM64_REG_S0 && regId <= Arm64Const.UC_ARM64_REG_S31) ||
-                    //     (regId >= ArmConst.UC_ARM_REG_Q0 && regId <= ArmConst.UC_ARM_REG_Q15) ||
-                    //     (regId >= ArmConst.UC_ARM_REG_D0 && regId <= ArmConst.UC_ARM_REG_D31) ||
-                    //     (regId >= ArmConst.UC_ARM_REG_S0 && regId <= ArmConst.UC_ARM_REG_S31)) {
-                    //     continue;
-                    // }
+                if (isComparableScalarRegister(regId)) {
                     try {
                         long val = backend.reg_read(regId).longValue();
-                        oldValues.put(regId, val);
+                        oldValueRegIds[oldValueCount] = regId;
+                        oldValues[oldValueCount] = val;
+                        oldValueCount++;
                     } catch (Exception ignored) {}
                 }
             }
@@ -61,10 +56,11 @@ public final class RegAccessPrinter {
             String regName = regNames.get(reg);
             if (regName == null) regName = "unk";
             
-            if (forWriteRegs && oldValues.containsKey(regId)) {
+            int oldValueIndex = forWriteRegs ? findOldValueIndex(regId) : -1;
+            if (oldValueIndex >= 0) {
                 try {
                     long currentVal = backend.reg_read(regId).longValue();
-                    if (currentVal == oldValues.get(regId).longValue()) {
+                    if (currentVal == oldValues[oldValueIndex]) {
                         continue;
                     }
                 } catch (Exception ignored) {}
@@ -168,6 +164,38 @@ public final class RegAccessPrinter {
                 }
             }
         }
+    }
+
+    private int findOldValueIndex(int regId) {
+        for (int i = 0; i < oldValueCount; i++) {
+            if (oldValueRegIds[i] == regId) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static boolean isComparableScalarRegister(int regId) {
+        return regId != 0 &&
+                regId != ArmConst.UC_ARM_REG_CPSR &&
+                regId != Arm64Const.UC_ARM64_REG_NZCV &&
+                !isArmSimdFpRegister(regId) &&
+                !isArm64SimdFpRegister(regId);
+    }
+
+    private static boolean isArmSimdFpRegister(int regId) {
+        return (regId >= ArmConst.UC_ARM_REG_D0 && regId <= ArmConst.UC_ARM_REG_D31) ||
+                (regId >= ArmConst.UC_ARM_REG_Q0 && regId <= ArmConst.UC_ARM_REG_Q15) ||
+                (regId >= ArmConst.UC_ARM_REG_S0 && regId <= ArmConst.UC_ARM_REG_S31);
+    }
+
+    private static boolean isArm64SimdFpRegister(int regId) {
+        return (regId >= Arm64Const.UC_ARM64_REG_B0 && regId <= Arm64Const.UC_ARM64_REG_B31) ||
+                (regId >= Arm64Const.UC_ARM64_REG_H0 && regId <= Arm64Const.UC_ARM64_REG_H31) ||
+                (regId >= Arm64Const.UC_ARM64_REG_S0 && regId <= Arm64Const.UC_ARM64_REG_S31) ||
+                (regId >= Arm64Const.UC_ARM64_REG_D0 && regId <= Arm64Const.UC_ARM64_REG_D31) ||
+                (regId >= Arm64Const.UC_ARM64_REG_Q0 && regId <= Arm64Const.UC_ARM64_REG_Q31) ||
+                (regId >= Arm64Const.UC_ARM64_REG_V0 && regId <= Arm64Const.UC_ARM64_REG_V31);
     }
 
     private static String formatVectorHex(byte[] vector) {

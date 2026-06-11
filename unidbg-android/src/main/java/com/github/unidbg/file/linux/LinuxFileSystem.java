@@ -13,11 +13,13 @@ import com.github.unidbg.linux.file.NullFileIO;
 import com.github.unidbg.linux.file.SimpleFileIO;
 import com.github.unidbg.linux.file.Stdin;
 import com.github.unidbg.linux.file.Stdout;
+import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import com.github.unidbg.unix.IO;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class LinuxFileSystem extends BaseFileSystem<AndroidFileIO> implements FileSystem<AndroidFileIO>, IOConstants {
 
@@ -36,6 +38,9 @@ public class LinuxFileSystem extends BaseFileSystem<AndroidFileIO> implements Fi
             }
         }
         if (configuredFile != null) {
+            TraceEnvironmentEventSink.emit(emulator, "linux_file", "open(\"" + pathname + "\")",
+                    new String(configuredFile, StandardCharsets.UTF_8), "json-config",
+                    "读取 Linux 文件 " + pathname);
             return FileResult.<AndroidFileIO>success(new ByteArrayFileIO(oflags, pathname, configuredFile));
         }
         if ("/dev/tty".equals(pathname)) {

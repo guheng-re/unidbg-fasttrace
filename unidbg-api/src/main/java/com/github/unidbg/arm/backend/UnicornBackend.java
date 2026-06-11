@@ -38,6 +38,7 @@ public class UnicornBackend extends AbstractBackend implements Backend {
     @SuppressWarnings("deprecation")
     @Override
     public byte[] reg_read_vector(int regId) throws BackendException {
+        regId = normalizeVectorRegId(regId, is64Bit);
         checkVectorRegId(regId, is64Bit);
         try {
             return unicorn.reg_read(regId, 16);
@@ -52,6 +53,7 @@ public class UnicornBackend extends AbstractBackend implements Backend {
         if (vector.length != 16) {
             throw new IllegalStateException("Invalid vector size");
         }
+        regId = normalizeVectorRegId(regId, is64Bit);
         checkVectorRegId(regId, is64Bit);
         try {
             unicorn.reg_write(regId, vector);
@@ -62,6 +64,7 @@ public class UnicornBackend extends AbstractBackend implements Backend {
 
     @Override
     public Number reg_read(int regId) throws BackendException {
+        checkScalarRegId(regId, is64Bit);
         try {
             return unicorn.reg_read(regId);
         } catch (UnicornException e) {

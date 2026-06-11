@@ -271,17 +271,19 @@ public class UdpSocket extends SocketIO implements FileIO {
         } catch (SocketException e) {
             throw new IllegalStateException(e);
         }
+        int flags;
         if (selected == null) {
-            throw new UnsupportedOperationException("getIFaceFlags: " + ifName);
+            flags = getFallbackInterfaceFlags(ifName);
+        } else {
+            flags = IFF_UP | IFF_RUNNING;
+            if (selected.isLoopback()) {
+                flags |= IFF_LOOPBACK;
+            } else if(selected.broadcast != null) {
+                flags |= IFF_BROADCAST;
+                flags |= IFF_MULTICAST;
+            }
         }
         Pointer ptr = req.getAddrPointer();
-        int flags = IFF_UP | IFF_RUNNING;
-        if (selected.isLoopback()) {
-            flags |= IFF_LOOPBACK;
-        } else if(selected.broadcast != null) {
-            flags |= IFF_BROADCAST;
-            flags |= IFF_MULTICAST;
-        }
         ptr.setShort(0, (short) flags);
         return 0;
     }

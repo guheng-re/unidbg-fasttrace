@@ -11,6 +11,7 @@ import com.github.unidbg.hook.HookListener;
 import com.github.unidbg.memory.MemoryBlock;
 import com.github.unidbg.memory.SvcMemory;
 import com.github.unidbg.pointer.UnidbgPointer;
+import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import com.sun.jna.Pointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,9 +108,11 @@ public class SystemPropertyHook implements HookListener {
                             if (propertyProvider != null) {
                                 Pointer replace = propertyProvider.__system_property_find(key);
                                 if (replace != null) {
+                                    emitPropertyEvent("__system_property_find", key, propertyProvider.getProperty(key), propertyEventSource());
                                     return HookStatus.LR(emulator, UnidbgPointer.nativeValue(replace));
                                 }
                             }
+                            emitPropertyEvent("__system_property_find", key, null, "fallback");
                             return HookStatus.RET(emulator, old);
                         }
                     }).peer;
@@ -129,9 +132,11 @@ public class SystemPropertyHook implements HookListener {
                             if (propertyProvider != null) {
                                 Pointer replace = propertyProvider.__system_property_find(key);
                                 if (replace != null) {
+                                    emitPropertyEvent("__system_property_find", key, propertyProvider.getProperty(key), propertyEventSource());
                                     return HookStatus.LR(emulator, UnidbgPointer.nativeValue(replace));
                                 }
                             }
+                            emitPropertyEvent("__system_property_find", key, null, "fallback");
                             return HookStatus.RET(emulator, old);
                         }
                     }).peer;
@@ -150,11 +155,13 @@ public class SystemPropertyHook implements HookListener {
                 byte[] keyData = key.getBytes(StandardCharsets.UTF_8);
                 Pointer keyPointer = context.getPointerArg(1);
                 keyPointer.write(0, Arrays.copyOf(keyData, keyData.length + 1), 0, keyData.length + 1);
+                emitPropertyEvent("__system_property_read", key, value, propertyEventSource());
                 return writePropertyValue(context.getPointerArg(2), key, value);
             }
         }
 
         log.debug("__system_property_read key={}", key);
+        emitPropertyEvent("__system_property_read", key, null, "fallback");
         return HookStatus.RET(emulator, old);
     }
 
@@ -164,12 +171,24 @@ public class SystemPropertyHook implements HookListener {
             String value = propertyProvider.getProperty(key);
             if (value != null) {
                 log.debug("__system_property_get key={}, value={}", key, value);
+                emitPropertyEvent("__system_property_get", key, value, propertyEventSource());
                 return writePropertyValue(context.getPointerArg(index + 1), key, value);
             }
         }
 
         log.debug("__system_property_get key={}", key);
+        emitPropertyEvent("__system_property_get", key, null, "fallback");
         return HookStatus.RET(emulator, old);
+    }
+
+    private void emitPropertyEvent(String api, String key, String value, String source) {
+        String text = value == null ? "key=" + key : key + "=" + value;
+        TraceEnvironmentEventSink.emit(emulator, "android_property", api, text, source,
+                "读取 Android 设备属性 " + key);
+    }
+
+    private String propertyEventSource() {
+        return propertyProvider instanceof JsonSystemPropertyProvider ? "json-config" : "fallback";
     }
 
     private HookStatus writePropertyValue(Pointer pointer, String key, String value) {

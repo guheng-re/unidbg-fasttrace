@@ -554,7 +554,7 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
             if (f.exists()) {
                 f.delete();
             }
-            return traceCodeText(begin, end, new java.io.PrintStream(f), null);
+            return traceCodeText(begin, end, new java.io.PrintStream(f), null, new java.io.File(redirectFile + ".env.jsonl"));
         } catch (java.io.FileNotFoundException e) {
             throw new IllegalStateException(e);
         }
@@ -567,7 +567,11 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
 
     @Override
     public TraceHook traceCodeText(long begin, long end, java.io.PrintStream redirect, TraceCodeListener listener) {
-        final AssemblyCodeTextDumper hook = new AssemblyCodeTextDumper(this, begin, end, redirect, listener);
+        return traceCodeText(begin, end, redirect, listener, null);
+    }
+
+    private TraceHook traceCodeText(long begin, long end, java.io.PrintStream redirect, TraceCodeListener listener, java.io.File sidecarFile) {
+        final AssemblyCodeTextDumper hook = new AssemblyCodeTextDumper(this, begin, end, redirect, listener, sidecarFile);
         
         ReadHook readHook = new ReadHook() {
             @Override
@@ -612,7 +616,7 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
             if (f.exists()) {
                 f.delete();
             }
-            return traceCodeText(moduleNames, new java.io.PrintStream(f));
+            return traceCodeText(moduleNames, new java.io.PrintStream(f), null, new java.io.File(redirectFile + ".env.jsonl"));
         } catch (java.io.FileNotFoundException e) {
             throw new IllegalStateException(e);
         }
@@ -625,7 +629,11 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
 
     @Override
     public TraceHook traceCodeText(String[] moduleNames, java.io.PrintStream redirect, TraceCodeListener listener) {
-        final AssemblyCodeTextDumper hook = new AssemblyCodeTextDumper(this, 1, 0, moduleNames, redirect, listener);
+        return traceCodeText(moduleNames, redirect, listener, null);
+    }
+
+    private TraceHook traceCodeText(String[] moduleNames, java.io.PrintStream redirect, TraceCodeListener listener, java.io.File sidecarFile) {
+        final AssemblyCodeTextDumper hook = new AssemblyCodeTextDumper(this, 1, 0, moduleNames, redirect, listener, sidecarFile);
         
         ReadHook readHook = new ReadHook() {
             @Override

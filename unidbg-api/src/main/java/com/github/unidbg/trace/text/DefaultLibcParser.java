@@ -2,6 +2,7 @@ package com.github.unidbg.trace.text;
 
 import com.github.unidbg.*;
 import com.github.unidbg.arm.backend.Backend;
+import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.List;
@@ -204,6 +205,14 @@ public class DefaultLibcParser implements TraceCallParser {
             if (c >= 32 && c <= 126) return String.format("%d ('%c')", retVal, (char)c);
             else if (c == 0) return retVal + " ('\\0')";
             return String.valueOf(retVal);
+        } else if ("arc4random".equals(funcName) || "arc4random_uniform".equals(funcName)) {
+            TraceEnvironmentEventSink.emit(emulator, "random", funcName, "0x" + Long.toHexString(retVal),
+                    "fallback", "调用 libc 随机数函数 " + funcName);
+            return "0x" + Long.toHexString(retVal);
+        } else if ("time".equals(funcName)) {
+            TraceEnvironmentEventSink.emit(emulator, "time", "time", String.valueOf(retVal),
+                    "fallback", "调用 libc 时间函数 time");
+            return String.valueOf(retVal);
         }
         return null;
     }
@@ -248,6 +257,10 @@ public class DefaultLibcParser implements TraceCallParser {
                 byte[] data = backend.mem_read(destBuf, readSize);
                 String label = (size > 4096 ? "[Truncated " + readSize + "/" + size + "] " : "") + "Hex Updated 0x" + Long.toHexString(destBuf);
                 out.println(com.github.unidbg.utils.Inspector.inspectString(data, label));
+                if ("arc4random_buf".equals(f)) {
+                    TraceEnvironmentEventSink.emit(emulator, "random", "arc4random_buf", data,
+                            "fallback", "调用 libc 随机数函数 arc4random_buf");
+                }
             }
         } catch (Exception ignored) {}
     }
