@@ -1,4 +1,4 @@
-package agent.generated.fuxian;
+package agent.generated.fuxian_manual;
 
 import com.github.unidbg.AndroidEmulator;
 import com.github.unidbg.Emulator;
@@ -80,9 +80,9 @@ public class GeneratedUnidbgHarness extends AbstractJni implements IOResolver<An
 
     public String run() {
         DvmObject<?> context = vm.resolveClass("android.content.Context").newObject(null);
-        long arg1 = 1744781882714L;
-        String arg2 = "18912346543";
-        byte[] arg3 = new byte[] {
+        long arg1_timestamp = 1744781882714L;
+        String arg2_phone = "18912346543";
+        byte[] arg3_bytes = new byte[] {
                 118, 49, 46, 48, 46, 48, 105, 112, 118, 54, 49, 54, 56, 54, 102, 55,
                 51, 55, 52, 55, 51, 51, 100, 54, 56, 54, 52, 50, 101, 55, 56, 54,
                 57, 54, 49, 54, 102, 54, 97, 55, 53, 54, 98, 54, 53, 54, 97, 54,
@@ -93,24 +93,25 @@ public class GeneratedUnidbgHarness extends AbstractJni implements IOResolver<An
                 48, 54, 102, 54, 54, 54, 54, 54, 99, 54, 57, 54, 101, 54, 53, 50,
                 100, 55, 48, 54, 98, 54, 55, 50, 101, 54, 52, 54, 57, 54, 52, 54,
                 57, 50, 101, 54, 51, 54, 101, 50, 53, 51, 50, 51, 48, 54, 53, 55,
-                48, 54, 49, 55, 51, 55, 51, 55, 48, 54, 102, 55, 52, 50, 101, 54,
-                52, 54, 57, 54, 52, 54, 57, 55, 52, 54, 49, 55, 56, 54, 57, 50,
-                101, 54, 51, 54, 102, 54, 100, 50, 101, 54, 51, 54, 101
+                48, 54, 49, 55, 51, 55, 51, 55, 48, 54, 102, 55, 50, 55, 52, 50,
+                101, 54, 52, 54, 57, 54, 52, 54, 57, 55, 52, 54, 49, 55, 56, 54,
+                57, 50, 101, 54, 51, 54, 102, 54, 100, 50, 101, 54, 51, 54, 101
         };
         StringObject nativeUpdate_str = new StringObject(vm, "0");
         StringObject nativeUpdate2_str = new StringObject(vm, "01q8gLV04Gl/etNrf+xjq1Uf+HQJ5/R+GodTyQzhxNw0eq5OQDEqgcw93k5GLcEwFJRpRijzUcqbefvO1RiVGFSaHKJGzg9C6tNOLEWvqqHJqnPudf/u7rMZgwFTW+QoxBT7bOkucwe1PPYZF0p908MsBdrOjFRyVUdWkQ5VUojbS&&sYEnzyF4+Zoq2t2fsqp0a3pv7kCDvheCCjivJrWpSNk");
         StringObject nativeCollect_str = new StringObject(vm, "hd.xiaojukeji.com/d");
-        DvmObject<?> securityLib = vm.resolveClass("com.didi.security.wireless.SecurityLib").newObject(null);
+        DvmObject<?> securityLib_object = vm.resolveClass("com.didi.security.wireless.SecurityLib").newObject(null);
+        Object null_arg = null;
 
-        securityLib.callJniMethodObject(emulator, "nativeInit(Landroid/content/Context;)I", context);
-        securityLib.callJniMethodObject(emulator, "nativeUpdate(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", nativeUpdate_str, null, null, null);
-        securityLib.callJniMethodObject(emulator, "nativeUpdate2(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", null, null, null, nativeUpdate2_str);
-        securityLib.callJniMethodObject(emulator, "nativeCollect(Ljava/lang/String;)Ljava/lang/String;", nativeCollect_str);
+        securityLib_object.callJniMethodObject(emulator, "nativeInit(Landroid/content/Context;)I", context);
+        securityLib_object.callJniMethodObject(emulator, "nativeUpdate(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", nativeUpdate_str, null, null, null);
+        securityLib_object.callJniMethodObject(emulator, "nativeUpdate2(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", null, null, null, nativeUpdate2_str);
+        securityLib_object.callJniMethodObject(emulator, "nativeCollect(Ljava/lang/String;)Ljava/lang/String;", nativeCollect_str);
 
         startTraceHooks();
         try {
-            DvmObject<?> nativeSigResult = securityLib.callJniMethodObject(emulator, "nativeSig(Landroid/content/Context;JLjava/lang/String;[B)Ljava/lang/String;", context, arg1, arg2, arg3);
-            return traceAiStringifyResult(nativeSigResult.getValue().toString());
+            DvmObject<?> object1 = securityLib_object.callJniMethodObject(emulator, "nativeSig(Landroid/content/Context;JLjava/lang/String;[B)Ljava/lang/String;", context, arg1_timestamp, arg2_phone, arg3_bytes);
+            return traceAiStringifyResult(object1 == null ? null : object1.getValue());
         } finally {
             stopTraceHooks();
         }
@@ -188,10 +189,13 @@ public FileResult<AndroidFileIO> resolve(Emulator<AndroidFileIO> emulator, Strin
 }
 
     private void installInstrumentation() {
-        traceAiInstallCallsiteProbe("analysis-20260616-015135-926745-analysis-probe-base-loop-enter", 0x122087a0L, true, 0x122087a4L, true, new RegisterSpec[] {new RegisterSpec("x0", Arm64Const.UC_ARM64_REG_X0), new RegisterSpec("x1", Arm64Const.UC_ARM64_REG_X1), new RegisterSpec("x2", Arm64Const.UC_ARM64_REG_X2), new RegisterSpec("x3", Arm64Const.UC_ARM64_REG_X3), new RegisterSpec("x4", Arm64Const.UC_ARM64_REG_X4), new RegisterSpec("x5", Arm64Const.UC_ARM64_REG_X5), new RegisterSpec("x6", Arm64Const.UC_ARM64_REG_X6), new RegisterSpec("x7", Arm64Const.UC_ARM64_REG_X7), new RegisterSpec("lr", Arm64Const.UC_ARM64_REG_LR), new RegisterSpec("sp", Arm64Const.UC_ARM64_REG_SP), new RegisterSpec("pc", Arm64Const.UC_ARM64_REG_PC)}, new RegisterMemoryProbeSpec[] {new RegisterMemoryProbeSpec("analysis-20260616-015135-926745-analysis-read-base-x0", "analysis-20260616-015135-926745-analysis-probe-base-loop-enter", "enter", Arm64Const.UC_ARM64_REG_X0, "x0", 256, 0, "", 256), new RegisterMemoryProbeSpec("analysis-20260616-015135-926745-analysis-read-base-x1", "analysis-20260616-015135-926745-analysis-probe-base-loop-enter", "enter", Arm64Const.UC_ARM64_REG_X1, "x1", 256, 0, "", 256), new RegisterMemoryProbeSpec("analysis-20260616-015135-926745-analysis-read-base-x2", "analysis-20260616-015135-926745-analysis-probe-base-loop-enter", "enter", Arm64Const.UC_ARM64_REG_X2, "x2", 256, 0, "", 256), new RegisterMemoryProbeSpec("analysis-20260616-015135-926745-analysis-read-base-x3", "analysis-20260616-015135-926745-analysis-probe-base-loop-enter", "enter", Arm64Const.UC_ARM64_REG_X3, "x3", 256, 0, "", 256), new RegisterMemoryProbeSpec("analysis-20260616-015135-926745-analysis-read-base-table-x4", "analysis-20260616-015135-926745-analysis-probe-base-loop-enter", "enter", Arm64Const.UC_ARM64_REG_X4, "x4", 64, 0, "", 64), new RegisterMemoryProbeSpec("analysis-20260616-015135-926745-analysis-read-base-table-x5", "analysis-20260616-015135-926745-analysis-probe-base-loop-enter", "enter", Arm64Const.UC_ARM64_REG_X5, "x5", 64, 0, "", 64)}, new RegisterMemoryProbeSpec[] {});
+        traceAiInstallCallsiteProbe("analysis-20260616-110115-473467-analysis-final-return-buffer-snapshot", 0x121ead64L, true, 0x121ead68L, true, new RegisterSpec[] {new RegisterSpec("x0", Arm64Const.UC_ARM64_REG_X0), new RegisterSpec("x1", Arm64Const.UC_ARM64_REG_X1), new RegisterSpec("x2", Arm64Const.UC_ARM64_REG_X2), new RegisterSpec("x8", Arm64Const.UC_ARM64_REG_X8), new RegisterSpec("lr", Arm64Const.UC_ARM64_REG_LR), new RegisterSpec("x3", Arm64Const.UC_ARM64_REG_X3), new RegisterSpec("x4", Arm64Const.UC_ARM64_REG_X4), new RegisterSpec("x5", Arm64Const.UC_ARM64_REG_X5), new RegisterSpec("x6", Arm64Const.UC_ARM64_REG_X6), new RegisterSpec("x7", Arm64Const.UC_ARM64_REG_X7), new RegisterSpec("sp", Arm64Const.UC_ARM64_REG_SP), new RegisterSpec("pc", Arm64Const.UC_ARM64_REG_PC)}, new RegisterMemoryProbeSpec[] {new RegisterMemoryProbeSpec("analysis-20260616-110115-473467-analysis-final-return-read-x0-enter", "analysis-20260616-110115-473467-analysis-final-return-buffer-snapshot", "enter", Arm64Const.UC_ARM64_REG_X0, "x0", 512, 0, "", 512), new RegisterMemoryProbeSpec("analysis-20260616-110115-473467-analysis-final-return-read-x1-enter", "analysis-20260616-110115-473467-analysis-final-return-buffer-snapshot", "enter", Arm64Const.UC_ARM64_REG_X1, "x1", 512, 0, "", 512)}, new RegisterMemoryProbeSpec[] {});
+        traceAiInstallCallsiteProbe("analysis-20260616-110115-473467-analysis-copy-helper-callsite-verify", 0x121a836cL, true, 0x121a8370L, true, new RegisterSpec[] {new RegisterSpec("x0", Arm64Const.UC_ARM64_REG_X0), new RegisterSpec("x1", Arm64Const.UC_ARM64_REG_X1), new RegisterSpec("x2", Arm64Const.UC_ARM64_REG_X2), new RegisterSpec("x3", Arm64Const.UC_ARM64_REG_X3), new RegisterSpec("x8", Arm64Const.UC_ARM64_REG_X8), new RegisterSpec("x19", Arm64Const.UC_ARM64_REG_X19), new RegisterSpec("lr", Arm64Const.UC_ARM64_REG_LR), new RegisterSpec("x4", Arm64Const.UC_ARM64_REG_X4), new RegisterSpec("x5", Arm64Const.UC_ARM64_REG_X5), new RegisterSpec("x6", Arm64Const.UC_ARM64_REG_X6), new RegisterSpec("x7", Arm64Const.UC_ARM64_REG_X7), new RegisterSpec("sp", Arm64Const.UC_ARM64_REG_SP), new RegisterSpec("pc", Arm64Const.UC_ARM64_REG_PC)}, new RegisterMemoryProbeSpec[] {new RegisterMemoryProbeSpec("analysis-20260616-110115-473467-analysis-copy-helper-src-before", "analysis-20260616-110115-473467-analysis-copy-helper-callsite-verify", "enter", Arm64Const.UC_ARM64_REG_X1, "x1", 1024, 0, "", 1024)}, new RegisterMemoryProbeSpec[] {new RegisterMemoryProbeSpec("analysis-20260616-110115-473467-analysis-copy-helper-dst-after", "analysis-20260616-110115-473467-analysis-copy-helper-callsite-verify", "leave", Arm64Const.UC_ARM64_REG_X0, "x0", 512, 0, "", 512)});
+        traceAiInstallCallsiteProbe("analysis-20260616-110115-473467-analysis-act-next-003-verify-copy-prepost-callsite", 0x121a836cL, true, 0x121a8370L, true, new RegisterSpec[] {new RegisterSpec("x0", Arm64Const.UC_ARM64_REG_X0), new RegisterSpec("x1", Arm64Const.UC_ARM64_REG_X1), new RegisterSpec("x2", Arm64Const.UC_ARM64_REG_X2), new RegisterSpec("x3", Arm64Const.UC_ARM64_REG_X3), new RegisterSpec("x4", Arm64Const.UC_ARM64_REG_X4), new RegisterSpec("x5", Arm64Const.UC_ARM64_REG_X5), new RegisterSpec("x6", Arm64Const.UC_ARM64_REG_X6), new RegisterSpec("x7", Arm64Const.UC_ARM64_REG_X7), new RegisterSpec("lr", Arm64Const.UC_ARM64_REG_LR), new RegisterSpec("sp", Arm64Const.UC_ARM64_REG_SP), new RegisterSpec("pc", Arm64Const.UC_ARM64_REG_PC)}, new RegisterMemoryProbeSpec[] {}, new RegisterMemoryProbeSpec[] {});
+        traceAiInstallCallsiteProbe("act-next-003-verify-copy-prepost-callsite", 0x121a836cL, true, 0x121a8370L, true, new RegisterSpec[] {new RegisterSpec("x0", Arm64Const.UC_ARM64_REG_X0), new RegisterSpec("x1", Arm64Const.UC_ARM64_REG_X1), new RegisterSpec("x2", Arm64Const.UC_ARM64_REG_X2), new RegisterSpec("x3", Arm64Const.UC_ARM64_REG_X3), new RegisterSpec("x4", Arm64Const.UC_ARM64_REG_X4), new RegisterSpec("x5", Arm64Const.UC_ARM64_REG_X5), new RegisterSpec("x6", Arm64Const.UC_ARM64_REG_X6), new RegisterSpec("x7", Arm64Const.UC_ARM64_REG_X7), new RegisterSpec("lr", Arm64Const.UC_ARM64_REG_LR), new RegisterSpec("sp", Arm64Const.UC_ARM64_REG_SP), new RegisterSpec("pc", Arm64Const.UC_ARM64_REG_PC)}, new RegisterMemoryProbeSpec[] {new RegisterMemoryProbeSpec("analysis-20260616-110115-473467-analysis-act-next-003-verify-copy-prepost-src-memory-enter", "act-next-003-verify-copy-prepost-callsite", "enter", Arm64Const.UC_ARM64_REG_X1, "x1", 512, 0, "", 512), new RegisterMemoryProbeSpec("act-next-003-verify-copy-prepost-src-memory-enter", "act-next-003-verify-copy-prepost-callsite", "enter", Arm64Const.UC_ARM64_REG_X1, "x1", 512, 0, "", 512)}, new RegisterMemoryProbeSpec[] {new RegisterMemoryProbeSpec("analysis-20260616-110115-473467-analysis-act-next-003-verify-copy-prepost-dst-memory-leave", "act-next-003-verify-copy-prepost-callsite", "leave", Arm64Const.UC_ARM64_REG_X0, "x0", 512, 0, "", 512), new RegisterMemoryProbeSpec("act-next-003-verify-copy-prepost-dst-memory-leave", "act-next-003-verify-copy-prepost-callsite", "leave", Arm64Const.UC_ARM64_REG_X0, "x0", 512, 0, "", 512)});
         IxHook xHook = XHookImpl.getInstance(emulator);
-        traceAiRegisterFunctionHook(xHook, "analysis-20260616-015135-926745-analysis-hook-strncpy-body-copy", "libc.so", "strncpy", new HookArgSpec[] {new HookArgSpec(0, "dest", "pointer", "pointer", -1, -1, 4096), new HookArgSpec(1, "src", "pointer", "bytes", 2, -1, 512), new HookArgSpec(2, "size", "size_t", "value", -1, -1, 4096)});
-        traceAiRegisterFunctionHook(xHook, "analysis-20260616-015135-926745-analysis-hook-strdup-body-source", "libc.so", "strdup", new HookArgSpec[] {new HookArgSpec(0, "src", "pointer", "bytes", -1, -1, 512)});
+        traceAiRegisterFunctionHook(xHook, "analysis-20260616-110115-473467-analysis-hook-memcpy", "libc.so", "memcpy", new HookArgSpec[] {new HookArgSpec(0, "dest", "pointer", "pointer", -1, -1, 4096), new HookArgSpec(1, "src", "pointer", "bytes", 2, -1, 4096), new HookArgSpec(2, "size", "size_t", "value", -1, -1, 4096)});
+        traceAiRegisterFunctionHook(xHook, "analysis-20260616-110115-473467-analysis-hook-memmove", "libc.so", "memmove", new HookArgSpec[] {new HookArgSpec(0, "dest", "pointer", "pointer", -1, -1, 4096), new HookArgSpec(1, "src", "pointer", "bytes", 2, -1, 4096), new HookArgSpec(2, "size", "size_t", "value", -1, -1, 4096)});
         xHook.refresh();
     }
 
@@ -307,10 +311,10 @@ public FileResult<AndroidFileIO> resolve(Emulator<AndroidFileIO> emulator, Strin
 
 private void startTraceHooks() {
     stopTraceHooks();
-    traceAiStartRangeWriteProbe("analysis-20260616-015135-926745-analysis-range-body-writer", 0x12ac2005L, (0x12ac2005L + 199L), traceAiRangeJson(0x12ac2005L, (0x12ac2005L + 199L), "fixed"));
-    traceAiStartRangeWriteProbe("analysis-20260616-015135-926745-analysis-range-final-buffer", 0x12ac2000L, (0x12ac2000L + 256L), traceAiRangeJson(0x12ac2000L, (0x12ac2000L + 256L), "fixed"));
-    traceAiStartRangeWriteProbe("analysis-20260616-015135-926745-analysis-act-range-body-writer-range-writer", 0x12ac2005L, (0x12ac2005L + 199L), traceAiRangeJson(0x12ac2005L, (0x12ac2005L + 199L), "fixed"));
-    traceAiStartRangeWriteProbe("act-range-body-writer-range-writer", 0x12ac2005L, (0x12ac2005L + 199L), traceAiRangeJson(0x12ac2005L, (0x12ac2005L + 199L), "fixed"));
+    traceAiStartRangeWriteProbe("analysis-20260616-110115-473467-analysis-final-buffer-range-writer", 0x12ac2000L, (0x12ac2000L + 204L), traceAiRangeJson(0x12ac2000L, (0x12ac2000L + 204L), "fixed"));
+    traceAiStartRangeWriteProbe("analysis-20260616-110115-473467-analysis-final-body-writer-range", 0x12ac2005L, (0x12ac2005L + 199L), traceAiRangeJson(0x12ac2005L, (0x12ac2005L + 199L), "fixed"));
+    traceAiStartRangeWriteProbe("analysis-20260616-110115-473467-analysis-act-next-002-find-body-writer-range-writer", 0x12ac2005L, (0x12ac2005L + 199L), traceAiRangeJson(0x12ac2005L, (0x12ac2005L + 199L), "fixed"));
+    traceAiStartRangeWriteProbe("act-next-002-find-body-writer-range-writer", 0x12ac2005L, (0x12ac2005L + 199L), traceAiRangeJson(0x12ac2005L, (0x12ac2005L + 199L), "fixed"));
 }
 
 private void stopTraceHooks() {
