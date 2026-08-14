@@ -1,0 +1,23 @@
+Name:	main
+Umask:	0077
+State:	S (sleeping)
+Tgid:	12345
+Pid:	12345
+PPid:	1
+TracerPid:	0
+Uid:	10123	10123	10123	10123
+Gid:	10123	10123	10123	10123
+FDSize:	128
+Groups:	10123
+VmPeak:	  409600 kB
+VmSize:	  409600 kB
+Threads:	1
+SigQ:	0/29810
+CapEff:	0000000000000000
+CapBnd:	0000003fffffffff
+Seccomp:	0
+NoNewPrivs:	0
+Cpus_allowed:	ff
+Cpus_allowed_list:	0-7
+voluntary_ctxt_switches:	1
+nonvoluntary_ctxt_switches:	0

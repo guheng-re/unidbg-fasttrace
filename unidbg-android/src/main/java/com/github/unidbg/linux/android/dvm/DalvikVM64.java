@@ -2192,14 +2192,58 @@ public class DalvikVM64 extends BaseVM implements VM {
         Pointer _CallStaticFloatMethodV = svcMemory.registerSvc(new Arm64Svc() {
             @Override
             public long handle(Emulator<?> emulator) {
-                throw new UnsupportedOperationException();
+                RegisterContext context = emulator.getContext();
+                UnidbgPointer clazz = context.getPointerArg(1);
+                UnidbgPointer jmethodID = context.getPointerArg(2);
+                UnidbgPointer va_list = context.getPointerArg(3);
+                if (log.isDebugEnabled()) {
+                    log.debug("CallStaticFloatMethodV clazz={}, jmethodID={}, va_list={}", clazz, jmethodID, va_list);
+                }
+                DvmClass dvmClass = classMap.get(clazz.toIntPeer());
+                DvmMethod dvmMethod = dvmClass == null ? null : dvmClass.getStaticMethod(jmethodID.toIntPeer());
+                if (dvmMethod == null) {
+                    throw new BackendException();
+                } else {
+                    VaList vaList = new VaList64(emulator, DalvikVM64.this, va_list, dvmMethod);
+                    float ret = dvmMethod.callStaticFloatMethodV(vaList);
+                    if (verbose || verboseMethodOperation) {
+                        System.out.printf("JNIEnv->CallStaticFloatMethodV(%s, %s(%s) => %s) was called from %s%n", dvmClass, dvmMethod.methodName, vaList.formatArgs(), ret, context.getLRPointer());
+                    }
+                    ByteBuffer buffer = ByteBuffer.allocate(16);
+                    buffer.order(ByteOrder.LITTLE_ENDIAN);
+                    buffer.putFloat(ret);
+                    emulator.getBackend().reg_write_vector(Arm64Const.UC_ARM64_REG_Q0, buffer.array());
+                    return context.getLongArg(0);
+                }
             }
         });
 
         Pointer _CallStaticFloatMethodA = svcMemory.registerSvc(new Arm64Svc() {
             @Override
             public long handle(Emulator<?> emulator) {
-                throw new UnsupportedOperationException();
+                RegisterContext context = emulator.getContext();
+                UnidbgPointer clazz = context.getPointerArg(1);
+                UnidbgPointer jmethodID = context.getPointerArg(2);
+                UnidbgPointer jvalue = context.getPointerArg(3);
+                if (log.isDebugEnabled()) {
+                    log.debug("CallStaticFloatMethodA clazz={}, jmethodID={}, jvalue={}", clazz, jmethodID, jvalue);
+                }
+                DvmClass dvmClass = classMap.get(clazz.toIntPeer());
+                DvmMethod dvmMethod = dvmClass == null ? null : dvmClass.getStaticMethod(jmethodID.toIntPeer());
+                if (dvmMethod == null) {
+                    throw new BackendException();
+                } else {
+                    VaList vaList = new JValueList(DalvikVM64.this, jvalue, dvmMethod);
+                    float ret = dvmMethod.callStaticFloatMethodV(vaList);
+                    if (verbose || verboseMethodOperation) {
+                        System.out.printf("JNIEnv->CallStaticFloatMethodA(%s, %s(%s) => %s) was called from %s%n", dvmClass, dvmMethod.methodName, vaList.formatArgs(), ret, context.getLRPointer());
+                    }
+                    ByteBuffer buffer = ByteBuffer.allocate(16);
+                    buffer.order(ByteOrder.LITTLE_ENDIAN);
+                    buffer.putFloat(ret);
+                    emulator.getBackend().reg_write_vector(Arm64Const.UC_ARM64_REG_Q0, buffer.array());
+                    return context.getLongArg(0);
+                }
             }
         });
 

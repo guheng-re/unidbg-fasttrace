@@ -2,12 +2,15 @@
   "process": {
     "processName": "com.demo.app",
     "pid": 12345,
+    "pgid": 23456,
+    "sid": 34567,
     "ppid": 1,
     "tid": 12345,
     "uid": 1000,
     "gid": 1000,
     "euid": 1000,
     "egid": 1000,
+    "supplementaryGids": [1000, 1001],
     "threadName": "main"
   },
   "time": {
@@ -38,10 +41,113 @@
     "files": {
       "/proc/cpuinfo": "Processor\t: AArch64 Processor rev 2 (aarch64)\nHardware\t: raven\n",
       "/proc/meminfo": "MemTotal:        4096000 kB\nMemFree:          512000 kB\n",
-      "/proc/version": "Linux version 5.4.210-qgki-g991c3066d5a8\n",
-      "/sys/devices/system/cpu/present": "0-7\n",
-      "/sys/devices/system/cpu/possible": "0-7\n"
-    }
+      "/proc/version": "Linux version 5.4.210-qgki-g991c3066d5a8\n"
+    },
+    "proc": {
+      "state": "S",
+      "tracerPid": 0,
+      "threadCount": 1,
+      "cmdline": ["com.demo.app"],
+      "cgroups": ["0::/"],
+      "startTimeTicks": 123456789,
+      "virtualMemoryBytes": 4194304000,
+      "residentSetPages": 1024000,
+      "rchar": 10485760,
+      "wchar": 2097152,
+      "syscr": 2500,
+      "syscw": 500,
+      "readBytes": 4194304,
+      "writeBytes": 1048576,
+      "cancelledWriteBytes": 4096,
+      "bootId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "randomUuid": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "entropyAvail": 256,
+      "randomPoolSize": 4096,
+      "writeWakeupThreshold": 1024,
+      "urandomMinReseedSecs": 60,
+      "oomScoreAdj": 0,
+      "oomScore": 0,
+      "oomAdj": -17,
+      "selinuxContext": "u:r:untrusted_app:s0:c512,c768",
+      "fileSelinuxContexts": {
+        "/data/data/com.demo.app": "u:object_r:app_data_file:s0",
+        "/system/bin/app_process64": "u:object_r:zygote_exec:s0"
+      },
+      "comm": "demo_app",
+      "wchan": "0",
+      "dumpable": 0,
+      "nice": 0,
+      "seccompMode": 0,
+      "noNewPrivs": false,
+      "capInheritableHex": "0000000000000000",
+      "capEffectiveHex": "0000000000000000",
+      "capPermittedHex": "0000000000000000",
+      "capBoundingHex": "0000003fffffffff",
+      "capAmbientHex": "0000000000000000",
+      "signalBlockedHex": "0000000000000000",
+      "signalIgnoredHex": "0000000000001000",
+      "signalCaughtHex": "0000000180000000",
+      "limits": [
+        "Limit                     Soft Limit           Hard Limit           Units     ",
+        "Max cpu time              unlimited            unlimited            seconds   ",
+        "Max file size             unlimited            unlimited            bytes     ",
+        "Max data size             unlimited            unlimited            bytes     ",
+        "Max stack size            8388608              unlimited            bytes     ",
+        "Max core file size        0                    unlimited            bytes     ",
+        "Max resident set          unlimited            unlimited            bytes     ",
+        "Max processes             29810                29810                processes ",
+        "Max open files            32768                32768                files     ",
+        "Max locked memory         67108864             67108864             bytes     ",
+        "Max address space         unlimited            unlimited            bytes     ",
+        "Max file locks            unlimited            unlimited            locks     ",
+        "Max pending signals       29810                29810                signals   ",
+        "Max msgqueue size         819200               819200               bytes     ",
+        "Max nice priority         40                   40                   ",
+        "Max realtime priority     0                    0                    ",
+        "Max realtime timeout      unlimited            unlimited            us        "
+      ]
+    },
+    "auxv": {
+      "hwcap32": 1,
+      "hwcap2_32": 2,
+      "hwcap64": 3,
+      "hwcap2_64": 4,
+      "platform32": "v7l",
+      "platform64": "aarch64",
+      "execFn": "/system/bin/app_process64"
+    },
+    "cpu": {
+      "affinityMaskHex": "ff",
+      "online": "0-7",
+      "present": "0-7",
+      "possible": "0-7",
+      "configuredProcessorCount": 8,
+      "onlineProcessorCount": 8
+    },
+    "rlimits": {
+      "nofile": {
+        "soft": 32768,
+        "hard": 32768
+      }
+    },
+    "sysinfo": {
+      "uptime": 384221,
+      "loads": [65536, 58982, 52428],
+      "totalRam": 1907344,
+      "freeRam": 524288,
+      "sharedRam": 16384,
+      "bufferRam": 32768,
+      "totalSwap": 0,
+      "freeSwap": 0,
+      "procs": 412,
+      "memUnit": 4096
+    },
+    "environ": [
+      "ANDROID_DATA=/data",
+      "ANDROID_ROOT=/system",
+      "PATH=/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin",
+      "NO_ADDR_COMPAT_LAYOUT_FIXUP=1"
+    ]
   },
   "android": {
     "packageName": "com.demo.app",
@@ -70,6 +176,19 @@
       "TAGS": "release-keys",
       "TYPE": "user",
       "USER": "android-build",
+      "TIME": 1640995200000,
+      "SUPPORTED_ABIS": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "armeabi"
+      ],
+      "SUPPORTED_32_BIT_ABIS": [
+        "armeabi-v7a",
+        "armeabi"
+      ],
+      "SUPPORTED_64_BIT_ABIS": [
+        "arm64-v8a"
+      ],
       "VERSION.CODENAME": "REL",
       "VERSION.INCREMENTAL": "1234567",
       "VERSION.RELEASE": "12",
@@ -109,6 +228,811 @@
       "persist.sys.timezone": "Asia/Shanghai",
       "net.bt.name": "Android",
       "wifi.interface": "wlan0"
+    },
+    "settings": {
+      "secure": {
+        "android_id": "TRACEAI_ANDROID_ID_V1",
+        "default_input_method": "com.traceai.input/.MarkerIme"
+      },
+      "system": {
+        "screen_brightness": "128",
+        "accelerometer_rotation": "1",
+        "font_scale": "1.0"
+      },
+      "global": {
+        "adb_enabled": "0",
+        "development_settings_enabled": "0"
+      }
+    },
+    "telephony": {
+      "phoneCount": 2,
+      "networkOperator": "46000",
+      "networkOperatorName": "TRACEAI_OPERATOR_MARKER_V1",
+      "simOperator": "46000",
+      "simOperatorName": "TRACEAI_SIM_OPERATOR_MARKER_V1",
+      "networkCountryIso": "cn",
+      "simCountryIso": "cn",
+      "dataNetworkType": 13,
+      "dataState": 2,
+      "dataActivity": 0,
+      "phoneType": 1,
+      "networkRoaming": false,
+      "slots": [
+        {
+          "slotIndex": 0,
+          "imei": "TRACEAI_IMEI_SLOT0_V1",
+          "meid": "TRACEAI_MEID_SLOT0_V1",
+          "deviceId": "TRACEAI_DEVICE_ID_SLOT0_V1",
+          "subscriberId": "TRACEAI_IMSI_SLOT0_V1",
+          "simSerialNumber": "TRACEAI_ICCID_SLOT0_V1",
+          "simState": 5
+        },
+        {
+          "slotIndex": 1,
+          "imei": "TRACEAI_IMEI_SLOT1_V1",
+          "meid": "TRACEAI_MEID_SLOT1_V1",
+          "deviceId": "TRACEAI_DEVICE_ID_SLOT1_V1",
+          "subscriberId": "TRACEAI_IMSI_SLOT1_V1",
+          "simSerialNumber": "TRACEAI_ICCID_SLOT1_V1",
+          "simState": 1
+        }
+      ]
+    },
+    "packages": [
+      {
+        "packageName": "com.demo.app",
+        "versionName": "1.2.3",
+        "versionCode": 42,
+        "sourceDir": "/data/app/~~fixed/com.demo.app-fixed/base.apk",
+        "dataDir": "/data/user/0/com.demo.app",
+        "uid": 10001,
+        "enabled": true,
+        "systemApp": false,
+        "installerPackageName": "com.android.vending",
+        "initiatingPackageName": "com.android.vending",
+        "originatingPackageName": "com.android.vending",
+        "firstInstallTimeMillis": 1718000000000,
+        "lastUpdateTimeMillis": 1718000001000,
+        "permissions": {
+          "android.permission.INTERNET": true,
+          "android.permission.CAMERA": false,
+          "com.traceai.permission.CUSTOM": true
+        },
+        "signaturesHex": [
+          "3082010a020100",
+          "aabb0011"
+        ],
+        "signingCertificateHistoryHex": [
+          "deadbeef",
+          "cafebabe"
+        ]
+      },
+      {
+        "packageName": "com.traceai.marker",
+        "versionName": "TRACEAI_PKG_VERSION_MARKER_V1",
+        "versionCode": 0,
+        "sourceDir": "/data/app/TRACEAI_SOURCE_MARKER_V1/base.apk",
+        "dataDir": "/data/user/0/com.traceai.marker",
+        "uid": 10002,
+        "enabled": false,
+        "systemApp": true,
+        "installerPackageName": "com.traceai.installer",
+        "initiatingPackageName": "com.traceai.initiator",
+        "originatingPackageName": "com.traceai.originator",
+        "firstInstallTimeMillis": 0,
+        "lastUpdateTimeMillis": 0,
+        "permissions": {},
+        "signaturesHex": [],
+        "signingCertificateHistoryHex": [
+          "11223344"
+        ]
+      }
+    ],
+    "features": [
+      {
+        "name": "android.hardware.camera",
+        "version": 1
+      },
+      {
+        "name": "android.hardware.wifi"
+      },
+      {
+        "name": "com.traceai.feature.CUSTOM_MARKER_V1",
+        "version": 0
+      }
+    ],
+    "tee": {
+      "available": true,
+      "securityLevel": "TRUSTED_ENVIRONMENT",
+      "keymasterVersion": 41,
+      "strongBoxAvailable": false,
+      "marker": "TRACEAI_TEE_MARKER_V1",
+      "keyBlobHex": "545241434541495f5445455f4d41524b45525f5631",
+      "keyAlgorithm": "AES",
+      "keyFormat": "RAW"
+    },
+    "drm": {
+      "available": true,
+      "marker": "TRACEAI_DRM_MARKER_V1",
+      "schemeUuids": [
+        "edef8ba9-79d6-4ace-a3c8-27dcd51d21ed"
+      ],
+      "vendor": "TraceAI",
+      "version": "TRACEAI_DRM_MARKER_V1",
+      "description": "TraceAI DRM analysis marker",
+      "algorithms": "AES/CBC/NoPadding,HmacSHA256",
+      "securityLevel": "L3",
+      "hdcpLevel": "HDCP_NONE",
+      "maxHdcpLevel": "HDCP_NONE",
+      "provisioned": true,
+      "deviceUniqueIdHex": "545241434541495f44524d5f44455649445f5631",
+      "sessionIdHex": "545241434541495f44524d5f5349445f5631"
+    },
+    "locale": {
+      "languageTag": "zh-Hans-CN",
+      "timezoneId": "Asia/Shanghai"
+    },
+    "display": {
+      "widthPixels": 1080,
+      "heightPixels": 2400,
+      "densityDpi": 420,
+      "scaledDensity": 2.625,
+      "xdpi": 411.0,
+      "ydpi": 411.0,
+      "refreshRate": 60.0,
+      "rotation": 0,
+      "modeId": 1
+    },
+    "configuration": {
+      "orientation": 1,
+      "screenLayout": 34,
+      "uiMode": 17,
+      "fontScale": 1.0,
+      "densityDpi": 420,
+      "screenWidthDp": 360,
+      "screenHeightDp": 640,
+      "smallestScreenWidthDp": 360,
+      "keyboard": 1,
+      "navigation": 1,
+      "keyboardHidden": 1,
+      "hardKeyboardHidden": 1,
+      "navigationHidden": 1
+    },
+    "power": {
+      "interactive": true,
+      "powerSaveMode": false,
+      "deviceIdleMode": false,
+      "deviceLightIdleMode": false,
+      "lowPowerStandbyEnabled": false,
+      "sustainedPerformanceModeSupported": false,
+      "rebootingUserspaceSupported": false,
+      "ignoringBatteryOptimizations": false
+    },
+    "thermal": {
+      "currentThermalStatus": 0,
+      "headroom": 0.75
+    },
+    "battery": {
+      "capacityPercent": 73,
+      "charging": false,
+      "chargeCounterUah": 2500000,
+      "currentNowUa": -450000,
+      "currentAverageUa": -320000,
+      "energyCounterNwh": 55000000000,
+      "status": 3,
+      "chargeTimeRemainingMillis": -1
+    },
+    "cameras": {
+      "count": 2,
+      "infos": [
+        { "facing": 1, "orientation": 270, "canDisableShutterSound": true },
+        { "facing": 0, "orientation": 90, "canDisableShutterSound": false }
+      ]
+    },
+    "sensors": {
+      "types": [1, 4],
+      "dynamicTypes": [7, 1],
+      "dynamicDiscoverySupported": true,
+      "names": {
+        "1": "TRACEAI_SENSOR_ACCEL",
+        "7": "TRACEAI_SENSOR_DYNAMIC"
+      },
+      "vendors": {
+        "1": "TRACEAI_SENSOR_VENDOR"
+      },
+      "versions": {
+        "1": 1
+      },
+      "stringTypes": {
+        "1": "android.sensor.accelerometer"
+      },
+      "maximumRanges": {
+        "1": 19.6
+      },
+      "resolutions": {
+        "1": 0.01
+      },
+      "powers": {
+        "1": 0.13
+      },
+      "minDelaysMicros": {
+        "1": 5000,
+        "4": -1
+      },
+      "maxDelaysMicros": {
+        "1": 200000
+      },
+      "fifoReservedEventCounts": {
+        "1": 3000
+      },
+      "fifoMaxEventCounts": {
+        "1": 5000
+      },
+      "wakeUpSensors": {
+        "1": false
+      },
+      "sensorIds": {
+        "1": -1
+      },
+      "reportingModes": {
+        "1": 0
+      },
+      "dynamicSensors": {
+        "7": true
+      },
+      "requiredPermissions": {
+        "1": ""
+      },
+      "additionalInfoSupported": {
+        "1": false
+      },
+      "highestDirectReportRateLevels": {
+        "1": 1
+      },
+      "directChannelTypesSupported": {
+        "1": [1]
+      }
+    },
+    "clipboard": {
+      "hasPrimaryClip": true,
+      "primaryText": "TRACEAI_CLIPBOARD_PRIMARY_V1",
+      "primaryLabel": "TRACEAI_CLIPBOARD_LABEL_V1",
+      "timestampMillis": 1710000000000
+    },
+    "accessibility": {
+      "enabled": false,
+      "touchExplorationEnabled": false,
+      "highContrastTextEnabled": false,
+      "services": [
+        {
+          "id": "com.traceai.a11y/.MarkerService",
+          "enabled": true
+        },
+        {
+          "id": "com.android.talkback/.TalkBackService",
+          "enabled": false
+        }
+      ]
+    },
+    "audio": {
+      "musicActive": false,
+      "speakerphoneOn": false,
+      "ringerMode": 2,
+      "mode": 0,
+      "properties": {
+        "android.media.property.OUTPUT_SAMPLE_RATE": "48000",
+        "android.media.property.OUTPUT_FRAMES_PER_BUFFER": "192",
+        "android.media.property.SUPPORT_MIC_NEAR_ULTRASOUND": null
+      },
+      "streamVolumes": [
+        { "streamType": 3, "volume": 7, "maxVolume": 15, "minVolume": 0 },
+        { "streamType": 0, "volume": 4, "maxVolume": 7 },
+        { "streamType": 2, "volume": 5, "maxVolume": 7, "minVolume": 1 }
+      ]
+    },
+    "location": {
+      "enabled": true,
+      "providers": {
+        "gps": true,
+        "network": false,
+        "passive": false
+      },
+      "lastKnownLocations": [
+        {
+          "provider": "gps",
+          "latitude": 31.2304,
+          "longitude": 121.4737,
+          "altitude": 12.5,
+          "accuracyMeters": 8.0,
+          "timeMillis": 1700000000000,
+          "elapsedRealtimeNanos": 9000000000000,
+          "mock": false,
+          "speedMetersPerSecond": 1.5,
+          "bearingDegrees": 90.0,
+          "verticalAccuracyMeters": 2.5,
+          "speedAccuracyMetersPerSecond": 0.25,
+          "bearingAccuracyDegrees": 5.0
+        },
+        {
+          "provider": "network",
+          "latitude": 31.2310,
+          "longitude": 121.4740,
+          "accuracyMeters": 35.0,
+          "timeMillis": 1699999900000,
+          "mock": false
+        }
+      ]
+    },
+    "runtime": {
+      "systemProperties": {
+        "os.name": "Linux",
+        "os.arch": "aarch64",
+        "java.vm.name": "Dalvik",
+        "java.vm.version": "2.1.0",
+        "http.agent": null
+      },
+      "environmentVariables": {
+        "PATH": "/product/bin:/apex/com.android.runtime/bin:/system/bin",
+        "ANDROID_DATA": "/data",
+        "ANDROID_ROOT": "/system",
+        "TMPDIR": null
+      },
+      "availableProcessors": 8,
+      "maxMemoryBytes": 268435456,
+      "totalMemoryBytes": 134217728,
+      "freeMemoryBytes": 67108864
+    },
+    "identifiers": {
+      "advertisingId": "00000000-0000-0000-0000-00000000a001",
+      "limitAdTracking": false,
+      "androidId": "9774d56d682e549c",
+      "appSetId": "traceai-app-set-id-000000000001",
+      "appSetScope": 2
+    },
+    "accounts": [
+      {
+        "name": "demo@example.com",
+        "type": "com.google"
+      }
+    ],
+    "inputMethods": [
+      {
+        "id": "com.traceai.input/.MarkerIme",
+        "enabled": true
+      },
+      {
+        "id": "com.android.inputmethod.latin/.LatinIME",
+        "enabled": false
+      }
+    ],
+    "userState": {
+      "userId": 0,
+      "serialNumber": 0,
+      "userUnlocked": true,
+      "systemUser": true,
+      "managedProfile": false,
+      "demoUser": false
+    },
+    "securitySignals": {
+      "debuggerConnected": false,
+      "waitingForDebugger": false,
+      "debuggerTracing": false,
+      "selinuxEnabled": true,
+      "selinuxEnforced": true,
+      "userAMonkey": false,
+      "userTestHarness": false
+    },
+    "securityState": {
+      "keyguardLocked": false,
+      "keyguardSecure": false,
+      "deviceLocked": false,
+      "deviceSecure": false,
+      "biometricCanAuthenticateResult": 12,
+      "biometricLastAuthenticationElapsedRealtimeMillis": -1
     }
+  },
+  "network": {
+    "interfaces": [
+      {
+        "name": "lo",
+        "index": 1,
+        "ipv4": "127.0.0.1",
+        "flags": 73,
+        "mac": "00:00:00:00:00:00",
+        "hardwareType": 772,
+        "mtu": 65536,
+        "virtual": false,
+        "operState": "unknown",
+        "carrier": false,
+        "speedMbps": -1,
+        "duplex": "unknown",
+        "linkIndex": 1,
+        "txQueueLen": 1000,
+        "addressAssignType": 0,
+        "nameAssignType": 0
+      },
+      {
+        "name": "wlan0",
+        "index": 2,
+        "ipv4": "192.168.50.23",
+        "broadcast": "192.168.50.255",
+        "flags": 4163,
+        "mac": "02:54:52:41:43:45",
+        "hardwareType": 1,
+        "mtu": 1500,
+        "displayName": "WLAN0",
+        "virtual": false,
+        "operState": "up",
+        "carrier": true,
+        "speedMbps": 866,
+        "duplex": "full",
+        "linkIndex": 2,
+        "txQueueLen": 1000,
+        "addressAssignType": 1,
+        "nameAssignType": 4,
+        "linkLayerBroadcast": "ff:ff:ff:ff:ff:ff"
+      }
+    ],
+    "ipv4Routes": [
+      {
+        "interfaceName": "wlan0",
+        "destination": "0.0.0.0",
+        "gateway": "192.168.50.1",
+        "flags": 3,
+        "refCount": 0,
+        "use": 0,
+        "metric": 600,
+        "mask": "0.0.0.0",
+        "mtu": 0,
+        "window": 0,
+        "irtt": 0
+      },
+      {
+        "interfaceName": "wlan0",
+        "destination": "192.168.50.0",
+        "gateway": "0.0.0.0",
+        "flags": 1,
+        "refCount": 0,
+        "use": 0,
+        "metric": 600,
+        "mask": "255.255.255.0",
+        "mtu": 0,
+        "window": 0,
+        "irtt": 0
+      }
+    ],
+    "interfaceStats": [
+      {
+        "interfaceName": "lo",
+        "rxBytes": 1280,
+        "rxPackets": 10,
+        "rxErrors": 0,
+        "rxDrop": 0,
+        "rxFifo": 0,
+        "rxFrame": 0,
+        "rxCompressed": 0,
+        "rxMulticast": 0,
+        "txBytes": 1280,
+        "txPackets": 10,
+        "txErrors": 0,
+        "txDrop": 0,
+        "txFifo": 0,
+        "txCollisions": 0,
+        "txCarrier": 0,
+        "txCompressed": 0
+      },
+      {
+        "interfaceName": "wlan0",
+        "rxBytes": 4096000,
+        "rxPackets": 3200,
+        "rxErrors": 0,
+        "rxDrop": 0,
+        "rxFifo": 0,
+        "rxFrame": 0,
+        "rxCompressed": 0,
+        "rxMulticast": 24,
+        "txBytes": 2048000,
+        "txPackets": 1600,
+        "txErrors": 0,
+        "txDrop": 0,
+        "txFifo": 0,
+        "txCollisions": 0,
+        "txCarrier": 0,
+        "txCompressed": 0
+      }
+    ],
+    "ipv6Addresses": [
+      {
+        "interfaceName": "lo",
+        "addressHex": "00000000000000000000000000000001",
+        "prefixLength": 128,
+        "scope": 16,
+        "flags": 128
+      },
+      {
+        "interfaceName": "wlan0",
+        "addressHex": "fe800000000000000000000000000001",
+        "prefixLength": 64,
+        "scope": 32,
+        "flags": 128
+      }
+    ],
+    "arpEntries": [
+      {
+        "interfaceName": "wlan0",
+        "ipv4": "192.168.50.1",
+        "hardwareType": 1,
+        "flags": 2,
+        "mac": "02:00:00:00:00:01"
+      },
+      {
+        "interfaceName": "wlan0",
+        "ipv4": "192.168.50.23",
+        "hardwareType": 1,
+        "flags": 2,
+        "mac": "02:54:52:41:43:45"
+      }
+    ],
+    "igmpMemberships": [
+      {
+        "interfaceName": "lo",
+        "groupIpv4": "224.0.0.1",
+        "querierVersion": "V2",
+        "users": 1,
+        "timerRunning": false,
+        "timerClock": 0,
+        "reporter": false
+      },
+      {
+        "interfaceName": "wlan0",
+        "groupIpv4": "224.0.0.251",
+        "querierVersion": "V3",
+        "users": 1,
+        "timerRunning": false,
+        "timerClock": 0,
+        "reporter": false
+      },
+      {
+        "interfaceName": "wlan0",
+        "groupIpv4": "239.255.255.250",
+        "querierVersion": "V3",
+        "users": 2,
+        "timerRunning": true,
+        "timerClock": 10,
+        "reporter": true
+      }
+    ],
+    "igmp6Memberships": [
+      {
+        "interfaceName": "lo",
+        "groupIpv6": "ff02::1",
+        "users": 1,
+        "flags": 0,
+        "timer": 0
+      },
+      {
+        "interfaceName": "wlan0",
+        "groupIpv6": "ff02::1",
+        "users": 1,
+        "flags": 0,
+        "timer": 0
+      },
+      {
+        "interfaceName": "wlan0",
+        "groupIpv6": "ff02::fb",
+        "users": 2,
+        "flags": 1,
+        "timer": 10
+      }
+    ],
+    "linkLayerMulticastEntries": [
+      {
+        "interfaceName": "lo",
+        "mac": "01:00:5e:00:00:01",
+        "referenceCount": 1,
+        "globalUse": false
+      },
+      {
+        "interfaceName": "wlan0",
+        "mac": "01:00:5e:00:00:01",
+        "referenceCount": 1,
+        "globalUse": false
+      },
+      {
+        "interfaceName": "wlan0",
+        "mac": "01:00:5e:00:00:fb",
+        "referenceCount": 2,
+        "globalUse": true
+      }
+    ],
+    "wirelessProcStats": {
+      "wirelessExtensionsVersion": 22,
+      "entries": [
+        {
+          "interfaceName": "lo",
+          "status": 0,
+          "linkQuality": 0,
+          "level": 0,
+          "noise": 0,
+          "linkUpdated": false,
+          "levelUpdated": false,
+          "noiseUpdated": false,
+          "discardNwid": 0,
+          "discardCrypt": 0,
+          "discardFragment": 0,
+          "discardRetries": 0,
+          "discardMisc": 0,
+          "missedBeacon": 0
+        },
+        {
+          "interfaceName": "wlan0",
+          "status": 0,
+          "linkQuality": 70,
+          "level": -50,
+          "noise": -90,
+          "linkUpdated": true,
+          "levelUpdated": true,
+          "noiseUpdated": true,
+          "discardNwid": 0,
+          "discardCrypt": 0,
+          "discardFragment": 0,
+          "discardRetries": 1,
+          "discardMisc": 0,
+          "missedBeacon": 2
+        }
+      ]
+    },
+    "wifi": {
+      "enabled": true,
+      "state": 3,
+      "ssid": "TRACEAI_WIFI_SSID_V1",
+      "bssid": "02:54:52:41:43:45",
+      "macAddress": "02:54:52:41:43:46",
+      "ipv4": "192.168.50.23",
+      "rssi": -55,
+      "linkSpeedMbps": 866,
+      "frequencyMhz": 5180,
+      "networkId": 42
+    },
+    "links": {
+      "connected": true,
+      "type": 1,
+      "typeName": "WIFI",
+      "interfaceName": "wlan0",
+      "dnsServers": [
+        "8.8.8.8",
+        "1.1.1.1"
+      ],
+      "gatewayIpv4": "192.168.50.1",
+      "mtu": 1500,
+      "privateDnsActive": true,
+      "privateDnsServerName": "TRACEAI_PRIVATE_DNS_V1",
+      "domains": "lan.local",
+      "proxyHost": "TRACEAI_PROXY_HOST_V1",
+      "proxyPort": 8080,
+      "dhcpServerIpv4": "192.168.50.1",
+      "netmaskIpv4": "255.255.255.0",
+      "leaseDurationSeconds": 7200
+    },
+    "bluetooth": {
+      "name": "TRACEAI_BT_V1",
+      "address": "02:54:52:41:43:47",
+      "enabled": true,
+      "state": 12,
+      "scanMode": 21,
+      "discovering": false
+    }
+  },
+  "filesystem": {
+    "stat": {
+      "/proc/cpuinfo": {
+        "device": 1414676803,
+        "inode": 1414676804,
+        "mode": 33060,
+        "uid": 1000,
+        "gid": 1000,
+        "size": 4242,
+        "blockSize": 4096,
+        "blocks": 8,
+        "atimeMillis": 1718000000000,
+        "mtimeMillis": 1718000001000,
+        "ctimeMillis": 1718000002000
+      }
+    },
+    "statfs": {
+      "/": {
+        "type": 61267,
+        "blockSize": 4096,
+        "blocks": 8388608,
+        "blocksFree": 4194304,
+        "blocksAvailable": 3984588,
+        "files": 2097152,
+        "filesFree": 1887436,
+        "fsid": [1414676803, 1414676804],
+        "nameLength": 255,
+        "fragmentSize": 4096,
+        "flags": 1056
+      },
+      "/data": {
+        "type": 61267,
+        "blockSize": 4096,
+        "blocks": 16777216,
+        "blocksFree": 8388608,
+        "blocksAvailable": 7969176,
+        "files": 4194304,
+        "filesFree": 3774872,
+        "fsid": [1414676810, 1414676811],
+        "nameLength": 255,
+        "fragmentSize": 4096,
+        "flags": 1056
+      }
+    },
+    "mounts": [
+      {
+        "source": "/dev/block/dm-0",
+        "target": "/",
+        "fileSystemType": "ext4",
+        "options": "ro,seclabel,relatime",
+        "dump": 1,
+        "pass": 1,
+        "mountId": 21,
+        "parentId": 1,
+        "major": 253,
+        "minor": 0,
+        "root": "/",
+        "mountOptions": "ro,seclabel,relatime",
+        "optionalFields": ["shared:1"],
+        "superOptions": "rw,seclabel"
+      },
+      {
+        "source": "/dev/block/dm-1",
+        "target": "/data",
+        "fileSystemType": "f2fs",
+        "options": "rw,nosuid,nodev,noatime,seclabel",
+        "dump": 0,
+        "pass": 2,
+        "mountId": 45,
+        "parentId": 21,
+        "major": 253,
+        "minor": 1,
+        "root": "/",
+        "mountOptions": "rw,nosuid,nodev,noatime,seclabel",
+        "optionalFields": ["shared:2"],
+        "superOptions": "rw,seclabel"
+      }
+    ],
+    "links": {
+      "/proc/self/exe": "/system/bin/app_process64",
+      "/proc/self/fd/0": "/dev/null",
+      "/data/local/tmp/rel": "../cache/foo"
+    },
+    "externalStorage": {
+      "directory": "/storage/emulated/0",
+      "state": "mounted",
+      "emulated": true,
+      "removable": false
+    },
+    "systemDirectories": {
+      "rootDirectory": "/system",
+      "dataDirectory": "/data",
+      "downloadCacheDirectory": "/cache",
+      "storageDirectory": "/storage"
+    }
+  },
+  "graphics": {
+    "vendor": "Qualcomm",
+    "renderer": "Adreno (TM) 730",
+    "version": "OpenGL ES 3.2",
+    "shadingLanguageVersion": "OpenGL ES GLSL ES 3.20",
+    "extensions": [
+      "GL_OES_EGL_image",
+      "GL_EXT_texture_format_BGRA8888"
+    ],
+    "eglVendor": "Android",
+    "eglVersion": "1.5 Android META-EGL",
+    "eglExtensions": [
+      "EGL_KHR_image_base",
+      "EGL_ANDROID_image_native_buffer"
+    ]
   }
 }

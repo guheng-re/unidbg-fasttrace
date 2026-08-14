@@ -18,6 +18,7 @@ import com.github.unidbg.file.FileIO;
 import com.github.unidbg.file.FileResult;
 import com.github.unidbg.file.IOResolver;
 import com.github.unidbg.file.linux.AndroidFileIO;
+import com.github.unidbg.file.linux.ConfiguredFileStat;
 import com.github.unidbg.file.linux.IOConstants;
 import com.github.unidbg.linux.android.AndroidResolver;
 import com.github.unidbg.linux.file.ByteArrayFileIO;
@@ -29,12 +30,13 @@ import com.github.unidbg.linux.file.SocketIO;
 import com.github.unidbg.linux.file.TcpSocket;
 import com.github.unidbg.linux.file.UdpSocket;
 import com.github.unidbg.linux.struct.Stat32;
-import com.github.unidbg.linux.struct.SysInfo32;
+import com.github.unidbg.linux.struct.StatFS32;
 import com.github.unidbg.linux.thread.KitKatThread;
 import com.github.unidbg.linux.thread.MarshmallowThread;
 import com.github.unidbg.memory.Memory;
 import com.github.unidbg.memory.SvcMemory;
 import com.github.unidbg.pointer.UnidbgPointer;
+import com.github.unidbg.pointer.UnidbgStructure;
 import com.github.unidbg.thread.PopContextException;
 import com.github.unidbg.thread.Task;
 import com.github.unidbg.thread.ThreadContextSwitchException;
@@ -221,6 +223,9 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
                 case 64:
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, getppid(emulator));
                     return;
+                case 65: // getpgrp
+                    backend.reg_write(ArmConst.UC_ARM_REG_R0, readGetpgrp(emulator));
+                    return;
                 case 67:
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, sigaction(emulator));
                     return;
@@ -276,9 +281,15 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
                 case 175:
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, sigprocmask(emulator));
                     return;
-                case 132:
+                case 132: { // getpgid(pid)
+                    Integer pgidRet = tryGetpgid(emulator);
+                    if (pgidRet != null) {
+                        backend.reg_write(ArmConst.UC_ARM_REG_R0, pgidRet.intValue());
+                        return;
+                    }
                     syscall = "getpgid";
                     break;
+                }
                 case 136:
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, personality(backend));
                     return;
@@ -294,9 +305,15 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
                 case 146:
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, writev(backend, emulator));
                     return;
-                case 147:
-                    backend.reg_write(ArmConst.UC_ARM_REG_R0, getsid(emulator));
-                    return;
+                case 147: { // getsid(pid)
+                    Integer sidRet = tryGetsid(emulator);
+                    if (sidRet != null) {
+                        backend.reg_write(ArmConst.UC_ARM_REG_R0, sidRet.intValue());
+                        return;
+                    }
+                    syscall = "getsid";
+                    break;
+                }
                 case 150:
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, mlock(emulator));
                     return;
@@ -343,6 +360,14 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
                 case 183:
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, getcwd(emulator));
                     return;
+                case 184: { // capget (linux arm)
+                    Integer capgetRet = tryCapget(emulator);
+                    if (capgetRet != null) {
+                        backend.reg_write(ArmConst.UC_ARM_REG_R0, capgetRet.intValue());
+                        return;
+                    }
+                    break;
+                }
                 case 186:
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, sigaltstack(emulator));
                     return;
@@ -373,9 +398,15 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
                 case 202: // getegid
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, emitProcessIdentity(emulator, "getegid", getConfiguredEgid(emulator, 0)));
                     return;
-                case 205:
+                case 205: { // getgroups32
+                    Integer groupsRet = tryGetgroups(emulator);
+                    if (groupsRet != null) {
+                        backend.reg_write(ArmConst.UC_ARM_REG_R0, groupsRet.intValue());
+                        return;
+                    }
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, getgroups(backend, emulator));
                     return;
+                }
                 case 208:
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, setresuid32(backend));
                     return;
@@ -426,6 +457,14 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
                     Pointer buf = context.getPointerArg(2).setSize(size);
                     String path = pathPointer.getString(0);
                     backend.reg_write(ArmConst.UC_ARM_REG_R0, (int) statfs64(emulator, path, buf));
+                    return;
+                }
+                case 267: {
+                    RegisterContext context = emulator.getContext();
+                    int fd = context.getIntArg(0);
+                    int size = context.getIntArg(1);
+                    Pointer buf = context.getPointerArg(2);
+                    backend.reg_write(ArmConst.UC_ARM_REG_R0, (int) fstatfs64(emulator, fd, size, buf));
                     return;
                 }
                 case 268:
@@ -597,15 +636,6 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         return 0;
     }
 
-    private int getsid(Emulator<AndroidFileIO> emulator) {
-        RegisterContext context = emulator.getContext();
-        int pid = context.getIntArg(0);
-        if (log.isDebugEnabled()) {
-            log.debug("getsid pid={}", pid);
-        }
-        return getConfiguredPpid(emulator, emulator.getPid());
-    }
-
     private int readlinkat(Emulator<AndroidFileIO> emulator) {
         RegisterContext context = emulator.getContext();
         int dirfd = context.getIntArg(0);
@@ -649,17 +679,6 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         if (node != null) {
             node.setInt(0, 0);
         }
-        return 0;
-    }
-
-    private int sysinfo(Emulator<?> emulator) {
-        Arm32RegisterContext context = emulator.getContext();
-        Pointer info = context.getR0Pointer();
-        if (log.isDebugEnabled()) {
-            log.debug("sysinfo info={}", info);
-        }
-        SysInfo32 sysInfo32 = new SysInfo32(info);
-        sysInfo32.pack();
         return 0;
     }
 
@@ -1116,7 +1135,12 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
     protected int stat64(Emulator<AndroidFileIO> emulator, String pathname, Pointer statbuf) {
         FileResult<AndroidFileIO> result = resolve(emulator, pathname, IOConstants.O_RDONLY);
         if (result != null && result.isSuccess()) {
-            return result.io.fstat(emulator, new Stat32(statbuf));
+            Stat32 stat = new Stat32(statbuf);
+            int ret = result.io.fstat(emulator, stat);
+            if (ret == 0) {
+                ConfiguredFileStat.apply(emulator, pathname, stat);
+            }
+            return ret;
         }
 
         log.info("stat64 pathname={}, LR={}", pathname, emulator.getContext().getLRPointer());
@@ -1591,6 +1615,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         return -1;
     }
 
+    /** Unconfigured ARM32 {@code getgroups32}: historical stub always returns 0. */
     private int getgroups(Backend backend, Emulator<?> emulator) {
         int size = backend.reg_read(ArmConst.UC_ARM_REG_R0).intValue();
         Pointer list = UnidbgPointer.register(emulator, ArmConst.UC_ARM_REG_R1);
@@ -1688,6 +1713,10 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
     private static final int PR_SET_DUMPABLE = 4;
     private static final int PR_SET_NAME = 15;
     private static final int PR_GET_NAME = 16;
+    /** Linux/Android {@code PR_GET_SECCOMP} (linux/prctl.h). */
+    private static final int PR_GET_SECCOMP = 21;
+    /** Linux/Android {@code PR_GET_NO_NEW_PRIVS} (linux/prctl.h). */
+    private static final int PR_GET_NO_NEW_PRIVS = 39;
     private static final int BIONIC_PR_SET_VMA = 0x53564d41;
     private static final int PR_SET_PTRACER = 0x59616d61;
 
@@ -1698,7 +1727,57 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
             log.debug("prctl option=0x{}, arg2=0x{}", Integer.toHexString(option), Long.toHexString(arg2));
         }
         switch (option) {
-            case PR_GET_DUMPABLE:
+            case PR_GET_DUMPABLE: {
+                TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+                if (config != null && config.isLinuxProcConfigured()) {
+                    TraceEnvironmentConfig.LinuxProcConfig proc = config.getLinuxProcConfig();
+                    if (proc.isDumpableConfigured()) {
+                        int value = proc.getDumpable();
+                        TraceEnvironmentEventSink.emit(emulator, "linux_proc",
+                                "prctl(PR_GET_DUMPABLE)",
+                                "result=" + value,
+                                "json-config",
+                                "读取配置的进程 dumpable 标志");
+                        return value;
+                    }
+                }
+                // Historical fixed return when dumpable is not configured
+                return 0;
+            }
+            case PR_GET_SECCOMP: {
+                TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+                if (config != null && config.isLinuxProcConfigured()) {
+                    TraceEnvironmentConfig.LinuxProcConfig proc = config.getLinuxProcConfig();
+                    if (proc.isSeccompModeConfigured()) {
+                        int value = proc.getSeccompMode();
+                        TraceEnvironmentEventSink.emit(emulator, "linux_proc",
+                                "prctl(PR_GET_SECCOMP)",
+                                "field=seccompMode,result=" + value,
+                                "json-config",
+                                "读取配置的进程 seccomp 模式");
+                        return value;
+                    }
+                }
+                // Field/node absent: preserve historical UOE for this option
+                throw new UnsupportedOperationException("option=" + option);
+            }
+            case PR_GET_NO_NEW_PRIVS: {
+                TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+                if (config != null && config.isLinuxProcConfigured()) {
+                    TraceEnvironmentConfig.LinuxProcConfig proc = config.getLinuxProcConfig();
+                    if (proc.isNoNewPrivsConfigured()) {
+                        int value = proc.isNoNewPrivs() ? 1 : 0;
+                        TraceEnvironmentEventSink.emit(emulator, "linux_proc",
+                                "prctl(PR_GET_NO_NEW_PRIVS)",
+                                "field=noNewPrivs,result=" + value,
+                                "json-config",
+                                "读取配置的进程 no_new_privs 标志");
+                        return value;
+                    }
+                }
+                // Field/node absent: preserve historical UOE for this option
+                throw new UnsupportedOperationException("option=" + option);
+            }
             case PR_SET_DUMPABLE:
                 return 0;
             case PR_SET_NAME: {
@@ -1710,10 +1789,10 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
                 return 0;
             }
             case PR_GET_NAME: {
-                String name = getConfiguredThreadName(emulator, java.lang.Thread.currentThread().getName());
-                if (name.length() > 15) {
-                    name = name.substring(0, 15);
-                }
+                // process.threadName with current Java thread-name fallback; at most 15 UTF-8
+                // bytes + NUL (no mid-code-point split); no sidecar.
+                String name = truncatePrctlThreadNameUtf8(
+                        getConfiguredThreadName(emulator, java.lang.Thread.currentThread().getName()));
                 if (log.isDebugEnabled()) {
                     log.debug("prctl get thread name: {}", name);
                 }
@@ -2042,6 +2121,22 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         }
     }
 
+    /**
+     * ARM32 {@code fstatfs64(fd, sz, buf)}: {@code sz} must equal {@link StatFS32} size.
+     * Mismatch returns {@code -1}/{@code EINVAL} and does not write {@code buf}.
+     */
+    protected long fstatfs64(Emulator<AndroidFileIO> emulator, int fd, int size, Pointer buf) {
+        int expected = UnidbgStructure.calculateSize(StatFS32.class);
+        if (size != expected) {
+            emulator.getMemory().setErrno(UnixEmulator.EINVAL);
+            return -1;
+        }
+        if (buf instanceof UnidbgPointer) {
+            buf = ((UnidbgPointer) buf).setSize(size);
+        }
+        return fstatfs64(emulator, fd, buf);
+    }
+
     private int fstat(Backend backend, Emulator<?> emulator) {
         int fd = backend.reg_read(ArmConst.UC_ARM_REG_R0).intValue();
         Pointer stat = UnidbgPointer.register(emulator, ArmConst.UC_ARM_REG_R1);
@@ -2061,7 +2156,12 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         if (log.isDebugEnabled()) {
             log.debug("fstat file={}, stat={}, from={}", file, stat, emulator.getContext().getLRPointer());
         }
-        return file.fstat(emulator, new Stat32(stat));
+        Stat32 statStructure = new Stat32(stat);
+        int ret = file.fstat(emulator, statStructure);
+        if (ret == 0) {
+            ConfiguredFileStat.apply(emulator, file, statStructure);
+        }
+        return ret;
     }
 
     private int ioctl(Emulator<?> emulator) {
@@ -2080,7 +2180,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         }
         int ret = file.ioctl(emulator, request, argp);
         emitNetworkDeviceIoctl(emulator, fd, request, argp, ret);
-        if (ret == -1) {
+        if (ret == -1 && !preserveConfiguredSocketHwaddrErrno(emulator, file, request)) {
             emulator.getMemory().setErrno(UnixEmulator.ENOTTY);
         }
         return ret;

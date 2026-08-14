@@ -5,25 +5,31 @@ import com.github.unidbg.Emulator;
 import com.github.unidbg.arm.backend.BackendException;
 import com.github.unidbg.arm.context.RegisterContext;
 import com.github.unidbg.env.TraceEnvironmentConfig;
+import com.github.unidbg.file.FileIO;
 import com.github.unidbg.file.FileResult;
 import com.github.unidbg.file.linux.AndroidFileIO;
+import com.github.unidbg.file.linux.ConfiguredFileStatFs;
 import com.github.unidbg.file.linux.IOConstants;
 import com.github.unidbg.linux.file.DirectoryFileIO;
 import com.github.unidbg.linux.file.EventFD;
 import com.github.unidbg.linux.file.PipedReadFileIO;
 import com.github.unidbg.linux.file.PipedWriteFileIO;
+import com.github.unidbg.linux.file.SocketIO;
 import com.github.unidbg.linux.signal.SigAction;
 import com.github.unidbg.linux.signal.SignalFunction;
 import com.github.unidbg.linux.signal.SignalTask;
 import com.github.unidbg.linux.struct.StatFS;
 import com.github.unidbg.linux.struct.StatFS32;
 import com.github.unidbg.linux.struct.StatFS64;
+import com.github.unidbg.linux.struct.SysInfo32;
+import com.github.unidbg.linux.struct.SysInfo64;
 import com.github.unidbg.linux.thread.FutexIndefinitelyWaiter;
 import com.github.unidbg.linux.thread.FutexNanoSleepWaiter;
 import com.github.unidbg.linux.thread.FutexWaiter;
 import com.github.unidbg.linux.thread.MarshmallowThread;
 import com.github.unidbg.linux.thread.NanoSleepWaiter;
 import com.github.unidbg.pointer.UnidbgPointer;
+import com.github.unidbg.pointer.UnidbgStructure;
 import com.github.unidbg.signal.SigSet;
 import com.github.unidbg.signal.SignalOps;
 import com.github.unidbg.signal.UnixSigSet;
@@ -50,6 +56,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,6 +74,109 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
     protected final int getConfiguredPpid(Emulator<?> emulator, int fallback) {
         TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
         return config == null ? fallback : config.getPpid(fallback);
+    }
+
+    protected final int getConfiguredPgid(Emulator<?> emulator, int fallback) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? fallback : config.getPgid(fallback);
+    }
+
+    protected final int getConfiguredSid(Emulator<?> emulator, int fallback) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config == null ? fallback : config.getSid(fallback);
+    }
+
+    /**
+     * Read-only {@code getpgrp} for the current process (ARM32 NR 65). AArch64 has no
+     * independent {@code getpgrp} syscall.
+     */
+    protected final int readGetpgrp(Emulator<?> emulator) {
+        int selfPid = emulator.getPid();
+        return emitProcessIdentity(emulator, "getpgrp", getConfiguredPgid(emulator, selfPid));
+    }
+
+    /**
+     * Read-only {@code getpgid(pid)}: hits config only for {@code pid==0} or the current
+     * {@code emulator.getPid()}. Other pids return {@code null} so the architecture keeps
+     * its unknown-syscall / old path (no errno rewrite).
+     */
+    protected final Integer tryGetpgid(Emulator<?> emulator) {
+        if (emulator == null) {
+            return null;
+        }
+        int pid = emulator.getContext().getIntArg(0);
+        int selfPid = emulator.getPid();
+        if (pid != 0 && pid != selfPid) {
+            return null;
+        }
+        return Integer.valueOf(emitProcessIdentity(emulator, "getpgid",
+                getConfiguredPgid(emulator, selfPid)));
+    }
+
+    /**
+     * Read-only {@code getsid(pid)}: same 0/current-pid rule as {@link #tryGetpgid}.
+     * Missing {@code process.sid} defaults to current pid, never ppid.
+     */
+    protected final Integer tryGetsid(Emulator<?> emulator) {
+        if (emulator == null) {
+            return null;
+        }
+        int pid = emulator.getContext().getIntArg(0);
+        int selfPid = emulator.getPid();
+        if (pid != 0 && pid != selfPid) {
+            return null;
+        }
+        return Integer.valueOf(emitProcessIdentity(emulator, "getsid",
+                getConfiguredSid(emulator, selfPid)));
+    }
+
+    /**
+     * Read-only {@code getgroups} / {@code getgroups32} backed by explicit
+     * {@code process.supplementaryGids}. ARM32 NR 205 and ARM64 NR 158 only (not ARM32 NR 80).
+     * Missing key returns {@code null} so ARM32 keeps returning 0 and ARM64 keeps the unknown
+     * syscall path. Does not implement {@code setgroups} or host fallback.
+     *
+     * @return group count or {@code -1} when handled; {@code null} when the key is absent
+     */
+    protected final Integer tryGetgroups(Emulator<?> emulator) {
+        if (emulator == null) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        if (config == null || !config.isSupplementaryGidsConfigured()) {
+            return null;
+        }
+        List<Integer> gids = config.getSupplementaryGids();
+        int count = gids.size();
+        RegisterContext ctx = emulator.getContext();
+        int size = ctx.getIntArg(0);
+        if (size == 0) {
+            emitGetgroupsSuccess(emulator, count, size);
+            return Integer.valueOf(count);
+        }
+        if (size < count) {
+            emulator.getMemory().setErrno(UnixEmulator.EINVAL);
+            return Integer.valueOf(-1);
+        }
+        Pointer list = ctx.getPointerArg(1);
+        if (count > 0 && list == null) {
+            emulator.getMemory().setErrno(UnixEmulator.EFAULT);
+            return Integer.valueOf(-1);
+        }
+        if (count > 0) {
+            for (int i = 0; i < count; i++) {
+                list.setInt((long) i * 4, gids.get(i).intValue());
+            }
+        }
+        emitGetgroupsSuccess(emulator, count, size);
+        return Integer.valueOf(count);
+    }
+
+    private static void emitGetgroupsSuccess(Emulator<?> emulator, int count, int requestedSize) {
+        TraceEnvironmentEventSink.emit(emulator, "process_identity", "getgroups",
+                "count=" + count + ",requestedSize=" + requestedSize,
+                "json-config",
+                "读取配置的补充组 getgroups");
     }
 
     protected final int getConfiguredTid(Emulator<?> emulator, int fallback) {
@@ -99,10 +209,161 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
         return config == null ? fallback : config.getThreadName(fallback);
     }
 
+    /**
+     * Truncate a thread name for {@code prctl(PR_GET_NAME)} to at most {@code 15} UTF-8 bytes
+     * without splitting a multibyte UTF-8 code point (TASK_COMM_LEN-1). ASCII of length ≤15 is
+     * unchanged; pure-ASCII longer names match historical 15-character truncation.
+     */
+    protected static String truncatePrctlThreadNameUtf8(String name) {
+        if (name == null || name.isEmpty()) {
+            return name == null ? "" : name;
+        }
+        byte[] utf8 = name.getBytes(StandardCharsets.UTF_8);
+        if (utf8.length <= 15) {
+            return name;
+        }
+        int end = 0;
+        int byteCount = 0;
+        int i = 0;
+        while (i < name.length()) {
+            int cp = name.codePointAt(i);
+            int charCount = Character.charCount(cp);
+            // UTF-8 length of one Unicode scalar value
+            int pieceBytes;
+            if (cp <= 0x7F) {
+                pieceBytes = 1;
+            } else if (cp <= 0x7FF) {
+                pieceBytes = 2;
+            } else if (cp <= 0xFFFF) {
+                pieceBytes = 3;
+            } else {
+                pieceBytes = 4;
+            }
+            if (byteCount + pieceBytes > 15) {
+                break;
+            }
+            byteCount += pieceBytes;
+            i += charCount;
+            end = i;
+        }
+        return name.substring(0, end);
+    }
+
     protected final int emitProcessIdentity(Emulator<?> emulator, String api, int value) {
         TraceEnvironmentEventSink.emit(emulator, "process_identity", api, String.valueOf(value),
                 processIdentitySource(emulator, api), "读取进程身份 " + api);
         return value;
+    }
+
+    /**
+     * Linux {@code _LINUX_CAPABILITY_VERSION_3} ({@code linux/capability.h}).
+     * V3 uses two {@code __user_cap_data_struct} slots (64-bit masks).
+     */
+    public static final int LINUX_CAPABILITY_VERSION_3 = 0x20080522;
+    /** Number of {@code __u32} capability words for V3. */
+    public static final int LINUX_CAPABILITY_U32S_3 = 2;
+    /** Size of one {@code __user_cap_data_struct} (effective/permitted/inheritable u32s). */
+    private static final int CAP_USER_DATA_SIZE = 12;
+
+    /**
+     * Read-only {@code capget} for capability V3 only, backed by explicit
+     * {@code linux.proc.capInheritableHex}/{@code capPermittedHex}/{@code capEffectiveHex}.
+     * Handles only pid {@code 0} or the emulator/configured process pid and non-null
+     * V3 header/data pointers. Writes two 32-bit data slots from the 64-bit masks
+     * (unconfigured fields → 0). Does not implement {@code capset}, CapBnd/CapAmb, or
+     * host fallback.
+     *
+     * @return {@code 0} when handled; {@code null} when not intercepted (absence /
+     *         wrong version / bad pid / null pointers → keep prior path)
+     */
+    protected final Integer tryCapget(Emulator<?> emulator) {
+        if (emulator == null) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        if (config == null || !config.isLinuxProcConfigured()) {
+            return null;
+        }
+        TraceEnvironmentConfig.LinuxProcConfig proc = config.getLinuxProcConfig();
+        if (proc == null) {
+            return null;
+        }
+        boolean inhCfg = proc.isCapInheritableHexConfigured();
+        boolean prmCfg = proc.isCapPermittedHexConfigured();
+        boolean effCfg = proc.isCapEffectiveHexConfigured();
+        if (!inhCfg && !prmCfg && !effCfg) {
+            return null;
+        }
+
+        RegisterContext ctx = emulator.getContext();
+        Pointer header = ctx.getPointerArg(0);
+        Pointer data = ctx.getPointerArg(1);
+        if (header == null || data == null) {
+            return null;
+        }
+
+        int version = header.getInt(0);
+        int pid = header.getInt(4);
+        if (version != LINUX_CAPABILITY_VERSION_3) {
+            return null;
+        }
+        int selfPid = emulator.getPid();
+        if (pid != 0 && pid != selfPid) {
+            return null;
+        }
+
+        long inh = parseCapMask64(inhCfg ? proc.getCapInheritableHex() : null);
+        long prm = parseCapMask64(prmCfg ? proc.getCapPermittedHex() : null);
+        long eff = parseCapMask64(effCfg ? proc.getCapEffectiveHex() : null);
+
+        // data[0]: lower 32 bits; data[1]: upper 32 bits (V3 layout)
+        writeCapDataSlot(data, 0, eff, prm, inh, false);
+        writeCapDataSlot(data, CAP_USER_DATA_SIZE, eff, prm, inh, true);
+
+        StringBuilder fields = new StringBuilder();
+        if (inhCfg) {
+            fields.append("inh");
+        }
+        if (prmCfg) {
+            if (fields.length() > 0) {
+                fields.append('|');
+            }
+            fields.append("prm");
+        }
+        if (effCfg) {
+            if (fields.length() > 0) {
+                fields.append('|');
+            }
+            fields.append("eff");
+        }
+        TraceEnvironmentEventSink.emit(emulator, "linux_proc",
+                "capget",
+                "result=0,version=3,pid=" + pid + ",slots=2,fields=" + fields,
+                "json-config",
+                "读取配置的进程能力位（capget V3）");
+        if (log.isDebugEnabled()) {
+            log.debug("capget V3 pid={} fields={}", pid, fields);
+        }
+        return Integer.valueOf(0);
+    }
+
+    /** Parse 16-hex lowercase mask to unsigned 64-bit; null/empty → 0. */
+    private static long parseCapMask64(String hex) {
+        if (hex == null || hex.length() != 16) {
+            return 0L;
+        }
+        // high 8 hex = bits 32..63, low 8 = bits 0..31
+        long high = Long.parseLong(hex.substring(0, 8), 16);
+        long low = Long.parseLong(hex.substring(8, 16), 16);
+        return ((high & 0xffffffffL) << 32) | (low & 0xffffffffL);
+    }
+
+    private static void writeCapDataSlot(Pointer data, int base, long eff, long prm, long inh,
+                                         boolean highWord) {
+        int shift = highWord ? 32 : 0;
+        data.setInt(base, (int) ((eff >>> shift) & 0xffffffffL));
+        data.setInt(base + 4, (int) ((prm >>> shift) & 0xffffffffL));
+        data.setInt(base + 8, (int) ((inh >>> shift) & 0xffffffffL));
     }
 
     private static String processIdentitySource(Emulator<?> emulator, String api) {
@@ -126,15 +387,42 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
             configured = config.getEuid(sentinel) != sentinel;
         } else if ("getegid".equals(api)) {
             configured = config.getEgid(sentinel) != sentinel;
+        } else if ("getpgrp".equals(api) || "getpgid".equals(api)) {
+            configured = config.getPgid(sentinel) != sentinel;
+        } else if ("getsid".equals(api)) {
+            configured = config.getSid(sentinel) != sentinel;
         } else {
             configured = false;
         }
         return configured ? "json-config" : "unidbg-default";
     }
 
+    /**
+     * Keep errno already set by {@code file.ioctl} only for configured
+     * {@code SocketIO} {@code SIOCGIFHWADDR}. All other {@code ret == -1}
+     * results still become {@link UnixEmulator#ENOTTY}.
+     */
+    protected static boolean preserveConfiguredSocketHwaddrErrno(Emulator<?> emulator,
+                                                                 FileIO file, long request) {
+        if (request != AndroidFileIO.SIOCGIFHWADDR) {
+            return false;
+        }
+        if (!(file instanceof SocketIO)) {
+            return false;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        return config != null && config.isNetworkInterfacesConfigured();
+    }
+
     protected final void emitNetworkDeviceIoctl(Emulator<?> emulator, int fd, long request, long argp, int ret) {
         String requestName = networkDeviceRequestName(request);
         if (requestName == null) {
+            return;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        boolean fromConfig = config != null && config.isNetworkInterfacesConfigured();
+        // SocketIO emits name/format=ifreq-hwaddr/bytes on takeover; do not leak MAC or hardwareType.
+        if (request == AndroidFileIO.SIOCGIFHWADDR && fromConfig) {
             return;
         }
         StringBuilder value = new StringBuilder();
@@ -150,12 +438,26 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
                     value.append(",flags=0x").append(Integer.toHexString(ifreq.getShort(16) & 0xffff));
                 } else if (request == AndroidFileIO.SIOCGIFADDR && ret == 0) {
                     value.append(",addr=").append(toHex(ifreq.getByteArray(16, 16)));
+                } else if (request == AndroidFileIO.SIOCGIFHWADDR && ret == 0) {
+                    int family = ifreq.getShort(16) & 0xffff;
+                    value.append(",family=").append(family);
+                    value.append(",mac=").append(toHex(ifreq.getByteArray(18, 6)));
+                } else if (request == AndroidFileIO.SIOCGIFMTU && ret == 0) {
+                    value.append(",mtu=").append(ifreq.getInt(16));
                 }
             } catch (Throwable ignored) {
             }
         }
+        String source;
+        if (fromConfig) {
+            source = "json-config";
+        } else if (ret == 0) {
+            source = "unidbg-default";
+        } else {
+            source = "fallback";
+        }
         TraceEnvironmentEventSink.emit(emulator, "network_device", "ioctl(" + requestName + ")",
-                value.toString(), ret == 0 ? "unidbg-default" : "fallback", "读取网卡信息 " + requestName);
+                value.toString(), source, "读取网卡信息 " + requestName);
     }
 
     private static String networkDeviceRequestName(long request) {
@@ -170,6 +472,12 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
         }
         if (request == AndroidFileIO.SIOCGIFNAME) {
             return "SIOCGIFNAME";
+        }
+        if (request == AndroidFileIO.SIOCGIFHWADDR) {
+            return "SIOCGIFHWADDR";
+        }
+        if (request == AndroidFileIO.SIOCGIFMTU) {
+            return "SIOCGIFMTU";
         }
         return null;
     }
@@ -222,11 +530,103 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
         return 0;
     }
 
+    /**
+     * Android Bionic {@code bits/sysconf.h} name for {@code _SC_NPROCESSORS_CONF}
+     * (same numeric value on ARM32 and ARM64).
+     */
+    public static final int SC_NPROCESSORS_CONF = 0x60;
+
+    /**
+     * Android Bionic {@code bits/sysconf.h} name for {@code _SC_NPROCESSORS_ONLN}
+     * (same numeric value on ARM32 and ARM64).
+     */
+    public static final int SC_NPROCESSORS_ONLN = 0x61;
+
+    /**
+     * Config-backed {@code sysconf(name)} for processor counts only.
+     * Reads {@code name} from arg0. Returns configured count when the matching
+     * {@code linux.cpu} field is present; {@code null} when not handled (caller keeps
+     * prior libc/syscall path; no host fallback and no sidecar).
+     */
+    public final Long sysconf(Emulator<?> emulator) {
+        RegisterContext context = emulator.getContext();
+        int name = context.getIntArg(0);
+        return trySysconf(emulator, name);
+    }
+
+    /**
+     * Config-backed {@code sysconf(name)} for {@link #SC_NPROCESSORS_CONF} /
+     * {@link #SC_NPROCESSORS_ONLN} only. Other names and missing fields return {@code null}.
+     */
+    public final Long trySysconf(Emulator<?> emulator, int name) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        if (config == null || !config.isLinuxCpuConfigured()) {
+            return null;
+        }
+        TraceEnvironmentConfig.LinuxCpuConfig cpu = config.getLinuxCpuConfig();
+        if (cpu == null) {
+            return null;
+        }
+        if (name == SC_NPROCESSORS_CONF && cpu.isConfiguredProcessorCountConfigured()) {
+            int result = cpu.getConfiguredProcessorCount();
+            TraceEnvironmentEventSink.emit(emulator, "linux_cpu", "sysconf",
+                    "field=configuredProcessorCount,result=" + result,
+                    "json-config", "读取配置的 sysconf(_SC_NPROCESSORS_CONF) 处理器数");
+            return (long) result;
+        }
+        if (name == SC_NPROCESSORS_ONLN && cpu.isOnlineProcessorCountConfigured()) {
+            int result = cpu.getOnlineProcessorCount();
+            TraceEnvironmentEventSink.emit(emulator, "linux_cpu", "sysconf",
+                    "field=onlineProcessorCount,result=" + result,
+                    "json-config", "读取配置的 sysconf(_SC_NPROCESSORS_ONLN) 在线处理器数");
+            return (long) result;
+        }
+        return null;
+    }
+
     final long sched_getaffinity(Emulator<AndroidFileIO> emulator) {
         RegisterContext context = emulator.getContext();
         int pid = context.getIntArg(0);
         int cpusetsize = context.getIntArg(1);
         Pointer mask = context.getPointerArg(2);
+
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        if (config != null && config.isLinuxCpuConfigured()) {
+            // Configured affinity ignores stateful sched_cpu_mask.
+            TraceEnvironmentConfig.LinuxCpuConfig cpuConfig = config.getLinuxCpuConfig();
+            byte[] affinityMask = cpuConfig.getAffinityMaskBytes();
+            if (cpusetsize <= 0 || cpusetsize > 1024) {
+                TraceEnvironmentEventSink.emit(emulator, "linux_cpu", "sched_getaffinity",
+                        "pid=" + pid + ",cpusetsize=" + cpusetsize
+                                + ",errno=EINVAL,reason=invalid_cpusetsize",
+                        "json-config", "配置的 CPU 亲和性 cpusetsize 非法");
+                return -UnixEmulator.EINVAL;
+            }
+            if (cpusetsize < affinityMask.length) {
+                TraceEnvironmentEventSink.emit(emulator, "linux_cpu", "sched_getaffinity",
+                        "pid=" + pid + ",cpusetsize=" + cpusetsize
+                                + ",maskBytes=" + affinityMask.length
+                                + ",errno=EINVAL,reason=cpusetsize_too_small",
+                        "json-config", "配置的 CPU 亲和性缓冲区过短");
+                return -UnixEmulator.EINVAL;
+            }
+            if (mask == null) {
+                TraceEnvironmentEventSink.emit(emulator, "linux_cpu", "sched_getaffinity",
+                        "pid=" + pid + ",cpusetsize=" + cpusetsize
+                                + ",errno=EFAULT,reason=null_mask",
+                        "json-config", "配置的 CPU 亲和性 mask 指针为空");
+                return -UnixEmulator.EFAULT;
+            }
+            byte[] out = new byte[cpusetsize];
+            System.arraycopy(affinityMask, 0, out, 0, affinityMask.length);
+            mask.write(0, out, 0, cpusetsize);
+            TraceEnvironmentEventSink.emit(emulator, "linux_cpu", "sched_getaffinity",
+                    "pid=" + pid + ",cpusetsize=" + cpusetsize
+                            + ",maskHex=" + formatAffinityMaskHex(affinityMask),
+                    "json-config", "读取配置的 CPU 亲和性掩码");
+            return cpusetsize;
+        }
+
         int ret = 0;
         if (mask != null && sched_cpu_mask != null) {
             mask.write(0, sched_cpu_mask, 0, cpusetsize);
@@ -236,6 +636,28 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
             log.debug(Inspector.inspectString(sched_cpu_mask, "sched_getaffinity pid=" + pid + ", cpusetsize=" + cpusetsize + ", mask=" + mask));
         }
         return ret;
+    }
+
+    /**
+     * Hex for sidecar: at most the first 64 bytes, with total length / truncation markers when longer.
+     */
+    private static String formatAffinityMaskHex(byte[] mask) {
+        if (mask == null) {
+            return "null";
+        }
+        int show = Math.min(mask.length, 64);
+        StringBuilder sb = new StringBuilder(show * 2 + 32);
+        for (int i = 0; i < show; i++) {
+            int b = mask[i] & 0xff;
+            if (b < 0x10) {
+                sb.append('0');
+            }
+            sb.append(Integer.toHexString(b));
+        }
+        if (mask.length > 64) {
+            sb.append(",maskBytes=").append(mask.length).append(",truncated=true");
+        }
+        return sb.toString();
     }
 
     private static final int EFD_SEMAPHORE = 1;
@@ -321,6 +743,8 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
     }
 
     private static final int ANDROID_PRIORITY_NORMAL = 0; /* most threads run at normal priority */
+    /** Linux {@code PRIO_PROCESS} ({@code sys/resource.h}). */
+    private static final int PRIO_PROCESS = 0;
 
     protected int getpriority(Emulator<AndroidFileIO> emulator) {
         RegisterContext context = emulator.getContext();
@@ -329,7 +753,138 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
         if (log.isDebugEnabled()) {
             log.debug("getpriority which={}, who={}", which, who);
         }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        if (config != null && config.isLinuxProcConfigured()
+                && which == PRIO_PROCESS
+                && (who == 0 || who == emulator.getPid())) {
+            TraceEnvironmentConfig.LinuxProcConfig proc = config.getLinuxProcConfig();
+            if (proc != null && proc.isNiceConfigured()) {
+                int nice = proc.getNice();
+                // Linux raw getpriority success is 20-nice (40..1 for nice -20..19).
+                // Bionic exported getpriority() converts back with 20-rawResult.
+                int rawResult = 20 - nice;
+                TraceEnvironmentEventSink.emit(emulator, "linux_proc", "getpriority",
+                        "field=nice,nice=" + nice + ",rawResult=" + rawResult
+                                + ",which=" + which + ",who=" + who,
+                        "json-config",
+                        "读取配置的进程 nice 值（原始系统调用编码 20-nice；Bionic exported getpriority 再转回用户态 nice）");
+                return rawResult;
+            }
+        }
         return ANDROID_PRIORITY_NORMAL;
+    }
+
+    /**
+     * ARM32 NR 116 / ARM64 NR 179 {@code sysinfo}. Missing {@code linux.sysinfo} keeps
+     * the historical all-zero struct and emits no sidecar. Configured values never come
+     * from the host or {@code /proc/meminfo}.
+     */
+    protected int sysinfo(Emulator<?> emulator) {
+        RegisterContext context = emulator.getContext();
+        Pointer info = context.getPointerArg(0);
+        if (log.isDebugEnabled()) {
+            log.debug("sysinfo info={}", info);
+        }
+        if (info == null) {
+            emulator.getMemory().setErrno(UnixEmulator.EFAULT);
+            return -1;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        TraceEnvironmentConfig.LinuxSysinfoConfig sys = (config != null
+                && config.isLinuxSysinfoConfigured()) ? config.getLinuxSysinfoConfig() : null;
+        if (sys != null && emulator.is32Bit() && !sys.fitsArm32NativeFields()) {
+            emulator.getMemory().setErrno(UnixEmulator.EINVAL);
+            return -1;
+        }
+        // Zero the native struct first so alignment holes (ARM64 pad→totalhigh) stay 0.
+        int structSize = emulator.is64Bit()
+                ? UnidbgStructure.calculateSize(SysInfo64.class)
+                : UnidbgStructure.calculateSize(SysInfo32.class);
+        info.write(0, new byte[structSize], 0, structSize);
+        if (emulator.is64Bit()) {
+            SysInfo64 packed = new SysInfo64(info);
+            if (sys != null) {
+                applySysinfo64(packed, sys);
+            }
+            packed.pack();
+        } else {
+            SysInfo32 packed = new SysInfo32(info);
+            if (sys != null) {
+                applySysinfo32(packed, sys);
+            }
+            packed.pack();
+        }
+        if (sys != null) {
+            long[] loads = sys.getLoads();
+            TraceEnvironmentEventSink.emit(emulator, "linux_sys", "sysinfo",
+                    "uptime=" + sys.getUptime()
+                            + ",loads=" + loads[0] + "/" + loads[1] + "/" + loads[2]
+                            + ",totalRam=" + sys.getTotalRam()
+                            + ",freeRam=" + sys.getFreeRam()
+                            + ",sharedRam=" + sys.getSharedRam()
+                            + ",bufferRam=" + sys.getBufferRam()
+                            + ",totalSwap=" + sys.getTotalSwap()
+                            + ",freeSwap=" + sys.getFreeSwap()
+                            + ",procs=" + sys.getProcs()
+                            + ",memUnit=" + sys.getMemUnit(),
+                    "json-config",
+                    "读取配置的 sysinfo");
+        }
+        return 0;
+    }
+
+    private static void applySysinfo32(SysInfo32 packed, TraceEnvironmentConfig.LinuxSysinfoConfig sys) {
+        if (!sys.fitsArm32NativeFields()) {
+            throw new IllegalStateException("linux.sysinfo exceeds ARM32 native field range");
+        }
+        long[] loads = sys.getLoads();
+        packed.uptime = toArm32Signed32(sys.getUptime());
+        packed.loads[0] = toArm32Unsigned32(loads[0]);
+        packed.loads[1] = toArm32Unsigned32(loads[1]);
+        packed.loads[2] = toArm32Unsigned32(loads[2]);
+        packed.totalRam = toArm32Unsigned32(sys.getTotalRam());
+        packed.freeRam = toArm32Unsigned32(sys.getFreeRam());
+        packed.sharedRam = toArm32Unsigned32(sys.getSharedRam());
+        packed.bufferRam = toArm32Unsigned32(sys.getBufferRam());
+        packed.totalSwap = toArm32Unsigned32(sys.getTotalSwap());
+        packed.freeSwap = toArm32Unsigned32(sys.getFreeSwap());
+        packed.procs = (short) sys.getProcs();
+        packed.pad = 0;
+        packed.totalHigh = 0;
+        packed.freeHigh = 0;
+        packed.mem_unit = toArm32Unsigned32(sys.getMemUnit());
+    }
+
+    private static void applySysinfo64(SysInfo64 packed, TraceEnvironmentConfig.LinuxSysinfoConfig sys) {
+        packed.uptime = sys.getUptime();
+        packed.loads = sys.getLoads();
+        packed.totalRam = sys.getTotalRam();
+        packed.freeRam = sys.getFreeRam();
+        packed.sharedRam = sys.getSharedRam();
+        packed.bufferRam = sys.getBufferRam();
+        packed.totalSwap = sys.getTotalSwap();
+        packed.freeSwap = sys.getFreeSwap();
+        packed.procs = (short) sys.getProcs();
+        packed.pad = 0;
+        packed.totalHigh = 0;
+        packed.freeHigh = 0;
+        packed.mem_unit = toArm32Unsigned32(sys.getMemUnit());
+    }
+
+    /** Exact signed 32-bit; rejects overflow instead of narrowing. */
+    private static int toArm32Signed32(long value) {
+        if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+            throw new IllegalStateException("linux.sysinfo value exceeds ARM32 signed 32-bit: " + value);
+        }
+        return (int) value;
+    }
+
+    /** Exact unsigned 32-bit bit pattern; rejects values outside {@code 0..4294967295}. */
+    private static int toArm32Unsigned32(long value) {
+        if (!TraceEnvironmentConfig.fitsArm32Unsigned32(value)) {
+            throw new IllegalStateException("linux.sysinfo value exceeds ARM32 unsigned 32-bit: " + value);
+        }
+        return (int) value;
     }
 
     protected int setpriority(Emulator<AndroidFileIO> emulator) {
@@ -581,6 +1136,9 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
             if (ret != 0) {
                 log.info("statfs64 buf={}, path={}, ret={}", buf, path, ret);
             } else {
+                // Overlay filesystem.statfs only after underlying FileIO.statfs succeeds.
+                // Config does not create missing paths; apply packs once and emits one sidecar.
+                ConfiguredFileStatFs.apply(emulator, path, statFS);
                 if (verbose) {
                     System.out.printf("File statfs '%s' from %s%n", result.io, emulator.getContext().getLRPointer());
                 }
@@ -594,6 +1152,40 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
             emulator.getMemory().setErrno(result.errno);
             return -1;
         }
+    }
+
+    /**
+     * FD {@code fstatfs}/{@code fstatfs64}: look up {@code fdMap}, then overlay
+     * {@code filesystem.statfs} using {@link AndroidFileIO#getPath()} after a successful
+     * {@link AndroidFileIO#statfs}. Config does not create missing fds and does not read the host.
+     * Null/empty virtual paths skip overlay and sidecar but still return the underlying result.
+     */
+    protected long fstatfs64(Emulator<AndroidFileIO> emulator, int fd, Pointer buf) {
+        AndroidFileIO io = fdMap.get(fd);
+        if (io == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("fstatfs64 fd={}, buf={}, errno=" + UnixEmulator.EBADF, fd, buf);
+            }
+            emulator.getMemory().setErrno(UnixEmulator.EBADF);
+            return -1;
+        }
+        StatFS statFS = emulator.is64Bit() ? new StatFS64(buf) : new StatFS32(buf);
+        int ret = io.statfs(statFS);
+        if (ret != 0) {
+            log.info("fstatfs64 fd={}, buf={}, ret={}", fd, buf, ret);
+        } else {
+            String path = io.getPath();
+            if (path != null && !path.isEmpty()) {
+                ConfiguredFileStatFs.apply(emulator, path, statFS, "fstatfs");
+            }
+            if (verbose) {
+                System.out.printf("File fstatfs '%s' from %s%n", io, emulator.getContext().getLRPointer());
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("fstatfs64 fd={}, buf={}", fd, buf);
+            }
+        }
+        return ret;
     }
 
     protected int pipe2(Emulator<?> emulator) {

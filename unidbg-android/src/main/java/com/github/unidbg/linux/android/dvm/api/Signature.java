@@ -13,6 +13,18 @@ public class Signature extends DvmObject<CertificateMeta> {
         super(vm.resolveClass("android/content/pm/Signature"), meta);
     }
 
+    /**
+     * Data-only Signature for configured {@code signaturesHex} (and similar) paths.
+     * Builds a {@link CertificateMeta} that only carries a defensive copy of {@code data};
+     * other certificate fields are null. Does not alter the {@link CertificateMeta}-based constructor.
+     */
+    public Signature(VM vm, byte[] data) {
+        super(vm.resolveClass("android/content/pm/Signature"),
+                new CertificateMeta(null, null, null, null,
+                        data == null ? new byte[0] : Arrays.copyOf(data, data.length),
+                        null, null));
+    }
+
     public int getHashCode() {
         return Arrays.hashCode(value.getData());
     }

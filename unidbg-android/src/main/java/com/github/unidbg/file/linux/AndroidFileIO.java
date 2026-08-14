@@ -11,6 +11,7 @@ public interface AndroidFileIO extends NewFileIO {
     int SIOCGIFCONF = 0x8912;		/* get iface list		*/
     int SIOCGIFFLAGS = 0x8913;		/* get flags			*/
     int SIOCGIFADDR = 0x8915;		/* get PA address		*/
+    int SIOCGIFMTU = 0x8921;		/* get MTU size			*/
     int SIOCGIFHWADDR = 0x8927;		/* get HW address		*/
 
     int fstat(Emulator<?> emulator, StatStructure stat);

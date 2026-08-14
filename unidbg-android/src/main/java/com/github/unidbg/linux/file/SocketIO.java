@@ -2,13 +2,16 @@ package com.github.unidbg.linux.file;
 
 import com.github.unidbg.Emulator;
 import com.github.unidbg.arm.backend.Backend;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.file.linux.AndroidFileIO;
 import com.github.unidbg.file.linux.BaseAndroidFileIO;
 import com.github.unidbg.file.linux.IOConstants;
 import com.github.unidbg.linux.struct.IFConf;
 import com.github.unidbg.linux.struct.IFReq;
 import com.github.unidbg.pointer.UnidbgPointer;
+import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import com.github.unidbg.unix.IO;
+import com.github.unidbg.unix.UnixEmulator;
 import com.github.unidbg.unix.struct.SockAddr;
 import com.sun.jna.Pointer;
 import org.slf4j.Logger;
@@ -82,6 +85,9 @@ public abstract class SocketIO extends BaseAndroidFileIO implements AndroidFileI
     public static short IFF_NOARP = 0x80; /* no ARP protocol		*/
     public static short IFF_MULTICAST = 0x1000;		/* Supports multicast		*/
 
+    private static final int ENODEV = 19;
+    private static final int IFREQ_HWADDR_BYTES = 32; /* IFNAMSIZ + sizeof(sockaddr) */
+
     protected SocketIO() {
         super(IOConstants.O_RDWR);
     }
@@ -100,10 +106,34 @@ public abstract class SocketIO extends BaseAndroidFileIO implements AndroidFileI
         if (request == SIOCGIFADDR) {
             return getIFaceAddr(emulator, argp);
         }
+        // HWADDR/MTU only for JSON-configured interfaces; otherwise keep historical super.ioctl behavior.
+        if (request == SIOCGIFHWADDR || request == SIOCGIFMTU) {
+            TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+            if (config != null && config.isNetworkInterfacesConfigured()) {
+                if (request == SIOCGIFHWADDR) {
+                    return getIFaceHwAddr(emulator, argp);
+                }
+                return getIFaceMtu(emulator, argp);
+            }
+        }
         return super.ioctl(emulator, request, argp);
     }
 
     protected List<NetworkIF> getNetworkIFs(Emulator<?> emulator) throws SocketException {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        // Key present (including empty array) => never fall back to host enumeration.
+        if (config != null && config.isNetworkInterfacesConfigured()) {
+            List<NetworkIF> configured = parseConfiguredNetworkIFs(config.getNetworkInterfaces());
+            if (log.isDebugEnabled()) {
+                log.debug("Return configured network ifs: {}", configured);
+            }
+            if (emulator.getSyscallHandler().isVerbose()) {
+                System.out.println(getClass().getSimpleName() + " return configured network ifs: " + configured
+                        + " from " + emulator.getContext().getLRPointer());
+            }
+            return configured;
+        }
+
         Enumeration<NetworkInterface> enumeration = NetworkInterface.getNetworkInterfaces();
         List<NetworkIF> list = new ArrayList<>();
         while (enumeration.hasMoreElements()) {
@@ -133,6 +163,50 @@ public abstract class SocketIO extends BaseAndroidFileIO implements AndroidFileI
         return list;
     }
 
+    /**
+     * Build NetworkIF list from validated {@link TraceEnvironmentConfig.NetworkInterfaceConfig} entries.
+     * Names are kept as configured (no host OS remapping). Conversion failures throw
+     * {@link IllegalStateException} (config was already parse-validated).
+     */
+    private static List<NetworkIF> parseConfiguredNetworkIFs(
+            List<TraceEnvironmentConfig.NetworkInterfaceConfig> interfaces) {
+        List<NetworkIF> configured = new ArrayList<>(interfaces.size());
+        for (TraceEnvironmentConfig.NetworkInterfaceConfig iface : interfaces) {
+            Inet4Address ipv4 = parseIpv4Literal(iface.getIpv4());
+            Inet4Address broadcast = null;
+            if (iface.getBroadcast() != null) {
+                broadcast = parseIpv4Literal(iface.getBroadcast());
+            }
+            int configuredFlags = iface.getFlags() == null ? -1 : iface.getFlags().intValue();
+            configured.add(new NetworkIF(iface.getIndex(), iface.getName(), ipv4, broadcast, configuredFlags, false,
+                    iface.getMac(), iface.getMtu()));
+        }
+        return configured;
+    }
+
+    /** No DNS: dotted-decimal to {@link Inet4Address} via raw bytes. */
+    private static Inet4Address parseIpv4Literal(String text) {
+        try {
+            String[] parts = text.split("\\.", -1);
+            if (parts.length != 4) {
+                throw new IllegalStateException("invalid configured IPv4: " + text);
+            }
+            byte[] bytes = new byte[4];
+            for (int i = 0; i < 4; i++) {
+                int v = Integer.parseInt(parts[i]);
+                if (v < 0 || v > 255) {
+                    throw new IllegalStateException("invalid configured IPv4: " + text);
+                }
+                bytes[i] = (byte) v;
+            }
+            return (Inet4Address) InetAddress.getByAddress(bytes);
+        } catch (IllegalStateException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IllegalStateException("invalid configured IPv4: " + text, e);
+        }
+    }
+
     private int getIFaceAddr(Emulator<?> emulator, long argp) {
         IFReq req = IFReq.createIFReq(emulator, UnidbgPointer.pointer(emulator, argp));
         req.unpack();
@@ -157,8 +231,92 @@ public abstract class SocketIO extends BaseAndroidFileIO implements AndroidFileI
         if (log.isDebugEnabled()) {
             log.debug("getIFaceAddr not found: {}", ifName);
         }
-        emulator.getMemory().setErrno(19); // ENODEV
+        emulator.getMemory().setErrno(ENODEV);
         return -1;
+    }
+
+    /**
+     * SIOCGIFHWADDR: take over only when the named JSON interface has both an explicit
+     * valid {@code mac} and explicit {@code hardwareType}. Never infers either field from
+     * name, flags, operState, or carrier, and never reads host {@code NetworkInterface}.
+     * Unknown name or a missing field keeps the existing ENODEV / EOPNOTSUPP behavior.
+     */
+    private int getIFaceHwAddr(Emulator<?> emulator, long argp) {
+        IFReq req = IFReq.createIFReq(emulator, UnidbgPointer.pointer(emulator, argp));
+        req.unpack();
+        String ifName = new String(req.ifrn_name).trim();
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        TraceEnvironmentConfig.NetworkInterfaceConfig selected = null;
+        if (config != null && config.isNetworkInterfacesConfigured()) {
+            for (TraceEnvironmentConfig.NetworkInterfaceConfig iface : config.getNetworkInterfaces()) {
+                if (ifName.equals(iface.getName())) {
+                    selected = iface;
+                    break;
+                }
+            }
+        }
+        if (selected == null) {
+            emulator.getMemory().setErrno(ENODEV);
+            return -1;
+        }
+        String mac = selected.getMac();
+        if (mac == null || !selected.isHardwareTypeConfigured() || selected.getHardwareType() == null) {
+            emulator.getMemory().setErrno(UnixEmulator.EOPNOTSUPP);
+            return -1;
+        }
+        short family = (short) selected.getHardwareType().intValue();
+        byte[] macBytes = parseMacBytes(mac);
+        Pointer union = req.getAddrPointer();
+        union.write(0, new byte[16], 0, 16);
+        union.setShort(0, family);
+        union.write(2, macBytes, 0, 6);
+        String value = "name=" + selected.getName() + ",format=ifreq-hwaddr,bytes=" + IFREQ_HWADDR_BYTES;
+        TraceEnvironmentEventSink.emit(emulator, "network_device",
+                "ioctl(SIOCGIFHWADDR)", value, "json-config",
+                "读取配置的网卡 ifreq 硬件地址");
+        return 0;
+    }
+
+    private int getIFaceMtu(Emulator<?> emulator, long argp) {
+        IFReq req = IFReq.createIFReq(emulator, UnidbgPointer.pointer(emulator, argp));
+        req.unpack();
+        String ifName = new String(req.ifrn_name).trim();
+        NetworkIF selected = findConfiguredNetworkIF(emulator, ifName);
+        if (selected == null) {
+            emulator.getMemory().setErrno(ENODEV);
+            return -1;
+        }
+        if (selected.mtu == null) {
+            emulator.getMemory().setErrno(UnixEmulator.EOPNOTSUPP);
+            return -1;
+        }
+        req.getAddrPointer().setInt(0, selected.mtu.intValue());
+        return 0;
+    }
+
+    private NetworkIF findConfiguredNetworkIF(Emulator<?> emulator, String ifName) {
+        try {
+            for (NetworkIF networkIF : getNetworkIFs(emulator)) {
+                if (ifName.equals(networkIF.ifName)) {
+                    return networkIF;
+                }
+            }
+            return null;
+        } catch (SocketException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static byte[] parseMacBytes(String mac) {
+        String[] parts = mac.split(":", -1);
+        if (parts.length != 6) {
+            throw new IllegalStateException("invalid configured MAC: " + mac);
+        }
+        byte[] bytes = new byte[6];
+        for (int i = 0; i < 6; i++) {
+            bytes[i] = (byte) Integer.parseInt(parts[i], 16);
+        }
+        return bytes;
     }
 
     private int getIFaceList(Emulator<?> emulator, long argp) {
@@ -216,6 +374,8 @@ public abstract class SocketIO extends BaseAndroidFileIO implements AndroidFileI
         int flags;
         if (selected == null) {
             flags = getFallbackInterfaceFlags(ifName);
+        } else if (selected.configuredFlags >= 0) {
+            flags = selected.configuredFlags;
         } else {
             flags = IFF_UP | IFF_RUNNING;
             if (selected.isLoopback()) {
