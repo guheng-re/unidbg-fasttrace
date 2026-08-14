@@ -2,6 +2,7 @@ package com.github.unidbg;
 
 import com.github.unidbg.arm.ARMEmulator;
 import com.github.unidbg.arm.backend.BackendFactory;
+import com.github.unidbg.env.DeviceFingerprintProfile;
 import com.github.unidbg.env.TraceEnvironmentConfig;
 
 import java.io.File;
@@ -31,6 +32,7 @@ public abstract class EmulatorBuilder<T extends ARMEmulator<?>> {
     }
 
     protected TraceEnvironmentConfig environmentConfig;
+    protected DeviceFingerprintProfile environmentProfile;
 
     public EmulatorBuilder<T> setEnvironmentConfig(TraceEnvironmentConfig environmentConfig) {
         this.environmentConfig = environmentConfig;
@@ -47,8 +49,34 @@ public abstract class EmulatorBuilder<T extends ARMEmulator<?>> {
         return this;
     }
 
+    public EmulatorBuilder<T> setEnvironmentProfile(File environmentProfileFile) {
+        if (environmentProfileFile == null) {
+            return this;
+        }
+        this.environmentProfile = DeviceFingerprintProfile.load(environmentProfileFile);
+        return this;
+    }
+
+    public EmulatorBuilder<T> setEnvironmentProfile(String environmentProfilePath) {
+        if (environmentProfilePath == null) {
+            return this;
+        }
+        return setEnvironmentProfile(new File(environmentProfilePath));
+    }
+
     protected TraceEnvironmentConfig resolveEnvironmentConfig() {
-        return environmentConfig != null ? environmentConfig : TraceEnvironmentConfig.fromSystemProperty();
+        if (environmentConfig != null) {
+            return environmentConfig;
+        }
+        if (environmentProfile != null) {
+            return environmentProfile.getEnvironmentConfig();
+        }
+        TraceEnvironmentConfig fromConfig = TraceEnvironmentConfig.fromSystemProperty();
+        if (fromConfig != null) {
+            return fromConfig;
+        }
+        DeviceFingerprintProfile profile = DeviceFingerprintProfile.fromSystemProperty();
+        return profile == null ? null : profile.getEnvironmentConfig();
     }
 
     protected final List<BackendFactory> backendFactories = new ArrayList<>(5);

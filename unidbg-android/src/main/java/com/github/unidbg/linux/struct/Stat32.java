@@ -22,20 +22,20 @@ public class Stat32 extends StatStructure {
 
     @Override
     public void setSt_atim(long st_atim, long tv_nsec) {
-        this.st_atim.tv_sec = (int) (st_atim / 1000L);
-        this.st_atim.tv_nsec = (int) ((st_atim % 1000) * 1000000L + (tv_nsec % 1000000L));
+        this.st_atim.tv_sec = (int) millisToSeconds(st_atim);
+        this.st_atim.tv_nsec = (int) millisToNanos(st_atim, tv_nsec);
     }
 
     @Override
     public void setSt_mtim(long st_mtim, long tv_nsec) {
-        this.st_mtim.tv_sec = (int) (st_mtim / 1000L);
-        this.st_mtim.tv_nsec = (int) ((st_mtim % 1000) * 1000000L + tv_nsec % 1000000L);
+        this.st_mtim.tv_sec = (int) millisToSeconds(st_mtim);
+        this.st_mtim.tv_nsec = (int) millisToNanos(st_mtim, tv_nsec);
     }
 
     @Override
     public void setSt_ctim(long st_ctim, long tv_nsec) {
-        this.st_ctim.tv_sec = (int) (st_ctim / 1000L);
-        this.st_ctim.tv_nsec = (int) ((st_ctim % 1000) * 1000000L + tv_nsec % 1000000L);
+        this.st_ctim.tv_sec = (int) millisToSeconds(st_ctim);
+        this.st_ctim.tv_nsec = (int) millisToNanos(st_ctim, tv_nsec);
     }
 
     @Override

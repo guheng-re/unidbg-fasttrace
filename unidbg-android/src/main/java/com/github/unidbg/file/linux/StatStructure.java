@@ -21,6 +21,24 @@ public abstract class StatStructure extends UnidbgStructure {
     public long st_blocks;
 
     /**
+     * Convert epoch milliseconds to {@code tv_sec} via {@link Math#floorDiv}(millis, 1000).
+     * Correct for negative millis (unlike truncating division).
+     */
+    protected static long millisToSeconds(long millis) {
+        return Math.floorDiv(millis, 1000L);
+    }
+
+    /**
+     * Convert epoch milliseconds plus an extra nanosecond adjustment to {@code tv_nsec}
+     * in {@code [0, 999_999_999]}, including for negative millis:
+     * {@code floorMod(millis, 1000) * 1_000_000 + floorMod(tvNsec, 1_000_000)}.
+     */
+    protected static long millisToNanos(long millis, long tvNsec) {
+        return Math.floorMod(millis, 1000L) * 1000000L
+                + Math.floorMod(tvNsec, 1000000L);
+    }
+
+    /**
      * @param st_atim millis
      */
     public abstract void setSt_atim(long st_atim, long tv_nsec);

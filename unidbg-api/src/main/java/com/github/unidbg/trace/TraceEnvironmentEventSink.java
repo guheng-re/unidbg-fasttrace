@@ -1,6 +1,7 @@
 package com.github.unidbg.trace;
 
 import com.github.unidbg.Emulator;
+import com.github.unidbg.env.TraceEnvironmentConfig;
 
 import java.util.Collections;
 import java.util.Map;
@@ -43,6 +44,12 @@ public interface TraceEnvironmentEventSink {
         TraceEnvironmentEventSink sink = current(emulator);
         if (sink == null) {
             return;
+        }
+        if ("json-config".equals(source)) {
+            TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+            if (config != null && config.isProfileLoaded()) {
+                source = "profile-json";
+            }
         }
         try {
             sink.emitEnvironmentEvent(kind, api, value, source, note);

@@ -10,6 +10,11 @@ import com.github.unidbg.file.linux.AndroidFileIO;
 import com.github.unidbg.file.linux.IOConstants;
 import com.github.unidbg.hook.HookListener;
 import com.github.unidbg.linux.android.ElfLibraryFile;
+import com.github.unidbg.linux.android.GetifaddrsHook;
+import com.github.unidbg.linux.android.SelinuxGetEnforceHook;
+import com.github.unidbg.linux.android.SelinuxGetconHook;
+import com.github.unidbg.linux.android.SelinuxIsEnabledHook;
+import com.github.unidbg.linux.android.SysconfHook;
 import com.github.unidbg.linux.android.SystemPropertyHook;
 import com.github.unidbg.linux.thread.PThreadInternal;
 import com.github.unidbg.memory.MemRegion;
@@ -68,18 +73,30 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
         if (environmentConfig != null && environmentConfig.hasAndroidProperties()) {
             addHookListener(new SystemPropertyHook(emulator));
         }
+        if (environmentConfig != null && environmentConfig.isLinuxCpuConfigured()) {
+            addHookListener(new SysconfHook(emulator));
+        }
+        if (environmentConfig != null && environmentConfig.isAndroidSecuritySignalsConfigured()) {
+            addHookListener(new SelinuxGetEnforceHook(emulator));
+            addHookListener(new SelinuxIsEnabledHook(emulator));
+        }
+        if (SelinuxGetconHook.shouldRegister(emulator)) {
+            addHookListener(new SelinuxGetconHook(emulator));
+        }
+        if (GetifaddrsHook.shouldRegister(emulator)) {
+            addHookListener(new GetifaddrsHook(emulator));
+        }
 
         // init stack
         stackSize = STACK_SIZE_OF_PAGE * emulator.getPageAlign();
         backend.mem_map(STACK_BASE - stackSize, stackSize, UnicornConst.UC_PROT_READ | UnicornConst.UC_PROT_WRITE);
 
         setStackPoint(STACK_BASE);
-        this.environ = initializeTLS(new String[] {
-                "ANDROID_DATA=/data",
-                "ANDROID_ROOT=/system",
-                "PATH=/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin",
-                "NO_ADDR_COMPAT_LAYOUT_FIXUP=1"
-        });
+        // Same effective list as /proc/self|pid/environ (configured or built-in defaults).
+        List<String> environList = environmentConfig != null
+                ? environmentConfig.getEffectiveLinuxEnviron()
+                : TraceEnvironmentConfig.LINUX_ENVIRON_BUILTIN_DEFAULTS;
+        this.environ = initializeTLS(environList.toArray(new String[environList.size()]));
         this.setErrno(0);
     }
 
@@ -122,17 +139,37 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
         final Pointer auxv = allocateStack(0x100);
         assert auxv != null;
         final int AT_RANDOM = 25; // AT_RANDOM is a pointer to 16 bytes of randomness on the stack.
+        final int AT_PAGESZ = 6;
+        final int AT_HWCAP = 16;
+        final int AT_PLATFORM = 15;
+        final int AT_HWCAP2 = 26;
+        final int AT_EXECFN = 31;
+        final int AT_NULL = 0;
         Pointer atRandom = __stack_chk_guard;
         byte[] atRandomBytes = environmentConfig == null ? null : environmentConfig.getRandomBytes("atRandomHex", 16);
         if (atRandomBytes != null) {
             atRandom = allocateStack(atRandomBytes.length);
             atRandom.write(0, atRandomBytes, 0, atRandomBytes.length);
         }
-        auxv.setPointer(0, UnidbgPointer.pointer(emulator, AT_RANDOM));
-        auxv.setPointer(emulator.getPointerSize(), atRandom);
-        final int AT_PAGESZ = 6;
-        auxv.setPointer(emulator.getPointerSize() * 2L, UnidbgPointer.pointer(emulator, AT_PAGESZ));
-        auxv.setPointer(emulator.getPointerSize() * 3L, UnidbgPointer.pointer(emulator, ARMEmulator.PAGE_ALIGN));
+        // Legacy layout when linux.auxv is absent: only AT_RANDOM + AT_PAGESZ; remaining zero memory is AT_NULL.
+        int auxvPairIndex = 0;
+        auxvPairIndex = writeAuxvPointerPair(auxv, auxvPairIndex, AT_RANDOM, atRandom);
+        auxvPairIndex = writeAuxvUnsignedPair(auxv, auxvPairIndex, AT_PAGESZ, ARMEmulator.PAGE_ALIGN);
+
+        if (environmentConfig != null && environmentConfig.isLinuxAuxvConfigured()) {
+            TraceEnvironmentConfig.LinuxAuxvConfig auxvConfig = environmentConfig.getLinuxAuxvConfig();
+            long hwcap = emulator.is32Bit() ? auxvConfig.getHwcap32() : auxvConfig.getHwcap64();
+            long hwcap2 = emulator.is32Bit() ? auxvConfig.getHwcap2_32() : auxvConfig.getHwcap2_64();
+            String platform = emulator.is32Bit() ? auxvConfig.getPlatform32() : auxvConfig.getPlatform64();
+            Pointer platformPtr = writeStackString(platform);
+            String execFn = auxvConfig.getExecFn();
+            Pointer execFnPtr = execFn != null ? writeStackString(execFn) : programName;
+            auxvPairIndex = writeAuxvUnsignedPair(auxv, auxvPairIndex, AT_HWCAP, hwcap);
+            auxvPairIndex = writeAuxvUnsignedPair(auxv, auxvPairIndex, AT_HWCAP2, hwcap2);
+            auxvPairIndex = writeAuxvPointerPair(auxv, auxvPairIndex, AT_PLATFORM, platformPtr);
+            auxvPairIndex = writeAuxvPointerPair(auxv, auxvPairIndex, AT_EXECFN, execFnPtr);
+            writeAuxvUnsignedPair(auxv, auxvPairIndex, AT_NULL, 0L);
+        }
 
         List<String> envList = new ArrayList<>();
         for (String env : envs) {
@@ -177,6 +214,39 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
             log.debug("initializeTLS tls={}, argv={}, auxv={}, thread={}, environ={}, sp=0x{}", tls, argv, auxv, thread, environ, Long.toHexString(getStackPoint()));
         }
         return argv.share(2L * emulator.getPointerSize(), 0);
+    }
+
+    /**
+     * Write one auxv (type, pointer value) pair at the given 0-based pair index.
+     *
+     * @return next pair index
+     */
+    private int writeAuxvPointerPair(Pointer auxvBase, int pairIndex, long type, Pointer value) {
+        int pointerSize = emulator.getPointerSize();
+        long base = (long) pairIndex * 2L * pointerSize;
+        auxvBase.setPointer(base, UnidbgPointer.pointer(emulator, type));
+        auxvBase.setPointer(base + pointerSize, value);
+        return pairIndex + 1;
+    }
+
+    /**
+     * Write one auxv (type, unsigned integer value) pair using the native pointer width.
+     * 32-bit path uses int stores so values in {@code 0..0xffffffff} are bit-preserving;
+     * 64-bit path uses long stores so {@link Long#MAX_VALUE} is representable.
+     *
+     * @return next pair index
+     */
+    private int writeAuxvUnsignedPair(Pointer auxvBase, int pairIndex, long type, long value) {
+        int pointerSize = emulator.getPointerSize();
+        long base = (long) pairIndex * 2L * pointerSize;
+        if (pointerSize == 4) {
+            auxvBase.setInt(base, (int) type);
+            auxvBase.setInt(base + 4, (int) value);
+        } else {
+            auxvBase.setLong(base, type);
+            auxvBase.setLong(base + 8, value);
+        }
+        return pairIndex + 1;
     }
 
     private final Map<String, LinuxModule> modules = new LinkedHashMap<>();

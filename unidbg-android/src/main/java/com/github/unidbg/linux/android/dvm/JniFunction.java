@@ -23,6 +23,20 @@ public abstract class JniFunction implements Jni {
     }
 
     @Override
+    public float callStaticFloatMethodV(BaseVM vm, DvmClass dvmClass, DvmMethod dvmMethod, VaList vaList) {
+        return callStaticFloatMethodV(vm, dvmClass, dvmMethod.getSignature(), vaList);
+    }
+
+    @Override
+    public float callStaticFloatMethodV(BaseVM vm, DvmClass dvmClass, String signature, VaList vaList) {
+        if (fallbackJni == null) {
+            throw new UnsupportedOperationException(signature);
+        } else {
+            return fallbackJni.callStaticFloatMethodV(vm, dvmClass, signature, vaList);
+        }
+    }
+
+    @Override
     public double callStaticDoubleMethod(BaseVM vm, DvmClass dvmClass, DvmMethod dvmMethod, VarArg varArg) {
         return callStaticDoubleMethod(vm, dvmClass, dvmMethod.getSignature(), varArg);
     }

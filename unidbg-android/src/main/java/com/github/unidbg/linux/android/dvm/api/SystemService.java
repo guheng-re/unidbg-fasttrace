@@ -20,7 +20,17 @@ public class SystemService extends DvmObject<String> {
     public static final String UI_MODE_SERVICE = "uimode";
     public static final String DISPLAY_SERVICE = "display";
     public static final String AUDIO_SERVICE = "audio";
-    
+    /** Context.BLUETOOTH_SERVICE value. */
+    public static final String BLUETOOTH_SERVICE = "bluetooth";
+    /** Context.CLIPBOARD_SERVICE value. */
+    public static final String CLIPBOARD_SERVICE = "clipboard";
+    /** Context.POWER_SERVICE value. */
+    public static final String POWER_SERVICE = "power";
+    /** Context.BATTERY_SERVICE value. */
+    public static final String BATTERY_SERVICE = "batterymanager";
+    /** Context.USER_SERVICE value. */
+    public static final String USER_SERVICE = "user";
+
     public SystemService(VM vm, String serviceName) {
         super(getObjectType(vm, serviceName), serviceName);
     }
@@ -53,6 +63,16 @@ public class SystemService extends DvmObject<String> {
                 return vm.resolveClass("android/hardware/display/DisplayManager");
             case AUDIO_SERVICE:
                 return vm.resolveClass("android/media/AudioManager");
+            case BLUETOOTH_SERVICE:
+                return vm.resolveClass("android/bluetooth/BluetoothManager");
+            case CLIPBOARD_SERVICE:
+                return vm.resolveClass("android/content/ClipboardManager");
+            case POWER_SERVICE:
+                return vm.resolveClass("android/os/PowerManager");
+            case BATTERY_SERVICE:
+                return vm.resolveClass("android/os/BatteryManager");
+            case USER_SERVICE:
+                return vm.resolveClass("android/os/UserManager");
             default:
                 throw new BackendException("service failed: " + serviceName);
         }

@@ -86,6 +86,18 @@ class ProxyJni extends JniFunction {
     }
 
     @Override
+    public float callStaticFloatMethodV(BaseVM vm, DvmClass dvmClass, DvmMethod dvmMethod, VaList vaList) {
+        try {
+            Class<?> clazz = classLoader.loadClass(dvmClass.getName());
+            ProxyCall proxyCall = ProxyUtils.findMethod(clazz, dvmMethod, vaList, true, visitor);
+            return (Float) proxyCall.call(vm, null);
+        } catch (ClassNotFoundException | IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchMethodException e) {
+            log.warn("callStaticFloatMethodV", e);
+        }
+        return super.callStaticFloatMethodV(vm, dvmClass, dvmMethod, vaList);
+    }
+
+    @Override
     public double callStaticDoubleMethod(BaseVM vm, DvmClass dvmClass, DvmMethod dvmMethod, VarArg varArg) {
         try {
             Class<?> clazz = classLoader.loadClass(dvmClass.getName());

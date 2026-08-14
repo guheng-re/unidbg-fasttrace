@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.DataOutput;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -430,6 +431,36 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
     protected int readlink(Emulator<?> emulator, String path, Pointer buf, int bufSize) {
         if (log.isDebugEnabled()) {
             log.debug("readlink path={}, buf={}, bufSize={}", path, buf, bufSize);
+        }
+        // filesystem.links config first (exact path; /proc/<pid>/ → /proc/self/ alias for lookup only)
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        if (config != null && config.isFilesystemLinksConfigured()) {
+            TraceEnvironmentConfig.FileSystemLinkConfig link = config.getFilesystemLinkExact(path);
+            if (link == null && path != null) {
+                String pidPrefix = "/proc/" + emulator.getPid() + "/";
+                if (path.startsWith(pidPrefix)) {
+                    String selfPath = "/proc/self/" + path.substring(pidPrefix.length());
+                    link = config.getFilesystemLinkExact(selfPath);
+                }
+            }
+            if (link != null) {
+                if (buf == null || bufSize <= 0) {
+                    emulator.getMemory().setErrno(UnixEmulator.EINVAL);
+                    return -1;
+                }
+                byte[] targetBytes = link.getTarget().getBytes(StandardCharsets.UTF_8);
+                int n = Math.min(bufSize, targetBytes.length);
+                if (n > 0) {
+                    buf.write(0, targetBytes, 0, n);
+                }
+                // do not append NUL (Linux readlink semantics)
+                TraceEnvironmentEventSink.emit(emulator, "filesystem_link",
+                        "readlink(\"" + path + "\")",
+                        "path=" + path + ",target=" + link.getTarget(),
+                        "json-config",
+                        "读取配置的符号链接 " + path);
+                return n;
+            }
         }
         if (path.startsWith("/proc/" + emulator.getPid() + "/fd/") || path.startsWith("/proc/self/fd/")) {
             try {
