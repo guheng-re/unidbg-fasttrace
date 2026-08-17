@@ -1931,7 +1931,7 @@ public class MachOLoader extends AbstractLoader<DarwinFileIO> implements Memory,
     }
 
     @Override
-    public int brk(long address) {
+    public long brk(long address) {
         throw new UnsupportedOperationException();
     }
 

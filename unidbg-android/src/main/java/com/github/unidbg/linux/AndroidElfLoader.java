@@ -91,10 +91,19 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
         }
 
         // init stack
+        long stackBase = emulator.is64Bit() ? com.github.unidbg.arm.AndroidArm64Addresses.STACK_BASE : STACK_BASE;
+        if (emulator.is64Bit()) {
+            this.initialMmapBase = com.github.unidbg.arm.AndroidArm64Addresses.MMAP_BASE;
+            setMMapBaseAddress(this.initialMmapBase);
+        }
         stackSize = STACK_SIZE_OF_PAGE * emulator.getPageAlign();
-        backend.mem_map(STACK_BASE - stackSize, stackSize, UnicornConst.UC_PROT_READ | UnicornConst.UC_PROT_WRITE);
+        try {
+            backend.mem_map(stackBase - stackSize, stackSize, UnicornConst.UC_PROT_READ | UnicornConst.UC_PROT_WRITE);
+        } catch (RuntimeException e) {
+            throw new IllegalStateException(com.github.unidbg.arm.AndroidArm64Addresses.unicornRequiredMessage(stackBase), e);
+        }
 
-        setStackPoint(STACK_BASE);
+        setStackPoint(stackBase);
         // Same effective list as /proc/self|pid/environ (configured or built-in defaults).
         List<String> environList = environmentConfig != null
                 ? environmentConfig.getEffectiveLinuxEnviron()
@@ -808,14 +817,18 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
         }
     }
 
-    private static final long HEAP_BASE = 0x8048000;
+    private static final long HEAP_BASE_32 = 0x8048000;
     private long brk;
 
+    private long heapBase() {
+        return emulator.is64Bit() ? com.github.unidbg.arm.AndroidArm64Addresses.HEAP_BASE : HEAP_BASE_32;
+    }
+
     @Override
-    public int brk(long address) {
+    public long brk(long address) {
         if (address == 0) {
-            this.brk = HEAP_BASE;
-            return (int) this.brk;
+            this.brk = heapBase();
+            return this.brk;
         }
 
         if (address % emulator.getPageAlign() != 0) {
@@ -836,7 +849,7 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
             this.brk = address;
         }
 
-        return (int) this.brk;
+        return this.brk;
     }
 
     private static final int MAP_FAILED = -1;

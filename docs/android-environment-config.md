@@ -4423,6 +4423,8 @@ Android 系统目录四路径子集（**可选** `rootDirectory` / `dataDirector
 
 ## 通用环境槽（模板，无个案内容）
 
+动态 `/proc/self/maps` 不是 JSON 模板：它按**真实已映射**区间生成。Android ARM64 使用固定 39-bit 用户态（无 ASLR）：heap `0x7010000000`、mmap/`.so` `0x7100000000`、stack 顶 `0x7fe0000000`、SVC `0x7fffe00000`、LR `0x7ffff00000`。格式与内核 `%08lx` 相同（`7100000000-…`）。默认 **Unicorn1** 可映射并关闭该布局。Windows 上 Unicorn2 的 `uc_close` 在 39-bit 映射后会崩溃，因此 Android64 的 Unicorn2 `destroy` 不调用 `nativeDestroy`。Dynarmic / KVM / Hypervisor 仍是 36-bit 页表，无法映射。32 位仍为 `0x8048000` / `0x12000000` / `0xe5000000`。`linux.files` 或画像 overlay 的精确 `/proc/self/maps` 仍优先于动态生成。
+
 下列节点均为**可填充模板**：缺键不接管，显式 `[]`/`{}` 是权威空快照。引擎不内置端口、厂商或采集器逻辑。
 
 | 节点 | 作用 |

@@ -459,7 +459,19 @@ public class Unicorn {
      * Java UnHooks are marked cancelled and dropped here; native hook_list is
      * released exclusively by nativeDestroy.
      */
+    public boolean isOpen() {
+        return nativeHandle != 0L;
+    }
+
     public synchronized void closeAll() throws UnicornException {
+        closeAll(true);
+    }
+
+    /**
+     * Windows unicorn.dll {@code uc_close} faults after 39-bit guest maps.
+     * Android ARM64 therefore abandons the engine without nativeDestroy.
+     */
+    public synchronized void closeAll(boolean destroyNative) throws UnicornException {
         long handle = nativeHandle;
         if (handle == 0L) {
             return;
@@ -469,7 +481,9 @@ public class Unicorn {
             unHook.markCancelled();
         }
         newHookList.clear();
-        nativeDestroy(handle);
+        if (destroyNative) {
+            nativeDestroy(handle);
+        }
     }
 
 }

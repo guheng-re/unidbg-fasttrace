@@ -42,11 +42,14 @@ public class MapsFileIO extends ByteArrayFileIO implements FileIO {
         for (MemRegion memRegion : list) {
             items.add(new MapItem(memRegion.virtualAddress, memRegion.end, memRegion.perms, 0, "b3:19", memRegion.getName()));
         }
-        long stackSize = (long) Memory.STACK_SIZE_OF_PAGE * emulator.getPageAlign();
-        items.add(new MapItem(Memory.STACK_BASE - stackSize, Memory.STACK_BASE, UnicornConst.UC_PROT_WRITE | UnicornConst.UC_PROT_READ, 0, "00:00", "[stack]"));
+        Memory memory = emulator.getMemory();
+        long stackTop = memory.getStackBase();
+        long mappedStackSize = memory.getStackSize();
+        items.add(new MapItem(stackTop - mappedStackSize, stackTop, UnicornConst.UC_PROT_WRITE | UnicornConst.UC_PROT_READ, 0, "00:00", "[stack]"));
 
+        String anonymousLabel = emulator.is64Bit() ? "" : "anonymous";
         List<MapItem> mapItems = new ArrayList<>();
-        for (MemoryMap memoryMap : emulator.getMemory().getMemoryMap()) {
+        for (MemoryMap memoryMap : memory.getMemoryMap()) {
             boolean contains = false;
             for (MapItem item : items) {
                 if (Math.max(memoryMap.base, item.start) <= Math.min(memoryMap.base + memoryMap.size, item.end)) {
@@ -55,7 +58,7 @@ public class MapsFileIO extends ByteArrayFileIO implements FileIO {
                 }
             }
             if (!contains) {
-                mapItems.add(new MapItem(memoryMap.base, memoryMap.base + memoryMap.size, memoryMap.prot, 0, "00:00", "anonymous"));
+                mapItems.add(new MapItem(memoryMap.base, memoryMap.base + memoryMap.size, memoryMap.prot, 0, "00:00", anonymousLabel));
             }
         }
         items.addAll(mapItems);

@@ -31,7 +31,7 @@ public interface Memory extends IO, Loader, StackMemory {
 
     long mmap2(long start, int length, int prot, int flags, int fd, int offset);
     int mprotect(long address, int length, int prot);
-    int brk(long address);
+    long brk(long address);
 
     /**
      * 分配内存

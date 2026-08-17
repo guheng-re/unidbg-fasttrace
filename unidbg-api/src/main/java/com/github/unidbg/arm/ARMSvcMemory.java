@@ -37,7 +37,14 @@ public class ARMSvcMemory implements SvcMemory {
         this.size = size;
 
         Backend backend = emulator.getBackend();
-        backend.mem_map(base, size, UnicornConst.UC_PROT_READ | UnicornConst.UC_PROT_EXEC);
+        try {
+            backend.mem_map(base, size, UnicornConst.UC_PROT_READ | UnicornConst.UC_PROT_EXEC);
+        } catch (RuntimeException e) {
+            if (base >= AndroidArm64Addresses.HEAP_BASE) {
+                throw new IllegalStateException(AndroidArm64Addresses.unicornRequiredMessage(base), e);
+            }
+            throw e;
+        }
     }
 
     @Override

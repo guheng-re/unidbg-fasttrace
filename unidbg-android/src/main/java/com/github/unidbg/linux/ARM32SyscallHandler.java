@@ -1925,7 +1925,7 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
         if (log.isDebugEnabled()) {
             log.debug("brk address=0x{}", Long.toHexString(address));
         }
-        return emulator.getMemory().brk(address);
+        return (int) emulator.getMemory().brk(address);
     }
 
     private int mprotect(Backend backend, Emulator<?> emulator) {

@@ -46,6 +46,7 @@ public abstract class AbstractLoader<T extends NewFileIO> implements Memory, Loa
 
     protected long sp;
     protected long mmapBaseAddress;
+    protected long initialMmapBase = MMAP_BASE;
     protected final Map<Long, MemoryMap> memoryMap = new TreeMap<>();
 
     protected Boolean[] threadStackMap = new Boolean[Memory.MAX_THREADS];
@@ -76,7 +77,7 @@ public abstract class AbstractLoader<T extends NewFileIO> implements Memory, Loa
         if(!threadStackMap[index]) {
             throw new UnsupportedOperationException("Your ThreadStackIndex doesn't exist, it must come from allocateThreadIndex(), index = " + index);
         }
-        long threadStackBase = Memory.STACK_BASE - (long) Memory.STACK_SIZE_OF_MAIN_PAGE * emulator.getPageAlign();
+        long threadStackBase = getStackBase() - (long) Memory.STACK_SIZE_OF_MAIN_PAGE * emulator.getPageAlign();
         long address = threadStackBase - (long) BaseTask.THREAD_STACK_PAGE * index * emulator.getPageAlign();
         if (log.isDebugEnabled()) {
             log.debug("allocateThreadStackAddress=0x{}", Long.toHexString(address));
@@ -230,7 +231,7 @@ public abstract class AbstractLoader<T extends NewFileIO> implements Memory, Loa
             log.debug("munmap aligned=0x{}, start=0x{}, base=0x{}, size={}", Long.toHexString(aligned), Long.toHexString(start), Long.toHexString(removed.base), removed.size);
         }
         if (memoryMap.isEmpty()) {
-            setMMapBaseAddress(MMAP_BASE);
+            setMMapBaseAddress(initialMmapBase);
         }
         return removed.prot;
     }
@@ -349,7 +350,7 @@ public abstract class AbstractLoader<T extends NewFileIO> implements Memory, Loa
     @Override
     public final UnidbgPointer allocateStack(int size) {
         long newAddr = sp - size;
-        long threadStackBase = Memory.STACK_BASE - (long) Memory.STACK_SIZE_OF_MAIN_PAGE * emulator.getPageAlign();
+        long threadStackBase = getStackBase() - (long) Memory.STACK_SIZE_OF_MAIN_PAGE * emulator.getPageAlign();
         if(newAddr <= threadStackBase){
             throw new IllegalStateException("Error! main thread stack point too large. sp=0x" + Long.toHexString(sp) + ", threadStackBase=0x" + Long.toHexString(threadStackBase));
         }

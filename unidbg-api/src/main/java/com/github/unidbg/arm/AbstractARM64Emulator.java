@@ -52,8 +52,10 @@ public abstract class AbstractARM64Emulator<T extends NewFileIO> extends Abstrac
     protected final Memory memory;
     private final UnixSyscallHandler<T> syscallHandler;
 
-    private static final long LR = 0x7ffff0000L;
+    private static final long IOS_LR = 0x7ffff0000L;
+    private static final long IOS_SVC_BASE = 0xfffe0000L;
 
+    private final long returnAddress;
     private final Dlfcn dlfcn;
 
     public AbstractARM64Emulator(String processName, File rootDir, Family family, Collection<BackendFactory> backendFactories, String... envs) {
@@ -61,7 +63,8 @@ public abstract class AbstractARM64Emulator<T extends NewFileIO> extends Abstrac
     }
 
     public AbstractARM64Emulator(String processName, File rootDir, Family family, Collection<BackendFactory> backendFactories, TraceEnvironmentConfig environmentConfig, String... envs) {
-        super(true, processName, 0xfffe0000L, 0x10000, rootDir, family, backendFactories, environmentConfig);
+        super(true, processName, svcBaseFor(family), 0x10000, rootDir, family, backendFactories, environmentConfig);
+        this.returnAddress = lrFor(family);
 
         backend.switchUserMode();
 
@@ -95,6 +98,14 @@ public abstract class AbstractARM64Emulator<T extends NewFileIO> extends Abstrac
         setupTraps();
     }
 
+    private static long svcBaseFor(Family family) {
+        return family == Family.Android64 ? AndroidArm64Addresses.SVC_BASE : IOS_SVC_BASE;
+    }
+
+    private static long lrFor(Family family) {
+        return family == Family.Android64 ? AndroidArm64Addresses.LR : IOS_LR;
+    }
+
     private Disassembler arm64DisassemblerCache;
     private final Map<Long, Instruction[]> disassembleCache = new HashMap<>();
 
@@ -108,14 +119,21 @@ public abstract class AbstractARM64Emulator<T extends NewFileIO> extends Abstrac
 
     protected void setupTraps() {
         int size = getPageAlign();
-        backend.mem_map(LR, size, UnicornConst.UC_PROT_READ | UnicornConst.UC_PROT_EXEC);
+        try {
+            backend.mem_map(returnAddress, size, UnicornConst.UC_PROT_READ | UnicornConst.UC_PROT_EXEC);
+        } catch (RuntimeException e) {
+            if (getFamily() == Family.Android64) {
+                throw new IllegalStateException(AndroidArm64Addresses.unicornRequiredMessage(returnAddress), e);
+            }
+            throw e;
+        }
         ByteBuffer buffer = ByteBuffer.allocate(size);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         int code = Arm64Svc.assembleSvc(0);
         for (int i = 0; i < size; i += 4) {
             buffer.putInt(code); // svc #0
         }
-        memory.pointer(LR).write(buffer.array());
+        memory.pointer(returnAddress).write(buffer.array());
     }
 
     @Override
@@ -264,12 +282,12 @@ public abstract class AbstractARM64Emulator<T extends NewFileIO> extends Abstrac
 
     @Override
     public Number eFunc(long begin, Number... arguments) {
-        return runMainForResult(new Function64(getPid(), begin, LR, isPaddingArgument(), arguments));
+        return runMainForResult(new Function64(getPid(), begin, returnAddress, isPaddingArgument(), arguments));
     }
 
     @Override
     public Number eEntry(long begin, long sp) {
-        return runMainForResult(new Entry(getPid(), begin, LR, sp));
+        return runMainForResult(new Entry(getPid(), begin, returnAddress, sp));
     }
 
     @Override
@@ -284,6 +302,6 @@ public abstract class AbstractARM64Emulator<T extends NewFileIO> extends Abstrac
 
     @Override
     public long getReturnAddress() {
-        return LR;
+        return returnAddress;
     }
 }

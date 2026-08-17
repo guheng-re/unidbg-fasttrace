@@ -1,6 +1,7 @@
 package com.github.unidbg.arm.backend;
 
 import com.github.unidbg.Emulator;
+import com.github.unidbg.Family;
 import com.github.unidbg.arm.backend.unicorn.Unicorn;
 import com.github.unidbg.debugger.BreakPoint;
 import com.github.unidbg.debugger.BreakPointCallback;
@@ -278,8 +279,13 @@ class Unicorn2Backend extends AbstractBackend implements Backend {
 
     @Override
     public void destroy() throws BackendException {
+        if (!unicorn.isOpen()) {
+            return;
+        }
         try {
-            unicorn.closeAll();
+            // Windows unicorn.dll uc_close / uc_mem_unmap fault after 39-bit maps.
+            boolean android64 = emulator.getFamily() == Family.Android64;
+            unicorn.closeAll(!android64);
         } catch (UnicornException e) {
             throw new BackendException(e);
         }
