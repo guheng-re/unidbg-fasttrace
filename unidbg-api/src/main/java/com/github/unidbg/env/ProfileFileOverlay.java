@@ -34,6 +34,35 @@ public final class ProfileFileOverlay {
      * {@code /proc/self/X} and {@code /proc/<configuredPid>/X} share the same overlay file
      * except {@code fd} which stays on the explicit fd configuration path.
      */
+    /**
+     * Child names of an overlay directory, or {@code null} when the path is not a directory
+     * in the overlay. Never follows host symlinks.
+     */
+    public String[] list(String pathname) {
+        String normalized = normalizeGuestPath(pathname);
+        if (normalized == null || isBlockedProcFd(normalized)
+                || overlayRoot == null || profileDir == null) {
+            return null;
+        }
+        Path overlayReal = resolveContainedDirectory(overlayRoot, profileDir);
+        if (overlayReal == null) {
+            return null;
+        }
+        List<String> candidates = new ArrayList<String>(2);
+        candidates.add(normalized);
+        String aliased = aliasProcSelf(normalized);
+        if (aliased != null && !aliased.equals(normalized) && !isBlockedProcFd(aliased)) {
+            candidates.add(aliased);
+        }
+        for (int i = 0; i < candidates.size(); i++) {
+            String[] names = listExact(overlayReal, candidates.get(i));
+            if (names != null) {
+                return names;
+            }
+        }
+        return null;
+    }
+
     public byte[] read(String pathname) {
         String normalized = normalizeGuestPath(pathname);
         if (normalized == null || isBlockedProcFd(normalized)
@@ -57,6 +86,43 @@ public final class ProfileFileOverlay {
             }
         }
         return null;
+    }
+
+    private String[] listExact(Path overlayReal, String guestPath) {
+        String relative = guestPath.startsWith("/") ? guestPath.substring(1) : guestPath;
+        if (relative.isEmpty()) {
+            return null;
+        }
+        Path current = overlayReal;
+        String[] parts = relative.split("/");
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            if (part.isEmpty() || !isSafePathComponent(part)) {
+                return null;
+            }
+            Path next = current.resolve(part).normalize();
+            if (!isInside(next, overlayReal)) {
+                return null;
+            }
+            if (Files.isSymbolicLink(next)) {
+                return null;
+            }
+            if (!Files.isDirectory(next, LinkOption.NOFOLLOW_LINKS)) {
+                return null;
+            }
+            current = next;
+        }
+        try {
+            File dir = current.toFile();
+            String[] names = dir.list();
+            if (names == null) {
+                return null;
+            }
+            java.util.Arrays.sort(names);
+            return names;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private byte[] readExact(Path overlayReal, String guestPath) {

@@ -230,16 +230,33 @@ public final class DeviceFingerprintProfile {
 
     private static void collectReserved(JSONObject root, Map<String, Object> reservedFields,
                                         List<String> reserved) {
-        snapshotReserved(root, "android.sensors.samples", reservedFields, reserved);
         snapshotReserved(root, "android.telephony.cellInfo", reservedFields, reserved);
-        snapshotReserved(root, "network.capabilities", reservedFields, reserved);
         snapshotReserved(root, "graphics.native", reservedFields, reserved);
+        if (isLegacyNetworkCapabilities(root)) {
+            snapshotReserved(root, "network.capabilities", reservedFields, reserved);
+        }
         if (root.containsKey("backendStatus")) {
             reservedFields.put("backendStatus", copyJson(root.get("backendStatus")));
             if (!reserved.contains("backendStatus")) {
                 reserved.add("backendStatus");
             }
         }
+    }
+
+    private static boolean isLegacyNetworkCapabilities(JSONObject root) {
+        if (root == null) {
+            return false;
+        }
+        JSONObject network = root.getJSONObject("network");
+        return network != null && isLegacyNetworkCapabilitiesObject(network.get("capabilities"));
+    }
+
+    private static boolean isLegacyNetworkCapabilitiesObject(Object raw) {
+        if (!(raw instanceof JSONObject)) {
+            return false;
+        }
+        JSONObject caps = (JSONObject) raw;
+        return !caps.containsKey("transportTypes") && !caps.containsKey("networkCapabilities");
     }
 
     private static void snapshotReserved(JSONObject root, String path,
@@ -297,17 +314,13 @@ public final class DeviceFingerprintProfile {
         converted.remove("backendStatus");
         JSONObject android = converted.getJSONObject("android");
         if (android != null) {
-            JSONObject sensors = android.getJSONObject("sensors");
-            if (sensors != null) {
-                sensors.remove("samples");
-            }
             JSONObject telephony = android.getJSONObject("telephony");
             if (telephony != null) {
                 telephony.remove("cellInfo");
             }
         }
         JSONObject network = converted.getJSONObject("network");
-        if (network != null) {
+        if (network != null && isLegacyNetworkCapabilitiesObject(network.get("capabilities"))) {
             network.remove("capabilities");
         }
         JSONObject graphics = converted.getJSONObject("graphics");

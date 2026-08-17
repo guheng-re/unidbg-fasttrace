@@ -40,7 +40,7 @@ AndroidEmulator emulator = AndroidEmulatorBuilder.for64Bit()
 
 `profiles/pixel6-analysis/` 第 1 批已集中填写签名算法高频稳定输入（`linux.uname`/`linux.cpu`/`linux.environ`/`linux.auxv`、补全的 `Build`/`ro.*`、`android.identifiers`/`settings.secure.android_id`、`android.packages.signaturesHex`、`android.runtime`、`android.features`、`android.configuration`、`filesystem.statfs`，以及 `files/proc/*` 与 `files/sys/*` 文本）。详见 `docs/device-fingerprint-quick-profile.md`「第 1 批」。不新增后端。
 
-加载器只把已实现字段转换成现有 `TraceEnvironmentConfig`，并挂上 `fileOverlayRoot` 只读覆盖（优先于 `linux.files`；省略该键时默认为画像目录下的 `files`）。仅从文件加载时才解析覆盖根；`DeviceFingerprintProfile.parse(json, null)` 不挂覆盖层。`schemaVersion` 必须是 `traceai-device-fingerprint/v1`，否则整份画像失败。guest 路径与 `fileOverlayRoot` **不**折叠 `//` / `.` / 尾 `/`。写/`O_RDWR` 为 `EACCES`，`O_DIRECTORY` 为 `ENOTDIR`，不回落 `linux.files` 或宿主机，也**不**发 sidecar；不跟随符号链接，不接管 `/proc/self|pid/fd/*`。`reserved` 字段（`android.sensors.samples`、`android.telephony.cellInfo`、`network.capabilities`、`graphics.native`、`backendStatus`）在转换时剥离并保留原文，不导致整份画像失败，也**不**接入当前后端；其它非法已实现字段仍走现有配置校验并失败。`android.tee.securityLevel` 的整数 `0/1/2` 转为 `SOFTWARE`/`TRUSTED_ENVIRONMENT`/`STRONGBOX`。同一 builder 上若同时调用，**显式** `setEnvironmentConfig(...)` 优先于 `setEnvironmentProfile(...)`；系统属性同样是 `-Dunidbg.env.config` 优先于 `-Dunidbg.env.profile`。画像命中 sidecar 的 source 为 `profile-json`（转换后的 JSON 字段和 `linux.files`）或 `profile-file`（覆盖层 `open/read`）。
+加载器只把已实现字段转换成现有 `TraceEnvironmentConfig`，并挂上 `fileOverlayRoot` 只读覆盖（优先于 `linux.files`；省略该键时默认为画像目录下的 `files`）。仅从文件加载时才解析覆盖根；`DeviceFingerprintProfile.parse(json, null)` 不挂覆盖层。`schemaVersion` 必须是 `traceai-device-fingerprint/v1`，否则整份画像失败。guest 路径与 `fileOverlayRoot` **不**折叠 `//` / `.` / 尾 `/`。写/`O_RDWR` 为 `EACCES`。覆盖层**文件**上的 `O_DIRECTORY` 为 `ENOTDIR`；覆盖层**目录**可 `getdents` 枚举。不回落宿主机，不跟随符号链接，不接管 `/proc/self|pid/fd/*`。`reserved` 字段现为 `android.telephony.cellInfo`、`graphics.native`、`backendStatus`，以及**旧形状** `network.capabilities`（仅 `internet`/`vpn` 等布尔、无 `transportTypes`）。`android.sensors.samples` 与新形状 `network.capabilities`（`transportTypes`/`networkCapabilities`）已转正，不再剥离。其它非法已实现字段仍走现有配置校验并失败。`android.tee.securityLevel` 的整数 `0/1/2` 转为 `SOFTWARE`/`TRUSTED_ENVIRONMENT`/`STRONGBOX`。同一 builder 上若同时调用，**显式** `setEnvironmentConfig(...)` 优先于 `setEnvironmentProfile(...)`；系统属性同样是 `-Dunidbg.env.config` 优先于 `-Dunidbg.env.profile`。画像命中 sidecar 的 source 为 `profile-json`（转换后的 JSON 字段和 `linux.files`）或 `profile-file`（覆盖层 `open/read`）。
 
 ## process
 
@@ -1615,7 +1615,7 @@ GPU / GLES / EGL 查询字符串 **v1 子集**（八字段：可选 **`vendor`**
 | `computeChargeTimeRemaining()J` | 节点存在 **且** `chargeTimeRemainingMillis` 键存在 | 返回固定 long（`-1` 或非负） | 键缺失 / 节点缺失：UOE 无事件 |
 | `isCharging()Z` | 节点存在 | 返回 `charging` | 节点缺失 UOE 无事件 |
 
-**已实现** propertyId `4` 与 **可选** `1`、`2`、`3`，**可选 long-only** `5`，**可选 int-only** `6`，以及 **可选** `computeChargeTimeRemaining` 固定标记。**不**支持其它 propertyId、health/plugged/voltage/temperature、`ACTION_BATTERY_CHANGED`、真实充电时间估算/状态机迁移。
+**已实现** propertyId `4` 与 **可选** `1`、`2`、`3`，**可选 long-only** `5`，**可选 int-only** `6`，以及 **可选** `computeChargeTimeRemaining` 固定标记。**另：** 可选 `plugged`（仅 `0`/`1`/`2`/`4`）在键存在时接管粘性 `registerReceiver(null, …)` 的 `Intent.getIntExtra("plugged"|"status"|"level")`。**不**支持其它 propertyId、health/voltage/temperature、真实充电时间估算/状态机迁移。
 
 ### Sidecar（旁路事件，仅命中时）
 
@@ -1638,8 +1638,8 @@ GPU / GLES / EGL 查询字符串 **v1 子集**（八字段：可选 **`vendor`**
 - `getLongProperty` 的 `propertyId=6`（status 仅 int）
 - `getIntProperty` / `getLongProperty` 的其它未列出 propertyId
 - 从 capacity/current/charging **实时估算**剩余充电时间（仅固定配置标记）
-- 电池 `health` / `plugged` / `voltage` / `temperature` 字段
-- `ACTION_BATTERY_CHANGED` 广播 extras、status 状态迁移
+- 电池 `health` / `voltage` / `temperature` 字段
+- 非粘性 `ACTION_BATTERY_CHANGED` 注册（仅 `registerReceiver(null)` + 已配置 `plugged`）、status 状态迁移
 - `/sys/class/power_supply/*` 自动生成（可用 `linux.files` 手工）
 
 ## android.cameras
@@ -4420,6 +4420,57 @@ Android 系统目录四路径子集（**可选** `rootDirectory` / `dataDirector
 | `LinkProperties.isPrivateDnsActive()` / `getPrivateDnsServerName()` / `getDomains()` | `privateDnsActive` / `privateDnsServerName` / `domains` |
 | `LinkProperties.getHttpProxy()` / `ProxyInfo.getHost()` / `getPort()` | `proxyHost` / `proxyHost` / `proxyPort` |
 | `WifiManager.getDhcpInfo()` / `DhcpInfo.ipAddress` / `gateway` / `dns1` / `netmask` | `wifi.ipv4` 等 DHCP 源（含 `netmaskIpv4`） / `wifi.ipv4` / `gatewayIpv4` / `dnsServers[0]` / `netmaskIpv4` |
+
+## 通用环境槽（模板，无个案内容）
+
+下列节点均为**可填充模板**：缺键不接管，显式 `[]`/`{}` 是权威空快照。引擎不内置端口、厂商或采集器逻辑。
+
+| 节点 | 作用 |
+| --- | --- |
+| `android.sensors` + NDK `ASensorManager_*` | 配置存在时自动注册 `libandroid.so`；`getSensorList`/`getDefaultSensor`/`ASensor_getName|Vendor|Type|Resolution` 读同一份 `types/names/vendors/resolutions` |
+| `android.sensors.samples` | type→float[]；`registerListener` 投递 `onSensorChanged`，`SensorEvent.values` 为配置浮点数组 |
+| `network.ipv6Addresses` + `getifaddrs` | 同名接口追加 `AF_INET6` 条目 |
+| `android.drm` + Java `MediaDrm.getPropertyByteArray("deviceUniqueId")` | 与 `AMediaDrm` 共用 `resolveMediaDrmDeviceUniqueId()` |
+| `network.tcp` / `network.tcp6` | 渲染 `/proc/net/tcp`、`/proc/net/tcp6` 及 self/pid 别名（内核表头；`[]` 仅表头） |
+| `network.capabilities` | `transportTypes` / `networkCapabilities`；`hasTransport`/`hasCapability`；可反射 `mTransportTypes`/`mNetworkCapabilities` long bitset |
+| `linux.processes` | `/proc` 目录枚举 + `/proc/<pid>/cmdline|comm|exe` |
+| `linux.commands` | 精确命令键 → `popen`/`system` stdout；不特化任何二进制名 |
+| `linux.mincore.resident` | 配置后 `mincore` 按页写 0/1 |
+| `filesystem.directories` 与画像目录 | `getdents` 枚举子名 |
+| `android.locale.languageTags` | `LocaleList.getDefault` / `Configuration.getLocales` |
+| `android.battery.plugged` | sticky `registerReceiver(null, …)` + `Intent.getIntExtra("plugged")`；取值仅 0/1/2/4 |
+| `android.displays[]` | `getDisplays`/`getDisplay(id)`；缺键时仍可用单屏 `android.display` |
+| `android.packages[].applicationFlags` | 显式 `ApplicationInfo.flags`；缺省仍可由 `systemApp` 投影 `FLAG_SYSTEM` |
+| `android.location.lastKnownLocations` | `requestLocationUpdates(... )V` 投递 `onLocationChanged`（匹配 provider 的最后位置） |
+| `android.accessibility.services` | 仅当 `Settings.Secure.enabled_accessibility_services` 省略时单向派生 |
+
+快捷画像：`android.sensors.samples` 已转正。旧形状 `network.capabilities`（仅 `internet`/`vpn` 等布尔、无 `transportTypes`）仍当 reserved 剥离。
+
+### 模板字段（填 JSON，引擎不内置个案内容）
+
+`network.tcp[]` / `network.tcp6[]`：键缺失不接管；显式 `[]` 仅内核表头。每条白名单：`slot`（数组内唯一）+ `localPort`/`remotePort`（0..65535）+ `stateHex`（两位十六进制，如 listen=`0A`）+ 可选 `txQueue`/`rxQueue`/`uid`/`timeout`/`inode`。IPv4 用 `localIpv4`/`remoteIpv4`（点分）；IPv6 用 `localIpv6`/`remoteIpv6`（恰好 32 位 hex）。地址**不**从 `interfaces`/routes 推导。路径：`/proc/net/tcp`、`/proc/self/net/tcp`、`/proc/<pid>/net/tcp`（`tcp6` 同理）。`linux.files` 优先。
+
+`linux.processes[]`：键缺失不接管；显式 `[]` 使 `/proc` 仅含 `self`。每条：`pid` + 可选 `cmdline[]`（NUL 拼接）/ `comm` / `exe`。**不**从 `process.pid` 推导。
+
+`linux.commands`：对象，键为 **精确** 命令字符串（如 `"uptime"`），值为 stdout 文本。`popen`/`system` 精确匹配才接管；引擎**不**按二进制名特化。缺键不接管。
+
+`linux.mincore`：仅允许 `resident` 布尔。键存在时 ARM32 NR 219 / ARM64 NR 232 按页写 `0`/`1`。
+
+`filesystem.directories`：路径 → 子名数组。`open` 后 `getdents` 枚举这些名字；不递归、不推断文件类型。
+
+`network.capabilities`：仅 `transportTypes[]` / `networkCapabilities[]`（精确非负 int）。`hasTransport`/`hasCapability` 与可反射 `mTransportTypes`/`mNetworkCapabilities` bitset。**不**从 wifi/links 推导。
+
+`android.locale.languageTags[]`：BCP 47 标签列表 → `LocaleList.getDefault` / `Configuration.getLocales` / `size`。
+
+`android.battery.plugged`：仅 `0`/`1`/`2`/`4`。键存在时粘性 `registerReceiver(null)` 返回 Intent，`getIntExtra("plugged")` 读该值；`status`/`level` 若已配置一并可读。
+
+`android.displays[]`：`id`/`name`/`flags`/`widthPixels`/`heightPixels`/`densityDpi`。键存在时 `getDisplays` 不再硬编码单屏。
+
+`android.packages[].applicationFlags`：显式 `ApplicationInfo.flags`；缺省仍可由 `systemApp` 投影 `FLAG_SYSTEM`。
+
+`android.sensors.samples`：type 十进制键 → float 数组。键存在时 `SensorManager.registerListener` 按 Sensor type 投递 `SensorEventListener.onSensorChanged`；`SensorEvent.values` 为该数组副本。
+
+`android.drm` + Java `MediaDrm.getPropertyByteArray("deviceUniqueId")` 与 native `AMediaDrm` 共用 `resolveMediaDrmDeviceUniqueId()`（`deviceUniqueIdHex` → `random.mediaDrmDeviceUniqueIdHex` → `marker` UTF-8）。
 
 ## 编译验证
 

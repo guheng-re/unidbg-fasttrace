@@ -85,6 +85,7 @@ public class AndroidARM64Emulator extends AbstractARM64Emulator<AndroidFileIO> i
             throw new IllegalStateException("vm is already created");
         }
         vm = createDalvikVMInternal(apkFile);
+        AndroidEnvironmentModules.registerConfigured(this, vm);
         return vm;
     }
 

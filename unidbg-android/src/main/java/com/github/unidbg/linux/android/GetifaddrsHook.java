@@ -24,15 +24,17 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Native Bionic {@code libc.so} {@code getifaddrs}/{@code freeifaddrs} backed only by
- * {@code TraceEnvironmentConfig.network.interfaces}.
+ * Native Bionic {@code libc.so} {@code getifaddrs}/{@code freeifaddrs} backed by
+ * {@code TraceEnvironmentConfig.network.interfaces} and, when present,
+ * {@code network.ipv6Addresses} on the same interface name.
  * <ul>
  *   <li>Node present (including {@code []}) — intercept; never enumerate host NICs</li>
  *   <li>Node absent — do not intercept (guest libc / netlink keeps the old path)</li>
  *   <li>IPv4, optional MAC ({@code AF_PACKET}), optional flags / broadcast / hardwareType</li>
+ *   <li>Optional {@code AF_INET6} from {@code network.ipv6Addresses} (same interface name)</li>
  *   <li>ARM32 {@code sizeof(ifaddrs)=28}; ARM64 {@code sizeof(ifaddrs)=56}</li>
  * </ul>
- * Does not emit IPv6, netmask, {@code ifa_data}, or netlink snapshots.
+ * Does not emit netmask, {@code ifa_data}, or netlink snapshots.
  */
 public class GetifaddrsHook implements HookListener {
 
@@ -44,10 +46,13 @@ public class GetifaddrsHook implements HookListener {
 
     /** Linux {@code AF_INET}. */
     public static final int AF_INET = 2;
+    /** Linux {@code AF_INET6}. */
+    public static final int AF_INET6 = 10;
     /** Linux {@code AF_PACKET} (not BSD {@code AF_LINK}). */
     public static final int AF_PACKET = 17;
 
     public static final int SOCKADDR_IN_SIZE = 16;
+    public static final int SOCKADDR_IN6_SIZE = 28;
     public static final int SOCKADDR_LL_SIZE = 20;
 
     private static final int IFADDRS_SIZE_32 = 28;
@@ -123,7 +128,7 @@ public class GetifaddrsHook implements HookListener {
         TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
         List<TraceEnvironmentConfig.NetworkInterfaceConfig> interfaces =
                 config.getNetworkInterfaces();
-        List<PlannedEntry> planned = planEntries(interfaces);
+        List<PlannedEntry> planned = planEntries(config, interfaces);
         if (planned.isEmpty()) {
             ifap.setPointer(0, null);
             emitGetifaddrsSidecar(emulator, 0, 0);
@@ -248,6 +253,7 @@ public class GetifaddrsHook implements HookListener {
     }
 
     private static List<PlannedEntry> planEntries(
+            TraceEnvironmentConfig config,
             List<TraceEnvironmentConfig.NetworkInterfaceConfig> interfaces) {
         List<PlannedEntry> planned = new ArrayList<PlannedEntry>();
         for (TraceEnvironmentConfig.NetworkInterfaceConfig iface : interfaces) {
@@ -261,6 +267,17 @@ public class GetifaddrsHook implements HookListener {
             planned.add(PlannedEntry.inet(iface.getName(), flags, iface.getIndex(),
                     parseIpv4Bytes(iface.getIpv4()),
                     iface.getBroadcast() == null ? null : parseIpv4Bytes(iface.getBroadcast())));
+            if (config != null && config.isNetworkIpv6AddressesConfigured()) {
+                List<TraceEnvironmentConfig.NetworkIpv6AddressConfig> ipv6 =
+                        config.getNetworkIpv6Addresses();
+                for (int i = 0; i < ipv6.size(); i++) {
+                    TraceEnvironmentConfig.NetworkIpv6AddressConfig addr = ipv6.get(i);
+                    if (iface.getName().equals(addr.getInterfaceName())) {
+                        planned.add(PlannedEntry.inet6(iface.getName(), flags, iface.getIndex(),
+                                parseIpv6Bytes(addr.getAddressHex()), iface.getIndex()));
+                    }
+                }
+            }
         }
         return planned;
     }
@@ -283,9 +300,15 @@ public class GetifaddrsHook implements HookListener {
         }
         int sockaddrBytes = 0;
         for (PlannedEntry entry : planned) {
-            sockaddrBytes += entry.packet ? SOCKADDR_LL_SIZE : SOCKADDR_IN_SIZE;
-            if (entry.broadcast != null) {
+            if (entry.packet) {
+                sockaddrBytes += SOCKADDR_LL_SIZE;
+            } else if (entry.ipv6 != null) {
+                sockaddrBytes += SOCKADDR_IN6_SIZE;
+            } else {
                 sockaddrBytes += SOCKADDR_IN_SIZE;
+                if (entry.broadcast != null) {
+                    sockaddrBytes += SOCKADDR_IN_SIZE;
+                }
             }
         }
 
@@ -334,6 +357,12 @@ public class GetifaddrsHook implements HookListener {
                 node.setPointer(offAddr, ll);
                 node.setPointer(offIfu, null);
                 sockCursor += SOCKADDR_LL_SIZE;
+            } else if (entry.ipv6 != null) {
+                UnidbgPointer in6 = base.share(sockCursor, SOCKADDR_IN6_SIZE);
+                writeSockaddrIn6(in6, entry.ipv6, entry.scopeId);
+                node.setPointer(offAddr, in6);
+                node.setPointer(offIfu, null);
+                sockCursor += SOCKADDR_IN6_SIZE;
             } else {
                 UnidbgPointer in = base.share(sockCursor, SOCKADDR_IN_SIZE);
                 writeSockaddrIn(in, entry.ipv4);
@@ -357,6 +386,14 @@ public class GetifaddrsHook implements HookListener {
         p.setShort(2, (short) 0);
         p.write(4, ipv4, 0, 4);
         p.write(8, new byte[8], 0, 8);
+    }
+
+    private static void writeSockaddrIn6(Pointer p, byte[] ipv6, int scopeId) {
+        p.setShort(0, (short) AF_INET6);
+        p.setShort(2, (short) 0);
+        p.setInt(4, 0);
+        p.write(8, ipv6, 0, 16);
+        p.setInt(24, scopeId);
     }
 
     private static void writeSockaddrLl(Pointer p, PlannedEntry entry) {
@@ -398,6 +435,22 @@ public class GetifaddrsHook implements HookListener {
         }
     }
 
+    static byte[] parseIpv6Bytes(String addressHex) {
+        if (addressHex == null || addressHex.length() != 32) {
+            throw new IllegalStateException("invalid configured IPv6 hex: " + addressHex);
+        }
+        byte[] bytes = new byte[16];
+        for (int i = 0; i < 16; i++) {
+            int high = Character.digit(addressHex.charAt(i * 2), 16);
+            int low = Character.digit(addressHex.charAt(i * 2 + 1), 16);
+            if (high < 0 || low < 0) {
+                throw new IllegalStateException("invalid configured IPv6 hex: " + addressHex);
+            }
+            bytes[i] = (byte) ((high << 4) | low);
+        }
+        return bytes;
+    }
+
     static byte[] parseMacBytes(String mac) {
         String[] parts = mac.split(":", -1);
         if (parts.length != 6) {
@@ -419,9 +472,12 @@ public class GetifaddrsHook implements HookListener {
         final Integer hardwareType;
         final byte[] ipv4;
         final byte[] broadcast;
+        final byte[] ipv6;
+        final int scopeId;
 
         private PlannedEntry(String name, int flags, int index, boolean packet,
-                             byte[] mac, Integer hardwareType, byte[] ipv4, byte[] broadcast) {
+                             byte[] mac, Integer hardwareType, byte[] ipv4, byte[] broadcast,
+                             byte[] ipv6, int scopeId) {
             this.name = name;
             this.flags = flags;
             this.index = index;
@@ -430,15 +486,21 @@ public class GetifaddrsHook implements HookListener {
             this.hardwareType = hardwareType;
             this.ipv4 = ipv4;
             this.broadcast = broadcast;
+            this.ipv6 = ipv6;
+            this.scopeId = scopeId;
         }
 
         static PlannedEntry packet(String name, int flags, int index, byte[] mac,
                                    Integer hardwareType) {
-            return new PlannedEntry(name, flags, index, true, mac, hardwareType, null, null);
+            return new PlannedEntry(name, flags, index, true, mac, hardwareType, null, null, null, 0);
         }
 
         static PlannedEntry inet(String name, int flags, int index, byte[] ipv4, byte[] broadcast) {
-            return new PlannedEntry(name, flags, index, false, null, null, ipv4, broadcast);
+            return new PlannedEntry(name, flags, index, false, null, null, ipv4, broadcast, null, 0);
+        }
+
+        static PlannedEntry inet6(String name, int flags, int index, byte[] ipv6, int scopeId) {
+            return new PlannedEntry(name, flags, index, false, null, null, null, null, ipv6, scopeId);
         }
     }
 }

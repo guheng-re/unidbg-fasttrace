@@ -14,6 +14,7 @@ import com.github.unidbg.linux.android.dvm.api.SystemService;
 import com.github.unidbg.linux.android.dvm.array.ArrayObject;
 import com.github.unidbg.linux.android.dvm.array.ByteArray;
 import com.github.unidbg.linux.android.dvm.array.CharArray;
+import com.github.unidbg.linux.android.dvm.array.FloatArray;
 import com.github.unidbg.linux.android.dvm.jni.ProxyDvmObject;
 import com.github.unidbg.linux.android.dvm.wrapper.DvmBoolean;
 import com.github.unidbg.linux.android.dvm.wrapper.DvmInteger;
@@ -187,6 +188,10 @@ public abstract class AbstractJni implements Jni {
                 tryAndroidConfigurationLocaleField(vm, dvmObject, signature);
         if (configurationLocaleField.handled) {
             return configurationLocaleField.value;
+        }
+        DvmObject<?> sensorEventValues = tryAndroidSensorEventValues(vm, dvmObject, signature);
+        if (sensorEventValues != null) {
+            return sensorEventValues;
         }
         if (isConfiguredPackageInfo(dvmObject)
                 && signature != null
@@ -788,6 +793,10 @@ public abstract class AbstractJni implements Jni {
         if (linkResult.handled) {
             return linkResult.value;
         }
+        DvmObject<?> envObject = tryGenericEnvironmentObject(vm, dvmObject, signature, vaList);
+        if (envObject != null) {
+            return envObject;
+        }
         AndroidPackageObjectResult packageResult = tryAndroidPackageGetPackageInfo(vm, signature, vaList);
         if (packageResult.handled) {
             return packageResult.value;
@@ -1292,6 +1301,10 @@ public abstract class AbstractJni implements Jni {
         if (localeStaticResult.handled) {
             return localeStaticResult.value;
         }
+        DvmObject<?> localeList = tryAndroidLocaleListObject(vm, null, signature, varArg);
+        if (localeList != null) {
+            return localeList;
+        }
         AndroidAdvertisingIdObjectResult advertisingIdStaticResult =
                 tryAndroidAdvertisingIdStaticObject(vm, signature);
         if (advertisingIdStaticResult.handled) {
@@ -1390,6 +1403,10 @@ public abstract class AbstractJni implements Jni {
         AndroidLocaleObjectResult localeStaticResult = tryAndroidLocaleStaticObject(vm, dvmClass, signature);
         if (localeStaticResult.handled) {
             return localeStaticResult.value;
+        }
+        DvmObject<?> localeListV = tryAndroidLocaleListObject(vm, null, signature, vaList);
+        if (localeListV != null) {
+            return localeListV;
         }
         AndroidAdvertisingIdObjectResult advertisingIdStaticResult =
                 tryAndroidAdvertisingIdStaticObject(vm, signature);
@@ -1569,6 +1586,14 @@ public abstract class AbstractJni implements Jni {
     @Override
     public int callIntMethodV(BaseVM vm, DvmObject<?> dvmObject, String signature, VaList vaList) {
         log.info("callIntMethodV [Unidbg]: {}", signature);
+        Integer localeSizeV = tryAndroidLocaleListInt(vm, dvmObject, signature);
+        if (localeSizeV != null) {
+            return localeSizeV.intValue();
+        }
+        Integer batteryExtraV = tryAndroidBatteryIntentInt(vm, dvmObject, signature, vaList);
+        if (batteryExtraV != null) {
+            return batteryExtraV.intValue();
+        }
         AndroidTelephonyIntResult telephonyResult = tryAndroidTelephonyInt(vm, signature, vaList);
         if (telephonyResult.handled) {
             return telephonyResult.value;
@@ -1767,6 +1792,14 @@ public abstract class AbstractJni implements Jni {
         if (sensorBoolResult.handled) {
             return sensorBoolResult.value;
         }
+        Boolean sensorRegister = tryAndroidSensorRegisterListener(vm, dvmObject, signature, varArg);
+        if (sensorRegister != null) {
+            return sensorRegister.booleanValue();
+        }
+        Boolean capsBool = tryNetworkCapabilitiesBoolean(vm, dvmObject, signature, varArg);
+        if (capsBool != null) {
+            return capsBool.booleanValue();
+        }
         AndroidWifiBooleanResult wifiResult = tryAndroidWifiBoolean(vm, signature);
         if (wifiResult.handled) {
             return wifiResult.value;
@@ -1884,6 +1917,14 @@ public abstract class AbstractJni implements Jni {
                 tryAndroidSensorBoolean(vm, dvmObject, signature, vaList);
         if (sensorBoolResult.handled) {
             return sensorBoolResult.value;
+        }
+        Boolean sensorRegisterV = tryAndroidSensorRegisterListener(vm, dvmObject, signature, vaList);
+        if (sensorRegisterV != null) {
+            return sensorRegisterV.booleanValue();
+        }
+        Boolean capsBoolV = tryNetworkCapabilitiesBoolean(vm, dvmObject, signature, vaList);
+        if (capsBoolV != null) {
+            return capsBoolV.booleanValue();
         }
         AndroidWifiBooleanResult wifiResult = tryAndroidWifiBoolean(vm, signature);
         if (wifiResult.handled) {
@@ -2105,6 +2146,10 @@ public abstract class AbstractJni implements Jni {
         if (packageField.handled) {
             return packageField.value;
         }
+        Long capsLong = tryNetworkCapabilitiesLongField(vm, dvmObject, signature);
+        if (capsLong != null) {
+            return capsLong.longValue();
+        }
         if (isConfiguredPackageInfo(dvmObject)
                 && signature != null
                 && signature.startsWith("android/content/pm/PackageInfo->")
@@ -2261,6 +2306,10 @@ public abstract class AbstractJni implements Jni {
     @Override
     public DvmObject<?> newObject(BaseVM vm, DvmClass dvmClass, String signature, VarArg varArg) {
         log.info("newObject [Unidbg]: {}", signature);
+        DvmObject<?> mediaDrm = tryAndroidMediaDrmNew(vm, signature);
+        if (mediaDrm != null) {
+            return mediaDrm;
+        }
         switch (signature) {
             case "java/lang/String-><init>([B)V": {
                 ByteArray array = varArg.getObjectArg(0);
@@ -2510,6 +2559,10 @@ public abstract class AbstractJni implements Jni {
         AndroidNetworkLinkObjectResult linkResult = tryAndroidNetworkLinkObject(vm, dvmObject, signature);
         if (linkResult.handled) {
             return linkResult.value;
+        }
+        DvmObject<?> envObject = tryGenericEnvironmentObject(vm, dvmObject, signature, varArg);
+        if (envObject != null) {
+            return envObject;
         }
         AndroidPackageObjectResult packageResult = tryAndroidPackageGetPackageInfo(vm, signature, varArg);
         if (packageResult.handled) {
@@ -2806,6 +2859,14 @@ public abstract class AbstractJni implements Jni {
     @Override
     public int callIntMethod(BaseVM vm, DvmObject<?> dvmObject, String signature, VarArg varArg) {
         log.info("callIntMethod [Unidbg]: {}", signature);
+        Integer localeSize = tryAndroidLocaleListInt(vm, dvmObject, signature);
+        if (localeSize != null) {
+            return localeSize.intValue();
+        }
+        Integer batteryExtra = tryAndroidBatteryIntentInt(vm, dvmObject, signature, varArg);
+        if (batteryExtra != null) {
+            return batteryExtra.intValue();
+        }
         AndroidTelephonyIntResult telephonyResult = tryAndroidTelephonyInt(vm, signature, varArg);
         if (telephonyResult.handled) {
             return telephonyResult.value;
@@ -2956,6 +3017,12 @@ public abstract class AbstractJni implements Jni {
         if (displayVoid.handled) {
             return;
         }
+        if (tryAndroidLocationRequestUpdates(vm, dvmObject, signature, varArg)) {
+            return;
+        }
+        if (tryConfiguredListenerVoid(vm, dvmObject, signature, varArg)) {
+            return;
+        }
         switch (signature) {
             case "java/util/zip/GZIPOutputStream->write([B)V":
                 log.info("[*] 监控到 GZIP 压缩流写入数据 - 这是压缩前的原始数据");
@@ -2999,6 +3066,12 @@ public abstract class AbstractJni implements Jni {
         log.info("callVoidMethodV [Unidbg]: {}", signature);
         AndroidDisplayVoidResult displayVoid = tryAndroidDisplayVoidMethod(vm, dvmObject, signature, vaList);
         if (displayVoid.handled) {
+            return;
+        }
+        if (tryAndroidLocationRequestUpdates(vm, dvmObject, signature, vaList)) {
+            return;
+        }
+        if (tryConfiguredListenerVoid(vm, dvmObject, signature, vaList)) {
             return;
         }
         switch (signature) {
@@ -3444,6 +3517,19 @@ public abstract class AbstractJni implements Jni {
         }
         String key = ((StringObject) keyArg).getValue();
         TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config != null && "secure".equals(namespace)
+                && "enabled_accessibility_services".equals(key)
+                && !config.isAndroidSettingConfigured(namespace, key)
+                && config.isAndroidAccessibilityConfigured()) {
+            String derived = deriveEnabledAccessibilityServices(config);
+            if (derived != null) {
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_setting",
+                        "Settings.secure.getString",
+                        "key=enabled_accessibility_services,derived=true,length=" + derived.length(),
+                        "json-config", "由无障碍服务列表派生设置串");
+                return AndroidSettingsGetStringResult.of(new StringObject(vm, derived));
+            }
+        }
         if (config == null || !config.isAndroidSettingConfigured(namespace, key)) {
             return AndroidSettingsGetStringResult.notHandled();
         }
@@ -7066,7 +7152,8 @@ public abstract class AbstractJni implements Jni {
      * </ul>
      * Missing node / plain / foreign / stale marker / listed type without name, vendor or
      * string type / plain SensorManager / other SystemService is notHandled (UOE path, no event).
-     * 不实现动态发现回调 / registerListener / 采样值。{@code Sensor.getVersion} /
+     * {@code registerListener} 在 {@code android.sensors.samples} 存在时接管：按 Sensor type
+     * 投递 {@code SensorEvent.values} 到 {@code onSensorChanged}。动态发现回调仍未实现。{@code Sensor.getVersion} /
      * {@code Sensor.getMinDelay} / {@code Sensor.getMaxDelay} /
      * {@code Sensor.getFifoReservedEventCount} / {@code Sensor.getFifoMaxEventCount}
      * 见 {@link #tryAndroidSensorInt}。
@@ -13583,6 +13670,14 @@ public abstract class AbstractJni implements Jni {
                 return AndroidPackageIntFieldResult.of(value);
             }
             if ("android/content/pm/ApplicationInfo->flags:I".equals(signature)) {
+                if (pkg.isApplicationFlagsConfigured()) {
+                    int value = pkg.getApplicationFlags().intValue();
+                    TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_package",
+                            "ApplicationInfo.flags",
+                            "package=" + pkg.getPackageName() + ",value=" + value,
+                            "json-config", "读取配置的 applicationFlags");
+                    return AndroidPackageIntFieldResult.of(value);
+                }
                 if (!pkg.isSystemAppConfigured()) {
                     return AndroidPackageIntFieldResult.notHandled();
                 }
@@ -14605,5 +14700,610 @@ public abstract class AbstractJni implements Jni {
     @Override
     public boolean acceptField(DvmClass dvmClass, String signature, boolean isStatic) {
         return true;
+    }
+
+    private static final class ConfiguredMediaDrm {
+        final BaseVM owner;
+        final TraceEnvironmentConfig config;
+
+        ConfiguredMediaDrm(BaseVM owner, TraceEnvironmentConfig config) {
+            this.owner = owner;
+            this.config = config;
+        }
+    }
+
+    private static final class ConfiguredNetworkCapabilities {
+        final BaseVM owner;
+        final TraceEnvironmentConfig.NetworkCapabilitiesConfig capabilities;
+
+        ConfiguredNetworkCapabilities(BaseVM owner,
+                                      TraceEnvironmentConfig.NetworkCapabilitiesConfig capabilities) {
+            this.owner = owner;
+            this.capabilities = capabilities;
+        }
+    }
+
+    private static final class ConfiguredLocaleList {
+        final BaseVM owner;
+        final List<String> tags;
+
+        ConfiguredLocaleList(BaseVM owner, List<String> tags) {
+            this.owner = owner;
+            this.tags = tags;
+        }
+    }
+
+    private static final class ConfiguredBatteryIntent {
+        final BaseVM owner;
+        final TraceEnvironmentConfig.AndroidBatteryConfig battery;
+
+        ConfiguredBatteryIntent(BaseVM owner, TraceEnvironmentConfig.AndroidBatteryConfig battery) {
+            this.owner = owner;
+            this.battery = battery;
+        }
+    }
+
+    private static final class ConfiguredDisplayEntry {
+        final BaseVM owner;
+        final TraceEnvironmentConfig.AndroidDisplayEntryConfig entry;
+
+        ConfiguredDisplayEntry(BaseVM owner, TraceEnvironmentConfig.AndroidDisplayEntryConfig entry) {
+            this.owner = owner;
+            this.entry = entry;
+        }
+    }
+
+    private static String deriveEnabledAccessibilityServices(TraceEnvironmentConfig config) {
+        TraceEnvironmentConfig.AndroidAccessibilityConfig accessibility =
+                config.getAndroidAccessibilityConfig();
+        if (accessibility == null || !accessibility.isServicesConfigured()) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        List<TraceEnvironmentConfig.AndroidAccessibilityServiceConfig> services =
+                accessibility.getServices();
+        for (int i = 0; i < services.size(); i++) {
+            TraceEnvironmentConfig.AndroidAccessibilityServiceConfig service = services.get(i);
+            if (!service.isEnabled()) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append(':');
+            }
+            sb.append(service.getId());
+        }
+        return sb.toString();
+    }
+
+    private static DvmObject<?> tryGenericEnvironmentObject(BaseVM vm, DvmObject<?> dvmObject,
+                                                            String signature, VarArg args) {
+        DvmObject<?> mediaDrm = tryAndroidMediaDrmObject(vm, dvmObject, signature, args);
+        if (mediaDrm != null || handledMediaDrm(signature)) {
+            return mediaDrm;
+        }
+        DvmObject<?> capabilities = tryNetworkCapabilitiesObject(vm, dvmObject, signature);
+        if (capabilities != null || handledCapabilitiesObject(signature)) {
+            return capabilities;
+        }
+        DvmObject<?> locales = tryAndroidLocaleListObject(vm, dvmObject, signature, args);
+        if (locales != null || handledLocaleList(signature)) {
+            return locales;
+        }
+        DvmObject<?> battery = tryAndroidBatteryIntentObject(vm, dvmObject, signature, args);
+        if (battery != null || handledBatteryIntent(signature)) {
+            return battery;
+        }
+        DvmObject<?> displays = tryAndroidDisplaysObject(vm, dvmObject, signature, args);
+        if (displays != null) {
+            return displays;
+        }
+        return null;
+    }
+
+    private static boolean handledMediaDrm(String signature) {
+        return signature != null && signature.startsWith("android/media/MediaDrm->")
+                && (signature.contains("getPropertyByteArray") || signature.contains("getPropertyString"));
+    }
+
+    private static boolean handledCapabilitiesObject(String signature) {
+        return "android/net/ConnectivityManager->getNetworkCapabilities(Landroid/net/Network;)Landroid/net/NetworkCapabilities;"
+                .equals(signature);
+    }
+
+    private static boolean handledLocaleList(String signature) {
+        return signature != null && (signature.contains("LocaleList") || signature.contains("getLocales"));
+    }
+
+    private static boolean handledBatteryIntent(String signature) {
+        return signature != null && signature.contains("registerReceiver");
+    }
+
+    private static DvmObject<?> tryAndroidMediaDrmObject(BaseVM vm, DvmObject<?> dvmObject,
+                                                         String signature, VarArg args) {
+        if ("android/media/MediaDrm->getPropertyByteArray(Ljava/lang/String;)[B".equals(signature)) {
+            if (!(dvmObject.getValue() instanceof ConfiguredMediaDrm)) {
+                return null;
+            }
+            ConfiguredMediaDrm marker = (ConfiguredMediaDrm) dvmObject.getValue();
+            if (marker.owner != vm || marker.config != TraceEnvironmentConfig.get(vm.getEmulator())) {
+                return null;
+            }
+            DvmObject<?> nameArg = args.getObjectArg(0);
+            if (!(nameArg instanceof StringObject)
+                    || !"deviceUniqueId".equals(((StringObject) nameArg).getValue())) {
+                throw new UnsupportedOperationException(signature);
+            }
+            byte[] bytes = marker.config.resolveMediaDrmDeviceUniqueId();
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "drm",
+                    "MediaDrm.getPropertyByteArray",
+                    "property=deviceUniqueId,bytes=" + (bytes == null ? 0 : bytes.length),
+                    "json-config", "读取配置的 Java MediaDrm deviceUniqueId");
+            return new ByteArray(vm, bytes == null ? new byte[0] : bytes);
+        }
+        if ("android/media/MediaDrm->getPropertyString(Ljava/lang/String;)Ljava/lang/String;".equals(signature)) {
+            if (!(dvmObject.getValue() instanceof ConfiguredMediaDrm)) {
+                return null;
+            }
+            throw new UnsupportedOperationException(signature);
+        }
+        return null;
+    }
+
+    private static DvmObject<?> tryAndroidMediaDrmNew(BaseVM vm, String signature) {
+        if (!"android/media/MediaDrm-><init>(Ljava/util/UUID;)V".equals(signature)) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidDrmConfigured()) {
+            return null;
+        }
+        return vm.resolveClass("android/media/MediaDrm")
+                .newObject(new ConfiguredMediaDrm(vm, config));
+    }
+
+    private static DvmObject<?> tryNetworkCapabilitiesObject(BaseVM vm, DvmObject<?> dvmObject,
+                                                             String signature) {
+        if (!"android/net/ConnectivityManager->getNetworkCapabilities(Landroid/net/Network;)Landroid/net/NetworkCapabilities;"
+                .equals(signature)) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isNetworkCapabilitiesConfigured()) {
+            return null;
+        }
+        DvmObject<?> caps = vm.resolveClass("android/net/NetworkCapabilities")
+                .newObject(new ConfiguredNetworkCapabilities(vm, config.getNetworkCapabilitiesConfig()));
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "network_link",
+                "ConnectivityManager.getNetworkCapabilities",
+                "NetworkCapabilities",
+                "json-config", "返回配置的 NetworkCapabilities");
+        return caps;
+    }
+
+    private static Boolean tryNetworkCapabilitiesBoolean(BaseVM vm, DvmObject<?> dvmObject,
+                                                         String signature, VarArg args) {
+        if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredNetworkCapabilities)) {
+            return null;
+        }
+        ConfiguredNetworkCapabilities marker = (ConfiguredNetworkCapabilities) dvmObject.getValue();
+        if (marker.owner != vm) {
+            return null;
+        }
+        if ("android/net/NetworkCapabilities->hasTransport(I)Z".equals(signature)) {
+            boolean value = marker.capabilities.hasTransport(args.getIntArg(0));
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "network_link",
+                    "NetworkCapabilities.hasTransport",
+                    "transport=" + args.getIntArg(0) + ",result=" + value,
+                    "json-config", "读取配置的传输类型");
+            return Boolean.valueOf(value);
+        }
+        if ("android/net/NetworkCapabilities->hasCapability(I)Z".equals(signature)) {
+            boolean value = marker.capabilities.hasCapability(args.getIntArg(0));
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "network_link",
+                    "NetworkCapabilities.hasCapability",
+                    "capability=" + args.getIntArg(0) + ",result=" + value,
+                    "json-config", "读取配置的网络能力");
+            return Boolean.valueOf(value);
+        }
+        return null;
+    }
+
+    private static Long tryNetworkCapabilitiesLongField(BaseVM vm, DvmObject<?> dvmObject, String signature) {
+        if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredNetworkCapabilities)) {
+            return null;
+        }
+        ConfiguredNetworkCapabilities marker = (ConfiguredNetworkCapabilities) dvmObject.getValue();
+        if (marker.owner != vm) {
+            return null;
+        }
+        if ("android/net/NetworkCapabilities->mTransportTypes:J".equals(signature)) {
+            return Long.valueOf(marker.capabilities.transportBitset());
+        }
+        if ("android/net/NetworkCapabilities->mNetworkCapabilities:J".equals(signature)) {
+            return Long.valueOf(marker.capabilities.capabilityBitset());
+        }
+        return null;
+    }
+
+    private static DvmObject<?> tryAndroidLocaleListObject(BaseVM vm, DvmObject<?> dvmObject,
+                                                           String signature, VarArg args) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidLocaleConfigured()) {
+            return null;
+        }
+        TraceEnvironmentConfig.AndroidLocaleConfig locale = config.getAndroidLocaleConfig();
+        if (locale == null || !locale.isLanguageTagsConfigured()) {
+            return null;
+        }
+        if ("android/os/LocaleList->getDefault()Landroid/os/LocaleList;".equals(signature)
+                || "android/content/res/Configuration->getLocales()Landroid/os/LocaleList;".equals(signature)) {
+            DvmObject<?> list = vm.resolveClass("android/os/LocaleList")
+                    .newObject(new ConfiguredLocaleList(vm, locale.getLanguageTags()));
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_locale",
+                    signature.contains("getDefault") ? "LocaleList.getDefault" : "Configuration.getLocales",
+                    "count=" + locale.getLanguageTags().size(),
+                    "json-config", "读取配置的语言标签列表");
+            return list;
+        }
+        if (dvmObject != null && dvmObject.getValue() instanceof ConfiguredLocaleList) {
+            ConfiguredLocaleList marker = (ConfiguredLocaleList) dvmObject.getValue();
+            if (marker.owner != vm) {
+                return null;
+            }
+            if ("android/os/LocaleList->toLanguageTags()Ljava/lang/String;".equals(signature)) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < marker.tags.size(); i++) {
+                    if (i > 0) {
+                        sb.append(',');
+                    }
+                    sb.append(marker.tags.get(i));
+                }
+                return new StringObject(vm, sb.toString());
+            }
+            if ("android/os/LocaleList->get(I)Ljava/util/Locale;".equals(signature)) {
+                int index = args.getIntArg(0);
+                if (index < 0 || index >= marker.tags.size()) {
+                    return null;
+                }
+                return vm.resolveClass("java/util/Locale")
+                        .newObject(java.util.Locale.forLanguageTag(marker.tags.get(index)));
+            }
+        }
+        return null;
+    }
+
+    private static Integer tryAndroidLocaleListInt(BaseVM vm, DvmObject<?> dvmObject, String signature) {
+        if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredLocaleList)) {
+            return null;
+        }
+        if (!"android/os/LocaleList->size()I".equals(signature)) {
+            return null;
+        }
+        ConfiguredLocaleList marker = (ConfiguredLocaleList) dvmObject.getValue();
+        if (marker.owner != vm) {
+            return null;
+        }
+        return Integer.valueOf(marker.tags.size());
+    }
+
+    private static DvmObject<?> tryAndroidBatteryIntentObject(BaseVM vm, DvmObject<?> dvmObject,
+                                                              String signature, VarArg args) {
+        if (signature == null || !signature.contains("registerReceiver")) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidBatteryConfigured()) {
+            return null;
+        }
+        TraceEnvironmentConfig.AndroidBatteryConfig battery = config.getAndroidBatteryConfig();
+        if (battery == null || !battery.isPluggedConfigured()) {
+            return null;
+        }
+        DvmObject<?> receiver = args.getObjectArg(0);
+        if (receiver != null) {
+            return null;
+        }
+        DvmObject<?> intent = vm.resolveClass("android/content/Intent")
+                .newObject(new ConfiguredBatteryIntent(vm, battery));
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_battery",
+                "Context.registerReceiver",
+                "action=BATTERY_CHANGED",
+                "json-config", "返回配置的粘性电池 Intent");
+        return intent;
+    }
+
+    private static Integer tryAndroidBatteryIntentInt(BaseVM vm, DvmObject<?> dvmObject,
+                                                      String signature, VarArg args) {
+        if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredBatteryIntent)) {
+            return null;
+        }
+        if (!"android/content/Intent->getIntExtra(Ljava/lang/String;I)I".equals(signature)) {
+            return null;
+        }
+        ConfiguredBatteryIntent marker = (ConfiguredBatteryIntent) dvmObject.getValue();
+        if (marker.owner != vm) {
+            return null;
+        }
+        DvmObject<?> keyArg = args.getObjectArg(0);
+        if (!(keyArg instanceof StringObject)) {
+            return null;
+        }
+        String key = ((StringObject) keyArg).getValue();
+        int fallback = args.getIntArg(1);
+        if ("plugged".equals(key) && marker.battery.isPluggedConfigured()) {
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_battery",
+                    "Intent.getIntExtra",
+                    "key=plugged,result=" + marker.battery.getPlugged(),
+                    "json-config", "读取配置的电池 plugged");
+            return Integer.valueOf(marker.battery.getPlugged());
+        }
+        if ("status".equals(key) && marker.battery.isStatusConfigured()) {
+            return Integer.valueOf(marker.battery.getStatus());
+        }
+        if ("level".equals(key) && marker.battery.isCapacityPercentConfigured()) {
+            return Integer.valueOf(marker.battery.getCapacityPercent());
+        }
+        return Integer.valueOf(fallback);
+    }
+
+    private static DvmObject<?> tryAndroidDisplaysObject(BaseVM vm, DvmObject<?> dvmObject,
+                                                         String signature, VarArg args) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidDisplaysConfigured()) {
+            return null;
+        }
+        if (DISPLAY_MANAGER_GET_DISPLAYS_SIGNATURE.equals(signature)) {
+            java.util.List<TraceEnvironmentConfig.AndroidDisplayEntryConfig> displays =
+                    config.getAndroidDisplays();
+            DvmObject<?>[] items = new DvmObject<?>[displays.size()];
+            for (int i = 0; i < displays.size(); i++) {
+                items[i] = vm.resolveClass("android/view/Display")
+                        .newObject(new ConfiguredDisplayEntry(vm, displays.get(i)));
+            }
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display",
+                    "DisplayManager.getDisplays",
+                    "count=" + displays.size(),
+                    "json-config", "枚举配置的 Display 列表");
+            return new ArrayObject(items);
+        }
+        if (DISPLAY_MANAGER_GET_DISPLAY_SIGNATURE.equals(signature)) {
+            int id = args.getIntArg(0);
+            TraceEnvironmentConfig.AndroidDisplayEntryConfig entry = config.findAndroidDisplay(id);
+            if (entry == null) {
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display",
+                        "DisplayManager.getDisplay",
+                        "displayId=" + id + ",result=null",
+                        "json-config", "未配置的 displayId");
+                return null;
+            }
+            return vm.resolveClass("android/view/Display")
+                    .newObject(new ConfiguredDisplayEntry(vm, entry));
+        }
+        return null;
+    }
+
+    private static Boolean tryAndroidSensorRegisterListener(BaseVM vm, DvmObject<?> dvmObject,
+                                                            String signature, VarArg args) {
+        if (!"android/hardware/SensorManager->registerListener(Landroid/hardware/SensorEventListener;Landroid/hardware/Sensor;I)Z"
+                .equals(signature)) {
+            return null;
+        }
+        if (!isSystemServiceSensorManager(dvmObject)) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidSensorSamplesConfigured()) {
+            return null;
+        }
+        DvmObject<?> listener = safeObjectArg(args, 0);
+        DvmObject<?> sensorObj = safeObjectArg(args, 1);
+        ConfiguredSensor sensor = liveConfiguredSensor(vm, sensorObj);
+        float[] sample = sensor == null ? null : config.getAndroidSensorSample(sensor.sensorType);
+        if (sample != null && listener != null) {
+            DvmObject<?> event = vm.resolveClass("android/hardware/SensorEvent")
+                    .newObject(new ConfiguredSensorEvent(vm, sample, sensorObj));
+            invokeListenerVoid(vm, listener,
+                    "android/hardware/SensorEventListener",
+                    "onSensorChanged",
+                    "(Landroid/hardware/SensorEvent;)V",
+                    event);
+        }
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_sensor",
+                "SensorManager.registerListener",
+                "sensorType=" + (sensor == null ? -1 : sensor.sensorType)
+                        + ",values=" + (sample == null ? 0 : sample.length),
+                "json-config", "注册并投递配置的传感器采样");
+        return Boolean.TRUE;
+    }
+
+    /**
+     * {@code LocationManager.requestLocationUpdates(... )V} only. Missing last-known node does
+     * not take over. When present, delivers matching {@code ConfiguredLocation} objects through
+     * {@code LocationListener.onLocationChanged}.
+     */
+    private static boolean tryAndroidLocationRequestUpdates(BaseVM vm, DvmObject<?> dvmObject,
+                                                            String signature, VarArg args) {
+        if (signature == null
+                || !signature.startsWith("android/location/LocationManager->requestLocationUpdates")
+                || !signature.endsWith(")V")) {
+            return false;
+        }
+        if (!isSystemServiceLocationManager(dvmObject)) {
+            return false;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidLocationLastKnownLocationsConfigured()) {
+            return false;
+        }
+        DvmObject<?> listener = findTypedObjectArg(signature, args,
+                "android/location/LocationListener");
+        String provider = null;
+        DvmObject<?> providerArg = findTypedObjectArg(signature, args, "java/lang/String");
+        if (providerArg instanceof StringObject) {
+            provider = ((StringObject) providerArg).getValue();
+        }
+        List<TraceEnvironmentConfig.AndroidLastKnownLocationConfig> entries =
+                config.getAndroidLocationLastKnownLocations();
+        int delivered = 0;
+        for (int i = 0; i < entries.size(); i++) {
+            TraceEnvironmentConfig.AndroidLastKnownLocationConfig entry = entries.get(i);
+            if (provider != null && !provider.equals(entry.getProvider())) {
+                continue;
+            }
+            DvmObject<?> location = vm.resolveClass("android/location/Location")
+                    .newObject(new ConfiguredLocation(vm, config, entry));
+            invokeListenerVoid(vm, listener,
+                    "android/location/LocationListener",
+                    "onLocationChanged",
+                    "(Landroid/location/Location;)V",
+                    location);
+            delivered++;
+        }
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_location",
+                "LocationManager.requestLocationUpdates",
+                "count=" + delivered,
+                "json-config", "投递配置的最后已知位置");
+        return true;
+    }
+
+    private static boolean tryConfiguredListenerVoid(BaseVM vm, DvmObject<?> dvmObject,
+                                                     String signature, VarArg args) {
+        if ("android/location/LocationListener->onLocationChanged(Landroid/location/Location;)V"
+                .equals(signature)) {
+            DvmObject<?> event = safeObjectArg(args, 0);
+            if (event == null || !(event.getValue() instanceof ConfiguredLocation)) {
+                return false;
+            }
+            deliverToJavaInbox(dvmObject, event);
+            return true;
+        }
+        if ("android/hardware/SensorEventListener->onSensorChanged(Landroid/hardware/SensorEvent;)V"
+                .equals(signature)) {
+            DvmObject<?> event = safeObjectArg(args, 0);
+            if (event == null || !(event.getValue() instanceof ConfiguredSensorEvent)) {
+                return false;
+            }
+            deliverToJavaInbox(dvmObject, event);
+            return true;
+        }
+        return false;
+    }
+
+    private static DvmObject<?> tryAndroidSensorEventValues(BaseVM vm, DvmObject<?> dvmObject,
+                                                            String signature) {
+        if (!"android/hardware/SensorEvent->values:[F".equals(signature)) {
+            return null;
+        }
+        if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredSensorEvent)) {
+            throw new UnsupportedOperationException(signature);
+        }
+        ConfiguredSensorEvent event = (ConfiguredSensorEvent) dvmObject.getValue();
+        if (event.owner != vm) {
+            throw new UnsupportedOperationException(signature);
+        }
+        return new FloatArray(vm, Arrays.copyOf(event.values, event.values.length));
+    }
+
+    private static final class ConfiguredSensorEvent {
+        final BaseVM owner;
+        final float[] values;
+        final DvmObject<?> sensor;
+
+        private ConfiguredSensorEvent(BaseVM owner, float[] values, DvmObject<?> sensor) {
+            this.owner = owner;
+            this.values = values;
+            this.sensor = sensor;
+        }
+    }
+
+    private static void invokeListenerVoid(BaseVM vm, DvmObject<?> listener, String className,
+                                           String methodName, String argsDesc, DvmObject<?> event) {
+        if (vm == null || listener == null || event == null || vm.jni == null) {
+            return;
+        }
+        DvmClass cls = vm.resolveClass(className);
+        DvmMethod method = new DvmMethod(cls, methodName, argsDesc, false);
+        vm.jni.callVoidMethod(vm, listener, method.getSignature(),
+                new OneObjectVarArg(vm, method, event));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void deliverToJavaInbox(DvmObject<?> listener, DvmObject<?> event) {
+        if (listener == null || event == null) {
+            return;
+        }
+        Object value = listener.getValue();
+        if (value instanceof Collection) {
+            ((Collection) value).add(event);
+        }
+    }
+
+    private static DvmObject<?> safeObjectArg(VarArg args, int index) {
+        if (args == null || index < 0 || index >= args.args.size()) {
+            return null;
+        }
+        try {
+            return args.getObjectArg(index);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static DvmObject<?> findTypedObjectArg(String signature, VarArg args, String typeInternal) {
+        if (signature == null || args == null || typeInternal == null) {
+            return null;
+        }
+        int open = signature.indexOf('(');
+        int close = signature.lastIndexOf(')');
+        if (open < 0 || close <= open) {
+            return null;
+        }
+        String inside = signature.substring(open + 1, close);
+        int index = 0;
+        int i = 0;
+        while (i < inside.length()) {
+            char c = inside.charAt(i);
+            if (c == 'L') {
+                int semi = inside.indexOf(';', i);
+                if (semi < 0) {
+                    return null;
+                }
+                String desc = inside.substring(i + 1, semi);
+                if (typeInternal.equals(desc)) {
+                    return safeObjectArg(args, index);
+                }
+                i = semi + 1;
+                index++;
+            } else if (c == '[') {
+                i++;
+                while (i < inside.length() && inside.charAt(i) == '[') {
+                    i++;
+                }
+                if (i < inside.length() && inside.charAt(i) == 'L') {
+                    int semi = inside.indexOf(';', i);
+                    if (semi < 0) {
+                        return null;
+                    }
+                    i = semi + 1;
+                } else {
+                    i++;
+                }
+                index++;
+            } else {
+                i++;
+                index++;
+            }
+        }
+        return null;
+    }
+
+    private static final class OneObjectVarArg extends VarArg {
+        private OneObjectVarArg(BaseVM vm, DvmMethod method, DvmObject<?> object) {
+            super(vm, method);
+            args.add(Integer.valueOf(object == null ? 0 : object.hashCode()));
+            if (object != null) {
+                vm.addLocalObject(object);
+            }
+        }
     }
 }

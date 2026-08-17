@@ -147,7 +147,21 @@
       "ANDROID_ROOT=/system",
       "PATH=/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin",
       "NO_ADDR_COMPAT_LAYOUT_FIXUP=1"
-    ]
+    ],
+    "processes": [
+      {
+        "pid": 1,
+        "cmdline": ["init"],
+        "comm": "init",
+        "exe": "/system/bin/init"
+      }
+    ],
+    "commands": {
+      "uptime": " 0.00 0.00 0.00\n"
+    },
+    "mincore": {
+      "resident": true
+    }
   },
   "android": {
     "packageName": "com.demo.app",
@@ -288,6 +302,7 @@
         "uid": 10001,
         "enabled": true,
         "systemApp": false,
+        "applicationFlags": 0,
         "installerPackageName": "com.android.vending",
         "initiatingPackageName": "com.android.vending",
         "originatingPackageName": "com.android.vending",
@@ -370,8 +385,19 @@
     },
     "locale": {
       "languageTag": "zh-Hans-CN",
+      "languageTags": ["zh-Hans-CN", "en-US"],
       "timezoneId": "Asia/Shanghai"
     },
+    "displays": [
+      {
+        "id": 0,
+        "name": "TRACEAI_DISPLAY_0",
+        "flags": 2,
+        "widthPixels": 1080,
+        "heightPixels": 2400,
+        "densityDpi": 420
+      }
+    ],
     "display": {
       "widthPixels": 1080,
       "heightPixels": 2400,
@@ -420,7 +446,8 @@
       "currentAverageUa": -320000,
       "energyCounterNwh": 55000000000,
       "status": 3,
-      "chargeTimeRemainingMillis": -1
+      "chargeTimeRemainingMillis": -1,
+      "plugged": 0
     },
     "cameras": {
       "count": 2,
@@ -491,6 +518,10 @@
       },
       "directChannelTypesSupported": {
         "1": [1]
+      },
+      "samples": {
+        "1": [0.0, 0.0, 9.81],
+        "4": [0.0, 0.0, 0.0]
       }
     },
     "clipboard": {
@@ -921,9 +952,32 @@
       "state": 12,
       "scanMode": 21,
       "discovering": false
+    },
+    "tcp": [
+      {
+        "slot": 0,
+        "localIpv4": "127.0.0.1",
+        "localPort": 8080,
+        "remoteIpv4": "0.0.0.0",
+        "remotePort": 0,
+        "stateHex": "0A",
+        "txQueue": 0,
+        "rxQueue": 0,
+        "uid": 0,
+        "timeout": 0,
+        "inode": 1
+      }
+    ],
+    "tcp6": [],
+    "capabilities": {
+      "transportTypes": [1],
+      "networkCapabilities": [12, 15, 16]
     }
   },
   "filesystem": {
+    "directories": {
+      "/system/fonts": ["TRACEAI.ttf"]
+    },
     "stat": {
       "/proc/cpuinfo": {
         "device": 1414676803,

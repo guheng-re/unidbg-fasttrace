@@ -189,7 +189,7 @@ public class MediaNdkModule extends VirtualModule<VM> {
      * Shared byte-array property logic used by SVC and tests.
      * Only {@code deviceUniqueId} is supported (legacy and configured).
      */
-    long getPropertyByteArrayByName(Emulator<?> emulator, String propertyName, Pointer propertyValuePtr) {
+    public long getPropertyByteArrayByName(Emulator<?> emulator, String propertyName, Pointer propertyValuePtr) {
         if (!"deviceUniqueId".equals(propertyName)) {
             throw new UnsupportedOperationException("getPropertyByteArray: " + propertyName);
         }
@@ -197,28 +197,17 @@ public class MediaNdkModule extends VirtualModule<VM> {
         final byte[] bytes;
         if (config != null && config.isAndroidDrmConfigured()) {
             TraceEnvironmentConfig.AndroidDrmConfig drm = config.getAndroidDrmConfig();
-            if (drm.isDeviceUniqueIdConfigured()) {
-                // exact configured bytes, no pad/truncate
-                bytes = drm.getDeviceUniqueId();
-            } else {
-                byte[] randomId = config.getRandomBytes("mediaDrmDeviceUniqueIdHex", 0x20);
-                if (randomId != null) {
-                    bytes = randomId;
-                } else {
-                    // deterministic analysis marker as UTF-8
-                    bytes = drm.getMarker().getBytes(StandardCharsets.UTF_8);
-                }
-            }
+            bytes = config.resolveMediaDrmDeviceUniqueId();
             writePropertyByteArray(emulator, propertyValuePtr, bytes);
             TraceEnvironmentEventSink.emit(emulator, "drm", "AMediaDrm_getPropertyByteArray",
-                    "property=deviceUniqueId,bytes=" + bytes.length
+                    "property=deviceUniqueId,bytes=" + (bytes == null ? 0 : bytes.length)
                             + ",marker=" + drm.getMarker() + ",source=json-config",
                     "json-config",
                     "读取配置的 DRM 字节属性 deviceUniqueId");
             return 0;
         }
         // legacy unconfigured: 32 random or config-random bytes
-        byte[] b = config == null ? null : config.getRandomBytes("mediaDrmDeviceUniqueIdHex", 0x20);
+        byte[] b = config == null ? null : config.resolveMediaDrmDeviceUniqueId();
         if (b == null) {
             b = new byte[0x20];
             new Random().nextBytes(b);

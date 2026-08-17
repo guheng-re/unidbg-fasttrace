@@ -620,9 +620,7 @@ AndroidEmulatorBuilder.for64Bit()
     "eglExtensions": ["EGL_KHR_image_base"]
   },
   "backendStatus": {
-    "android.sensors.samples": "reserved",
     "android.telephony.cellInfo": "reserved",
-    "network.capabilities": "reserved",
     "graphics.native": "reserved"
   }
 }
@@ -638,25 +636,25 @@ AndroidEmulatorBuilder.for64Bit()
 | 包信息 | `android.packageName`、版本和路径 | `Context`、`PackageManager`、`ApplicationInfo` | 已实现，可直接映射 |
 | Build | `android.build.*` | `Build.*`、`Build.VERSION.*` | 已实现，可直接映射 |
 | 系统属性 | `android.properties` | `__system_property_get/read/find/read_callback` | 已实现，可直接映射 |
-| 电池 | `android.battery.*` | `BatteryManager` 容量、电流、状态、剩余充电时间 | 已实现静态读取；广播和状态迁移待实现 |
+| 电池 | `android.battery.*` | `BatteryManager` 容量、电流、状态、剩余充电时间、`plugged` | 已实现静态读取 + 粘性 `plugged` extras；状态迁移待实现 |
 | 电源 | `android.power.*` | `PowerManager` 交互、节电和空闲状态 | 已实现静态读取；状态迁移待实现 |
 | 温度 | `android.thermal.*` | 热状态、热余量 | 已实现静态读取；回调待实现 |
 | 传感器名称和参数 | `android.sensors.names/vendors/...` | `SensorManager`、`Sensor.getName/getVendor/...` | 已实现静态画像 |
-| 传感器采样 | `android.sensors.samples` | `registerListener`、`SensorEvent.values` | 字段保留，后端待实现 |
+| 传感器采样 | `android.sensors.samples` | `registerListener`、`SensorEvent.values` | 已实现：type→float[]；`registerListener` 在键存在时接管 |
 | 网卡 | `network.interfaces` | ioctl、`NetworkInterface`、`/sys/class/net/*` | 已实现主要静态字段 |
 | Wi-Fi | `network.wifi` | `WifiManager`、`WifiInfo` | 已实现主要静态字段 |
 | 网络链路 | `network.links` | `ConnectivityManager`、`LinkProperties`、DHCP | 已实现主要静态字段 |
-| 网络能力 | `network.capabilities` | `NetworkCapabilities`、网络回调 | 字段保留，后端待实现 |
+| 网络能力 | `network.capabilities` | `NetworkCapabilities.hasTransport`/`hasCapability` | 新形状 `transportTypes`/`networkCapabilities` 已实现；旧布尔形状仍 reserved |
 | 电话和 SIM | `android.telephony` | `TelephonyManager` | 基础标识和状态已实现 |
 | 小区信息 | `android.telephony.cellInfo` | `getAllCellInfo`、`getCellLocation` | 字段保留，后端待实现 |
-| 显示 | `android.display` | `DisplayMetrics`、`Display`、`Configuration` | 已实现主要静态字段 |
-| 区域和时区 | `android.locale` | `Locale`、`TimeZone` | 已实现主要静态字段 |
+| 显示 | `android.display` / `android.displays` | `DisplayMetrics`、`getDisplays` | 单屏 + 可选多屏列表 |
+| 区域和时区 | `android.locale` | `Locale`、`TimeZone`、`LocaleList` | 已实现 `languageTag` + 可选 `languageTags[]` |
 | 摄像头 | `android.cameras` | 旧版 `Camera.getCameraInfo` | 基础静态信息已实现；Camera2 和打开设备待实现 |
-| 位置 | `android.location` | `LocationManager`、最后已知位置 | 静态提供者和最后位置已实现；监听和 GNSS 待实现 |
+| 位置 | `android.location` | `LocationManager`、最后已知位置、`requestLocationUpdates` | 静态提供者 + 最后位置；`requestLocationUpdates` 在 `lastKnownLocations` 存在时接管；真实 GNSS 待实现 |
 | 存储 | `filesystem.*` | `Environment`、`stat`、`statfs`、挂载文件 | **`stat` / `statfs` / `mounts` 已实现**；样例含 APK/data/external 三路径 `stat` 与 `/system` `/data` `/storage/emulated/0` 三 `mounts`。`/proc/self/maps` **不固定**（不进覆盖层） |
 | 安全信号 | `android.securitySignals` | Debug、SELinux、测试环境状态 | 已实现部分静态读取 |
 | TEE | `android.tee` | `KeyInfo`、硬件密钥标记 | 分析型 marker 已实现；不做真实证明 |
-| DRM | `android.drm` | MediaDrm/Media NDK 属性和会话 | Native 子集和 marker 已实现；不做解密和许可交换 |
+| DRM | `android.drm` | MediaDrm/Media NDK 属性和会话 | Java/native `deviceUniqueId` 共用同一字节源；不做解密和许可交换 |
 | 图形 | `graphics` | Java GLES/EGL 查询 | Java 子集部分实现；Native 图形库待实现 |
 | `/proc` 和 `/sys` | `fileOverlayRoot` | `open/openat/read/stat/access/readlink` | **只读 `open/read` 覆盖层已落地**（优先于 `linux.files`；`/proc/self`↔配置 pid 别名）。guest 路径须为规范 POSIX 形式（不折叠 `//`、`.`、尾 `/`；禁 `..`/NUL/反斜杠/`:`/空白）。写/RDWR → `EACCES`，`O_DIRECTORY` → `ENOTDIR`，**不**回落宿主机。不跟随符号链接，不接管 `/proc/self\|pid/fd/*`。`stat`/`access`/`readlink` 仍走现有路径 |
 | uname / CPU | `linux.uname`、`linux.cpu` | `uname`、`sysconf(_SC_NPROCESSORS_*)`、`/sys/devices/system/cpu/*` | 已实现，可直接映射；第 1 批样例已填写 |
@@ -739,7 +737,7 @@ AndroidEmulatorBuilder.for64Bit()
 
 - 画像中的绝对路径由 `normalizeGuestPath` 解析：仅 POSIX `/` 分段；**不**把 `//`、`.`、尾 `/` 折叠成规范路径，这些一律拒绝。同时禁止 `..`、NUL、反斜杠、盘符/`:`、控制字符、空白分段。
 - `fileOverlayRoot` 由 `splitOverlayRoot` 解析，必须是画像目录下的相对子目录。禁止 `.` / `..` / 绝对路径 / 尾 `/` / 空段 / 空白。覆盖根若为符号链接，或真实路径不严格位于画像目录内，读取时不接管。
-- 已覆盖路径默认只允许读取。`LinuxFileSystem` 对写/`O_RDWR` 返回 `EACCES`，对 `O_RDONLY|O_DIRECTORY` 返回 `ENOTDIR`，**不**回落 `linux.files` 或宿主机文件，也**不**发 sidecar。
+- 已覆盖路径默认只允许读取。`LinuxFileSystem` 对写/`O_RDWR` 返回 `EACCES`。覆盖层**文件**上的 `O_DIRECTORY` 返回 `ENOTDIR`；覆盖层**目录**可 `getdents` 枚举。**不**回落宿主机，也**不**跟随符号链接。
 - 覆盖层**不**跟随路径上的宿主符号链接；`/proc/self/fd`、`/proc/self/fd/*` 与 `/proc/<pid>/fd/*` 不接管，仍走显式 fd 配置。
 - 二进制文件保持原始字节（含 `NUL`），不进行 UTF-8 转换。sidecar `profile-file` 的 value 仅 `path`+`bytes`，不写原文。覆盖层未命中、但命中转换后的 `linux.files` 时，source 为 `profile-json`（现有 `json-config` 在 `isProfileLoaded()` 时改写）。
 
@@ -751,7 +749,7 @@ AndroidEmulatorBuilder.for64Bit()
 2. 读取 `device-fingerprint.json`。
 3. 将已经支持的字段转换为现有 `TraceEnvironmentConfig`。`android.tee.securityLevel` 的整数 `0/1/2` 转为 `SOFTWARE`/`TRUSTED_ENVIRONMENT`/`STRONGBOX`；其它已是上述枚举字符串的值原样保留；无法识别的整数或类型会从转换结果中剥离并记入 reserved 警告，不使整份画像失败。
 4. 从文件加载时注册 `fileOverlayRoot` 文件覆盖层（缺省相对目录 `files`）。
-5. 对 `reserved` 字段（`android.sensors.samples`、`android.telephony.cellInfo`、`network.capabilities`、`graphics.native`、`backendStatus`）先保留原文，再从转换 JSON 中剥离，避免现有 allowed-key 校验失败；一次启动警告，不接入当前后端。其它非法的已实现字段仍走 `TraceEnvironmentConfig.parse` 并失败。
+5. 对仍 `reserved` 的字段（`android.telephony.cellInfo`、`graphics.native`、`backendStatus`，以及旧形状 `network.capabilities`）先保留原文，再从转换 JSON 中剥离；一次启动警告，不接入当前后端。`android.sensors.samples` 与新形状 `network.capabilities`（`transportTypes`/`networkCapabilities`）已转正，随已实现字段解析。其它非法的已实现字段仍走 `TraceEnvironmentConfig.parse` 并失败。
 6. 将配置命中事件的 `source` 统一标记为 `profile-json`（转换后的 JSON 字段与 `linux.files`）或 `profile-file`（覆盖层 `open/read`）。
 
 原有 `setEnvironmentConfig(...)`、`-Dunidbg.env.config` 和完整 JSON 格式必须继续可用。
@@ -807,13 +805,13 @@ AndroidEmulatorBuilder.for64Bit()
 | EGL 字符串 | `graphics.eglVendor/eglVersion/eglExtensions` | `eglQueryString` |
 | 文本文件 | `files/proc/*`、`files/sys/*`（见上节清单；**不含** maps） | `open/read` |
 
-`/proc/self/maps` **不固定**，样例不提供覆盖文件。本批故意不写入：传感器采样、小区信息、`NetworkCapabilities`、clipboard / audio / accessibility、完整 `linux.proc` IO 计数、动态回调。那些留给后续批次或 `reserved`。
+`/proc/self/maps` **不固定**，样例不提供覆盖文件。本批故意不写入：小区信息、clipboard / audio / accessibility、完整 `linux.proc` IO 计数、动态回调。传感器采样与新形状 `NetworkCapabilities` 已可填模板。
 
 ## 后端接入顺序
 
 ### 第一阶段：快捷修改基础
 
-**已落地：** `DeviceFingerprintProfile` + `setEnvironmentProfile(File)` / `-Dunidbg.env.profile`；已实现字段转换为现有 `TraceEnvironmentConfig`（`android.tee.securityLevel` 的 `0/1/2` 会转成 `SOFTWARE`/`TRUSTED_ENVIRONMENT`/`STRONGBOX`，其它标记值不改写）；`reserved` 字段（`android.sensors.samples`、`android.telephony.cellInfo`、`network.capabilities`、`graphics.native`、`backendStatus`）**保留原文**并一次启动警告，不接入后端、不失败；`fileOverlayRoot` 只读覆盖与 `/proc/self`↔配置 pid 别名；写/`O_DIRECTORY`/`fd`/符号链接按上节安全规则处理；sidecar source=`profile-json`/`profile-file`。同一 builder 上显式 `setEnvironmentConfig` 优先于 `setEnvironmentProfile`；`-Dunidbg.env.config` 优先于 `-Dunidbg.env.profile`。样例：`profiles/pixel6-analysis/`。
+**已落地：** `DeviceFingerprintProfile` + `setEnvironmentProfile(File)` / `-Dunidbg.env.profile`；已实现字段转换为现有 `TraceEnvironmentConfig`（`android.tee.securityLevel` 的 `0/1/2` 会转成 `SOFTWARE`/`TRUSTED_ENVIRONMENT`/`STRONGBOX`，其它标记值不改写）；仍 `reserved` 的字段（`android.telephony.cellInfo`、`graphics.native`、`backendStatus`、旧形状 `network.capabilities`）**保留原文**并一次启动警告；`android.sensors.samples` 与新形状 capabilities 已转正；`fileOverlayRoot` 只读覆盖与 `/proc/self`↔配置 pid 别名，目录可枚举；sidecar source=`profile-json`/`profile-file`。同一 builder 上显式 `setEnvironmentConfig` 优先于 `setEnvironmentProfile`；`-Dunidbg.env.config` 优先于 `-Dunidbg.env.profile`。样例：`profiles/pixel6-analysis/`。
 
 - 实现 `setEnvironmentProfile(File)` 和 `-Dunidbg.env.profile`。
 - 将快捷画像中的已实现字段转换到现有配置模型。

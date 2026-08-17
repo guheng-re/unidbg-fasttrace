@@ -368,6 +368,14 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
                 case 222:
                     backend.reg_write(Arm64Const.UC_ARM64_REG_X0, mmap(backend, emulator));
                     return;
+                case 232: {
+                    Integer mincore = tryMincore(emulator);
+                    if (mincore != null) {
+                        backend.reg_write(Arm64Const.UC_ARM64_REG_X0, mincore.intValue());
+                        return;
+                    }
+                    break;
+                }
                 case 226:
                     backend.reg_write(Arm64Const.UC_ARM64_REG_X0, mprotect(backend, emulator));
                     return;

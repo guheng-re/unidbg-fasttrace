@@ -544,9 +544,7 @@
     "eglExtensions": ["EGL_KHR_image_base"]
   },
   "backendStatus": {
-    "android.sensors.samples": "reserved",
     "android.telephony.cellInfo": "reserved",
-    "network.capabilities": "reserved",
     "graphics.native": "reserved"
   }
 }

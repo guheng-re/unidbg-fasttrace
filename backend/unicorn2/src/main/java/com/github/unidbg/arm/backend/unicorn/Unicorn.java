@@ -47,8 +47,12 @@ public class Unicorn {
             newHookList.remove(this);
         }
         private boolean unhooked;
+        private void markCancelled() {
+            unhooked = true;
+        }
         private void unhookInternal() {
-            if (!unhooked && handle != 0) {
+            // After closeAll, native hook_list is already freed by nativeDestroy.
+            if (!unhooked && handle != 0 && nativeHandle != 0L) {
                 hook_del(handle);
             }
             unhooked = true;
@@ -443,17 +447,29 @@ public class Unicorn {
     }
 
     private final List<UnHook> newHookList = new ArrayList<>();
-    private final long nativeHandle;
+    private long nativeHandle;
 
     public Unicorn(int arch, int mode) throws UnicornException {
         this.nativeHandle = nativeInitialize(arch, mode);
     }
 
-    public void closeAll() throws UnicornException {
-        for (UnHook unHook : newHookList) {
-            unHook.unhookInternal();
+    /**
+     * Close the underlying engine. Only the first call destroys the native handle;
+     * later calls return immediately and never pass a destroyed handle.
+     * Java UnHooks are marked cancelled and dropped here; native hook_list is
+     * released exclusively by nativeDestroy.
+     */
+    public synchronized void closeAll() throws UnicornException {
+        long handle = nativeHandle;
+        if (handle == 0L) {
+            return;
         }
-        nativeDestroy(nativeHandle);
+        nativeHandle = 0L;
+        for (UnHook unHook : newHookList) {
+            unHook.markCancelled();
+        }
+        newHookList.clear();
+        nativeDestroy(handle);
     }
 
 }

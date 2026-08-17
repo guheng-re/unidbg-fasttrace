@@ -62,16 +62,15 @@ public class DeviceFingerprintProfileTest {
         assertTrue(config.isProfileLoaded());
         assertEquals("unit", config.getProfileName());
         assertTrue(config.isAndroidSensorsConfigured());
+        assertTrue(config.isAndroidSensorSamplesConfigured());
+        assertNotNull(config.getAndroidSensorSample(1));
         assertTrue(config.isAndroidTeeConfigured());
         assertEquals("TRUSTED_ENVIRONMENT", config.getTeeSecurityLevel());
-        assertTrue(containsFragment(profile.getReservedWarnings(), "android.sensors.samples"));
         assertTrue(containsFragment(profile.getReservedWarnings(), "android.telephony.cellInfo"));
         assertTrue(containsFragment(profile.getReservedWarnings(), "network.capabilities"));
-        assertNotNull(profile.getReservedField("android.sensors.samples"));
         assertNotNull(profile.getReservedField("android.telephony.cellInfo"));
         assertNotNull(profile.getReservedField("network.capabilities"));
         assertNotNull(profile.getReservedField("backendStatus"));
-        assertNotNull(config.getProfileReservedFields().get("android.sensors.samples"));
     }
 
     @Test
@@ -92,9 +91,7 @@ public class DeviceFingerprintProfileTest {
         assertEquals("TRACEAI_GPU_VENDOR", config.getGraphicsConfig().getVendor());
         assertTrue(config.isAndroidTeeConfigured());
         assertEquals("TRUSTED_ENVIRONMENT", config.getTeeSecurityLevel());
-        assertTrue(containsFragment(profile.getReservedWarnings(), "android.sensors.samples"));
-        assertTrue(containsFragment(profile.getReservedWarnings(), "android.telephony.cellInfo"));
-        assertTrue(containsFragment(profile.getReservedWarnings(), "network.capabilities"));
+        assertTrue(containsFragment(profile.getReservedWarnings(), "backendStatus"));
         byte[] cpuinfo = config.readProfileOverlayFile("/proc/cpuinfo");
         assertNotNull(cpuinfo);
         assertEquals(new String(Files.readAllBytes(
@@ -643,7 +640,8 @@ public class DeviceFingerprintProfileTest {
                 + "\"network\":{\"capabilities\":{\"internet\":true,\"vpn\":false}},"
                 + "\"backendStatus\":{\"android.sensors.samples\":\"reserved\"}"
                 + "}", null);
-        assertTrue(String.valueOf(profile.getReservedField("android.sensors.samples")).contains("9.81"));
+        assertTrue(profile.getEnvironmentConfig().isAndroidSensorSamplesConfigured());
+        assertEquals(3, profile.getEnvironmentConfig().getAndroidSensorSample(1).length);
         assertTrue(String.valueOf(profile.getReservedField("android.telephony.cellInfo"))
                 .contains("CELL_MARK"));
         assertTrue(String.valueOf(profile.getReservedField("network.capabilities")).contains("internet"));

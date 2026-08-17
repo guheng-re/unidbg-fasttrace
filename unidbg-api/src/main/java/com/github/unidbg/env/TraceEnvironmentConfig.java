@@ -686,6 +686,160 @@ public class TraceEnvironmentConfig {
     }
 
     /**
+     * One {@code network.tcp[]} / {@code network.tcp6[]} row after parse validation.
+     * Addresses are never inferred from {@code network.interfaces} or routes.
+     */
+    public static final class NetworkTcpConfig {
+        private final int slot;
+        private final String localAddress;
+        private final int localPort;
+        private final String remoteAddress;
+        private final int remotePort;
+        private final String stateHex;
+        private final long txQueue;
+        private final long rxQueue;
+        private final int uid;
+        private final int timeout;
+        private final long inode;
+        private final boolean ipv6;
+
+        private NetworkTcpConfig(int slot, String localAddress, int localPort,
+                                 String remoteAddress, int remotePort, String stateHex,
+                                 long txQueue, long rxQueue, int uid, int timeout,
+                                 long inode, boolean ipv6) {
+            this.slot = slot;
+            this.localAddress = localAddress;
+            this.localPort = localPort;
+            this.remoteAddress = remoteAddress;
+            this.remotePort = remotePort;
+            this.stateHex = stateHex;
+            this.txQueue = txQueue;
+            this.rxQueue = rxQueue;
+            this.uid = uid;
+            this.timeout = timeout;
+            this.inode = inode;
+            this.ipv6 = ipv6;
+        }
+
+        public int getSlot() { return slot; }
+        public String getLocalAddress() { return localAddress; }
+        public int getLocalPort() { return localPort; }
+        public String getRemoteAddress() { return remoteAddress; }
+        public int getRemotePort() { return remotePort; }
+        public String getStateHex() { return stateHex; }
+        public long getTxQueue() { return txQueue; }
+        public long getRxQueue() { return rxQueue; }
+        public int getUid() { return uid; }
+        public int getTimeout() { return timeout; }
+        public long getInode() { return inode; }
+        public boolean isIpv6() { return ipv6; }
+    }
+
+    /**
+     * {@code network.capabilities} transport/capability sets. Membership is never inferred
+     * from {@code network.links} or wifi.
+     */
+    public static final class NetworkCapabilitiesConfig {
+        private final List<Integer> transportTypes;
+        private final List<Integer> networkCapabilities;
+
+        private NetworkCapabilitiesConfig(List<Integer> transportTypes,
+                                          List<Integer> networkCapabilities) {
+            this.transportTypes = transportTypes;
+            this.networkCapabilities = networkCapabilities;
+        }
+
+        public List<Integer> getTransportTypes() {
+            return transportTypes;
+        }
+
+        public List<Integer> getNetworkCapabilities() {
+            return networkCapabilities;
+        }
+
+        public boolean hasTransport(int transport) {
+            return transportTypes.contains(Integer.valueOf(transport));
+        }
+
+        public boolean hasCapability(int capability) {
+            return networkCapabilities.contains(Integer.valueOf(capability));
+        }
+
+        public long transportBitset() {
+            long bits = 0L;
+            for (int i = 0; i < transportTypes.size(); i++) {
+                int t = transportTypes.get(i).intValue();
+                if (t >= 0 && t < 63) {
+                    bits |= 1L << t;
+                }
+            }
+            return bits;
+        }
+
+        public long capabilityBitset() {
+            long bits = 0L;
+            for (int i = 0; i < networkCapabilities.size(); i++) {
+                int c = networkCapabilities.get(i).intValue();
+                if (c >= 0 && c < 63) {
+                    bits |= 1L << c;
+                }
+            }
+            return bits;
+        }
+    }
+
+    /**
+     * One {@code linux.processes[]} snapshot. Never inferred from {@code process.pid}.
+     */
+    public static final class LinuxProcessConfig {
+        private final int pid;
+        private final List<String> cmdline;
+        private final String comm;
+        private final String exe;
+
+        private LinuxProcessConfig(int pid, List<String> cmdline, String comm, String exe) {
+            this.pid = pid;
+            this.cmdline = cmdline;
+            this.comm = comm;
+            this.exe = exe;
+        }
+
+        public int getPid() { return pid; }
+        public List<String> getCmdline() { return cmdline; }
+        public String getComm() { return comm; }
+        public String getExe() { return exe; }
+    }
+
+    /**
+     * One {@code android.displays[]} entry. Independent of {@code android.display}.
+     */
+    public static final class AndroidDisplayEntryConfig {
+        private final int id;
+        private final String name;
+        private final int flags;
+        private final int widthPixels;
+        private final int heightPixels;
+        private final int densityDpi;
+
+        private AndroidDisplayEntryConfig(int id, String name, int flags,
+                                          int widthPixels, int heightPixels, int densityDpi) {
+            this.id = id;
+            this.name = name;
+            this.flags = flags;
+            this.widthPixels = widthPixels;
+            this.heightPixels = heightPixels;
+            this.densityDpi = densityDpi;
+        }
+
+        public int getId() { return id; }
+        public String getName() { return name; }
+        public int getFlags() { return flags; }
+        public int getWidthPixels() { return widthPixels; }
+        public int getHeightPixels() { return heightPixels; }
+        public int getDensityDpi() { return densityDpi; }
+    }
+
+    /**
      * Immutable view of one {@code network.arpEntries[]} entry after parse validation.
      * All five whitelist fields are required. Values are never inferred from
      * {@code network.interfaces}, {@code network.ipv4Routes},
@@ -1220,6 +1374,8 @@ public class TraceEnvironmentConfig {
         private final boolean enabledConfigured;
         private final Boolean systemApp;
         private final boolean systemAppConfigured;
+        private final Integer applicationFlags;
+        private final boolean applicationFlagsConfigured;
         private final String installerPackageName;
         private final boolean installerPackageNameConfigured;
         private final String initiatingPackageName;
@@ -1245,6 +1401,7 @@ public class TraceEnvironmentConfig {
                               Integer uid, boolean uidConfigured,
                               Boolean enabled, boolean enabledConfigured,
                               Boolean systemApp, boolean systemAppConfigured,
+                              Integer applicationFlags, boolean applicationFlagsConfigured,
                               String installerPackageName, boolean installerPackageNameConfigured,
                               String initiatingPackageName, boolean initiatingPackageNameConfigured,
                               String originatingPackageName, boolean originatingPackageNameConfigured,
@@ -1269,6 +1426,8 @@ public class TraceEnvironmentConfig {
             this.enabledConfigured = enabledConfigured;
             this.systemApp = systemApp;
             this.systemAppConfigured = systemAppConfigured;
+            this.applicationFlags = applicationFlags;
+            this.applicationFlagsConfigured = applicationFlagsConfigured;
             this.installerPackageName = installerPackageName;
             this.installerPackageNameConfigured = installerPackageNameConfigured;
             this.initiatingPackageName = initiatingPackageName;
@@ -1359,6 +1518,18 @@ public class TraceEnvironmentConfig {
         /** Whether {@code systemApp} was present. */
         public boolean isSystemAppConfigured() {
             return systemAppConfigured;
+        }
+
+        public boolean isApplicationFlagsConfigured() {
+            return applicationFlagsConfigured;
+        }
+
+        /**
+         * Exact {@code ApplicationInfo.flags} integer when configured. When omitted, JNI
+         * may still project {@code FLAG_SYSTEM} from {@code systemApp}.
+         */
+        public Integer getApplicationFlags() {
+            return applicationFlags;
         }
 
         /** Configured installer package name, or {@code null} when missing or explicit JSON null. */
@@ -4136,6 +4307,8 @@ public class TraceEnvironmentConfig {
         private final boolean statusConfigured;
         private final long chargeTimeRemainingMillis;
         private final boolean chargeTimeRemainingMillisConfigured;
+        private final int plugged;
+        private final boolean pluggedConfigured;
 
         private AndroidBatteryConfig(int capacityPercent, boolean capacityPercentConfigured,
                                      boolean charging, boolean chargingConfigured,
@@ -4145,7 +4318,8 @@ public class TraceEnvironmentConfig {
                                      long energyCounterNwh, boolean energyCounterNwhConfigured,
                                      int status, boolean statusConfigured,
                                      long chargeTimeRemainingMillis,
-                                     boolean chargeTimeRemainingMillisConfigured) {
+                                     boolean chargeTimeRemainingMillisConfigured,
+                                     int plugged, boolean pluggedConfigured) {
             this.capacityPercent = capacityPercent;
             this.capacityPercentConfigured = capacityPercentConfigured;
             this.charging = charging;
@@ -4162,6 +4336,8 @@ public class TraceEnvironmentConfig {
             this.statusConfigured = statusConfigured;
             this.chargeTimeRemainingMillis = chargeTimeRemainingMillis;
             this.chargeTimeRemainingMillisConfigured = chargeTimeRemainingMillisConfigured;
+            this.plugged = plugged;
+            this.pluggedConfigured = pluggedConfigured;
         }
 
         public boolean isCapacityPercentConfigured() {
@@ -4261,6 +4437,18 @@ public class TraceEnvironmentConfig {
          */
         public long getChargeTimeRemainingMillis() {
             return chargeTimeRemainingMillis;
+        }
+
+        public boolean isPluggedConfigured() {
+            return pluggedConfigured;
+        }
+
+        /**
+         * {@code BatteryManager.EXTRA_PLUGGED}: {@code 0} none, {@code 1} AC, {@code 2} USB,
+         * {@code 4} wireless. Never inferred from {@link #isCharging()} or {@code status}.
+         */
+        public int getPlugged() {
+            return plugged;
         }
     }
 
@@ -6444,13 +6632,18 @@ public class TraceEnvironmentConfig {
     public static final class AndroidLocaleConfig {
         private final String languageTag;
         private final boolean languageTagConfigured;
+        private final List<String> languageTags;
+        private final boolean languageTagsConfigured;
         private final String timezoneId;
         private final boolean timezoneIdConfigured;
 
         private AndroidLocaleConfig(String languageTag, boolean languageTagConfigured,
+                                    List<String> languageTags, boolean languageTagsConfigured,
                                     String timezoneId, boolean timezoneIdConfigured) {
             this.languageTag = languageTag;
             this.languageTagConfigured = languageTagConfigured;
+            this.languageTags = languageTags;
+            this.languageTagsConfigured = languageTagsConfigured;
             this.timezoneId = timezoneId;
             this.timezoneIdConfigured = timezoneIdConfigured;
         }
@@ -6464,6 +6657,18 @@ public class TraceEnvironmentConfig {
          */
         public String getLanguageTag() {
             return languageTag;
+        }
+
+        public boolean isLanguageTagsConfigured() {
+            return languageTagsConfigured;
+        }
+
+        /**
+         * Configured BCP 47 tags in JSON order. Empty when the key is omitted or {@code []}.
+         * Never inferred from {@link #getLanguageTag()}.
+         */
+        public List<String> getLanguageTags() {
+            return languageTags;
         }
 
         /**
@@ -6683,7 +6888,7 @@ public class TraceEnvironmentConfig {
 
     private static final String[] ANDROID_PACKAGES_ALLOWED_KEYS = {
             "packageName", "versionName", "versionCode", "sourceDir", "dataDir",
-            "uid", "enabled", "systemApp",
+            "uid", "enabled", "systemApp", "applicationFlags",
             "installerPackageName", "initiatingPackageName", "originatingPackageName",
             "firstInstallTimeMillis", "lastUpdateTimeMillis",
             "permissions", "signaturesHex", "signingCertificateHistoryHex"
@@ -6699,7 +6904,7 @@ public class TraceEnvironmentConfig {
      * {@code systemDirectories}.
      */
     private static final String[] FILESYSTEM_ALLOWED_KEYS = {
-            "stat", "statfs", "mounts", "links", "externalStorage", "systemDirectories"
+            "stat", "statfs", "mounts", "links", "externalStorage", "systemDirectories", "directories"
     };
 
     /** Allowed fields under {@code filesystem.externalStorage}. */
@@ -6835,6 +7040,18 @@ public class TraceEnvironmentConfig {
     private List<NetworkIpv4RouteConfig> networkIpv4Routes = Collections.emptyList();
     private List<NetworkInterfaceStatsConfig> networkInterfaceStats = Collections.emptyList();
     private List<NetworkIpv6AddressConfig> networkIpv6Addresses = Collections.emptyList();
+    private boolean networkTcpConfigured;
+    private List<NetworkTcpConfig> networkTcp = Collections.emptyList();
+    private boolean networkTcp6Configured;
+    private List<NetworkTcpConfig> networkTcp6 = Collections.emptyList();
+    private boolean networkCapabilitiesConfigured;
+    private NetworkCapabilitiesConfig networkCapabilitiesConfig;
+    private boolean linuxProcessesConfigured;
+    private List<LinuxProcessConfig> linuxProcesses = Collections.emptyList();
+    private boolean linuxCommandsConfigured;
+    private Map<String, String> linuxCommands = Collections.emptyMap();
+    private boolean linuxMincoreConfigured;
+    private boolean linuxMincoreResident;
     private List<NetworkArpEntryConfig> networkArpEntries = Collections.emptyList();
     private List<NetworkIgmpMembershipConfig> networkIgmpMemberships = Collections.emptyList();
     private List<NetworkIgmp6MembershipConfig> networkIgmp6Memberships = Collections.emptyList();
@@ -6858,6 +7075,8 @@ public class TraceEnvironmentConfig {
     private List<FileStatFsConfig> filesystemStatFsEntries = Collections.emptyList();
     private List<FileSystemMountConfig> filesystemMounts = Collections.emptyList();
     private List<FileSystemLinkConfig> filesystemLinks = Collections.emptyList();
+    private boolean filesystemDirectoriesConfigured;
+    private Map<String, List<String>> filesystemDirectories = Collections.emptyMap();
 
     /** Whether {@code filesystem.externalStorage} was present (including explicit empty object). */
     private boolean filesystemExternalStorageConfigured;
@@ -7015,6 +7234,9 @@ public class TraceEnvironmentConfig {
     /** Whether {@code android.display} was present (including explicit empty object). */
     private boolean androidDisplayConfigured;
     private AndroidDisplayConfig androidDisplayConfig;
+    /** Whether {@code android.displays} was present (including an explicit empty array). */
+    private boolean androidDisplaysConfigured;
+    private List<AndroidDisplayEntryConfig> androidDisplays = Collections.emptyList();
 
     /** Whether {@code android.configuration} was present (including explicit empty object). */
     private boolean androidConfigurationConfigured;
@@ -7049,6 +7271,8 @@ public class TraceEnvironmentConfig {
     /** Whether {@code android.sensors} was present (including explicit empty object). */
     private boolean androidSensorsConfigured;
     private AndroidSensorsConfig androidSensorsConfig;
+    private boolean androidSensorSamplesConfigured;
+    private Map<Integer, float[]> androidSensorSamples = Collections.emptyMap();
 
     /** Whether {@code android.clipboard} was present (including explicit empty object). */
     private boolean androidClipboardConfigured;
@@ -7200,7 +7424,7 @@ public class TraceEnvironmentConfig {
     };
 
     private static final String[] ANDROID_LOCALE_ALLOWED_KEYS = {
-            "languageTag", "timezoneId"
+            "languageTag", "languageTags", "timezoneId"
     };
 
     private static final String[] ANDROID_DISPLAY_ALLOWED_KEYS = {
@@ -7234,7 +7458,7 @@ public class TraceEnvironmentConfig {
 
     private static final String[] ANDROID_BATTERY_ALLOWED_KEYS = {
             "capacityPercent", "charging", "chargeCounterUah", "currentNowUa", "currentAverageUa",
-            "energyCounterNwh", "status", "chargeTimeRemainingMillis"
+            "energyCounterNwh", "status", "chargeTimeRemainingMillis", "plugged"
     };
 
     private static final String[] ANDROID_CAMERAS_ALLOWED_KEYS = {
@@ -7251,7 +7475,7 @@ public class TraceEnvironmentConfig {
             "maxDelaysMicros", "fifoReservedEventCounts", "fifoMaxEventCounts", "wakeUpSensors",
             "sensorIds", "reportingModes", "dynamicSensors", "requiredPermissions",
             "additionalInfoSupported", "highestDirectReportRateLevels",
-            "directChannelTypesSupported"
+            "directChannelTypesSupported", "samples"
     };
 
     private static final String[] ANDROID_CLIPBOARD_ALLOWED_KEYS = {
@@ -7639,6 +7863,13 @@ public class TraceEnvironmentConfig {
         validateNetworkWifi();
         validateNetworkBluetooth();
         validateNetworkLinks();
+        validateNetworkTcp(false);
+        validateNetworkTcp(true);
+        validateNetworkCapabilities();
+        validateLinuxProcesses();
+        validateLinuxCommands();
+        validateLinuxMincore();
+        validateAndroidDisplays();
         validateAndroidSettings();
         validateAndroidTelephony();
         validateAndroidPackages();
@@ -8921,6 +9152,17 @@ public class TraceEnvironmentConfig {
                     ANDROID_BATTERY_CHARGE_TIME_REMAINING_MILLIS_MAX);
         }
 
+        boolean pluggedConfigured = battery.containsKey("plugged");
+        int plugged = 0;
+        if (pluggedConfigured) {
+            plugged = requireExactJsonNumberIntField(battery, "plugged",
+                    "android.battery.plugged", 0, 4);
+            if (plugged != 0 && plugged != 1 && plugged != 2 && plugged != 4) {
+                throw new IllegalArgumentException(
+                        "android.battery.plugged must be 0, 1, 2, or 4");
+            }
+        }
+
         this.androidBatteryConfigured = true;
         this.androidBatteryConfig = new AndroidBatteryConfig(
                 capacityPercent, capacityPercentConfigured,
@@ -8930,7 +9172,8 @@ public class TraceEnvironmentConfig {
                 currentAverageUa, currentAverageUaConfigured,
                 energyCounterNwh, energyCounterNwhConfigured,
                 status, statusConfigured,
-                chargeTimeRemainingMillis, chargeTimeRemainingMillisConfigured);
+                chargeTimeRemainingMillis, chargeTimeRemainingMillisConfigured,
+                plugged, pluggedConfigured);
     }
 
     private static boolean isAllowedAndroidBatteryKey(String key) {
@@ -9150,6 +9393,8 @@ public class TraceEnvironmentConfig {
         if (android == null || !android.containsKey("sensors")) {
             this.androidSensorsConfigured = false;
             this.androidSensorsConfig = null;
+            this.androidSensorSamplesConfigured = false;
+            this.androidSensorSamples = Collections.emptyMap();
             return;
         }
         Object raw = android.get("sensors");
@@ -9160,7 +9405,7 @@ public class TraceEnvironmentConfig {
         for (String key : sensors.keySet()) {
             if (!isAllowedAndroidSensorsKey(key)) {
                 throw new IllegalArgumentException("android.sensors." + key
-                        + " is not an allowed key (types, dynamicTypes, dynamicDiscoverySupported, names, vendors, versions, stringTypes, maximumRanges, resolutions, powers, minDelaysMicros, maxDelaysMicros, fifoReservedEventCounts, fifoMaxEventCounts, wakeUpSensors, sensorIds, reportingModes, dynamicSensors, requiredPermissions, additionalInfoSupported, highestDirectReportRateLevels, directChannelTypesSupported)");
+                        + " is not an allowed key (types, dynamicTypes, dynamicDiscoverySupported, names, vendors, versions, stringTypes, maximumRanges, resolutions, powers, minDelaysMicros, maxDelaysMicros, fifoReservedEventCounts, fifoMaxEventCounts, wakeUpSensors, sensorIds, reportingModes, dynamicSensors, requiredPermissions, additionalInfoSupported, highestDirectReportRateLevels, directChannelTypesSupported, samples)");
             }
         }
 
@@ -9737,6 +9982,52 @@ public class TraceEnvironmentConfig {
             }
             directChannelTypesSupported = Collections.unmodifiableMap(built);
         }
+
+        boolean samplesConfigured = sensors.containsKey("samples");
+        Map<Integer, float[]> samples = Collections.emptyMap();
+        if (samplesConfigured) {
+            Object samplesRaw = sensors.get("samples");
+            if (!(samplesRaw instanceof JSONObject)) {
+                throw new IllegalArgumentException("android.sensors.samples must be a JSONObject");
+            }
+            JSONObject samplesObj = (JSONObject) samplesRaw;
+            Map<Integer, float[]> builtSamples = new LinkedHashMap<Integer, float[]>();
+            Set<Integer> knownTypes = new HashSet<Integer>(types);
+            knownTypes.addAll(dynamicTypes);
+            for (String sampleKey : samplesObj.keySet()) {
+                int typeValue = requireAndroidSensorNameTypeKey(sampleKey,
+                        "android.sensors.samples." + sampleKey);
+                Integer boxed = Integer.valueOf(typeValue);
+                if (!knownTypes.contains(boxed)) {
+                    throw new IllegalArgumentException("android.sensors.samples." + sampleKey
+                            + " is not listed in types or dynamicTypes");
+                }
+                Object listRaw = samplesObj.get(sampleKey);
+                if (!(listRaw instanceof JSONArray)) {
+                    throw new IllegalArgumentException("android.sensors.samples." + sampleKey
+                            + " must be a JSONArray of finite numbers");
+                }
+                JSONArray values = (JSONArray) listRaw;
+                float[] floats = new float[values.size()];
+                for (int i = 0; i < values.size(); i++) {
+                    Object item = values.get(i);
+                    if (!(item instanceof Number)) {
+                        throw new IllegalArgumentException("android.sensors.samples." + sampleKey
+                                + "[" + i + "] must be a finite JSON Number");
+                    }
+                    float f = ((Number) item).floatValue();
+                    if (Float.isNaN(f) || Float.isInfinite(f)) {
+                        throw new IllegalArgumentException("android.sensors.samples." + sampleKey
+                                + "[" + i + "] must be finite");
+                    }
+                    floats[i] = f;
+                }
+                builtSamples.put(boxed, floats);
+            }
+            samples = Collections.unmodifiableMap(builtSamples);
+        }
+        this.androidSensorSamplesConfigured = samplesConfigured;
+        this.androidSensorSamples = samples;
 
         this.androidSensorsConfigured = true;
         this.androidSensorsConfig = new AndroidSensorsConfig(types, typesConfigured,
@@ -12069,7 +12360,7 @@ public class TraceEnvironmentConfig {
         for (String key : localeNode.keySet()) {
             if (!isAllowedAndroidLocaleKey(key)) {
                 throw new IllegalArgumentException("android.locale." + key
-                        + " is not an allowed key (languageTag|timezoneId)");
+                        + " is not an allowed key (languageTag|languageTags|timezoneId)");
             }
         }
 
@@ -12078,6 +12369,22 @@ public class TraceEnvironmentConfig {
         if (languageTagConfigured) {
             languageTag = requireAndroidLocaleLanguageTag(localeNode.get("languageTag"),
                     "android.locale.languageTag");
+        }
+
+        boolean languageTagsConfigured = localeNode.containsKey("languageTags");
+        List<String> languageTags = Collections.emptyList();
+        if (languageTagsConfigured) {
+            Object rawTags = localeNode.get("languageTags");
+            if (!(rawTags instanceof JSONArray)) {
+                throw new IllegalArgumentException("android.locale.languageTags must be a JSONArray");
+            }
+            JSONArray array = (JSONArray) rawTags;
+            List<String> built = new ArrayList<String>(array.size());
+            for (int i = 0; i < array.size(); i++) {
+                built.add(requireAndroidLocaleLanguageTag(array.get(i),
+                        "android.locale.languageTags[" + i + "]"));
+            }
+            languageTags = Collections.unmodifiableList(built);
         }
 
         boolean timezoneIdConfigured = localeNode.containsKey("timezoneId");
@@ -12090,6 +12397,7 @@ public class TraceEnvironmentConfig {
         this.androidLocaleConfigured = true;
         this.androidLocaleConfig = new AndroidLocaleConfig(
                 languageTag, languageTagConfigured,
+                languageTags, languageTagsConfigured,
                 timezoneId, timezoneIdConfigured);
     }
 
@@ -13422,6 +13730,14 @@ public class TraceEnvironmentConfig {
                 systemApp = (Boolean) systemAppRaw;
             }
 
+            boolean applicationFlagsConfigured = pkg.containsKey("applicationFlags");
+            Integer applicationFlags = null;
+            if (applicationFlagsConfigured) {
+                applicationFlags = Integer.valueOf(requireExactJsonNumberIntField(pkg,
+                        "applicationFlags", pathPrefix + ".applicationFlags",
+                        Integer.MIN_VALUE, Integer.MAX_VALUE));
+            }
+
             boolean installerPackageNameConfigured = pkg.containsKey("installerPackageName");
             String installerPackageName = null;
             if (installerPackageNameConfigured) {
@@ -13509,6 +13825,7 @@ public class TraceEnvironmentConfig {
                     uid, uidConfigured,
                     enabled, enabledConfigured,
                     systemApp, systemAppConfigured,
+                    applicationFlags, applicationFlagsConfigured,
                     installerPackageName, installerPackageNameConfigured,
                     initiatingPackageName, initiatingPackageNameConfigured,
                     originatingPackageName, originatingPackageNameConfigured,
@@ -13792,6 +14109,8 @@ public class TraceEnvironmentConfig {
             this.filesystemExternalStorageConfig = null;
             this.filesystemSystemDirectoriesConfigured = false;
             this.filesystemSystemDirectoriesConfig = null;
+            this.filesystemDirectoriesConfigured = false;
+            this.filesystemDirectories = Collections.emptyMap();
             return;
         }
         Object filesystemRaw = root.get("filesystem");
@@ -13803,7 +14122,7 @@ public class TraceEnvironmentConfig {
             if (!isAllowedFilesystemKey(key)) {
                 throw new IllegalArgumentException("filesystem." + key
                         + " is not an allowed key"
-                        + " (stat|statfs|mounts|links|externalStorage|systemDirectories)");
+                        + " (stat|statfs|mounts|links|externalStorage|systemDirectories|directories)");
             }
         }
         validateFilesystemStat(filesystem);
@@ -13812,6 +14131,7 @@ public class TraceEnvironmentConfig {
         validateFilesystemLinks(filesystem);
         validateFilesystemExternalStorage(filesystem);
         validateFilesystemSystemDirectories(filesystem);
+        validateFilesystemDirectories(filesystem);
     }
 
     private void validateFilesystemStat(JSONObject filesystem) {
@@ -16683,6 +17003,402 @@ public class TraceEnvironmentConfig {
         return false;
     }
 
+    private static final String[] NETWORK_TCP_ALLOWED_KEYS = {
+            "slot", "localIpv4", "localIpv6", "localPort", "remoteIpv4", "remoteIpv6",
+            "remotePort", "stateHex", "txQueue", "rxQueue", "uid", "timeout", "inode"
+    };
+
+    private static final String[] NETWORK_CAPABILITIES_ALLOWED_KEYS = {
+            "transportTypes", "networkCapabilities"
+    };
+
+    private static final String[] LINUX_PROCESS_ALLOWED_KEYS = {
+            "pid", "cmdline", "comm", "exe"
+    };
+
+    private static final String[] ANDROID_DISPLAY_ENTRY_ALLOWED_KEYS = {
+            "id", "name", "flags", "widthPixels", "heightPixels", "densityDpi"
+    };
+
+    private void validateNetworkTcp(boolean ipv6) {
+        JSONObject network = section("network");
+        String key = ipv6 ? "tcp6" : "tcp";
+        if (network == null || !network.containsKey(key)) {
+            if (ipv6) {
+                this.networkTcp6Configured = false;
+                this.networkTcp6 = Collections.emptyList();
+            } else {
+                this.networkTcpConfigured = false;
+                this.networkTcp = Collections.emptyList();
+            }
+            return;
+        }
+        Object raw = network.get(key);
+        if (!(raw instanceof JSONArray)) {
+            throw new IllegalArgumentException("network." + key + " must be a JSONArray");
+        }
+        JSONArray array = (JSONArray) raw;
+        List<NetworkTcpConfig> built = new ArrayList<NetworkTcpConfig>(array.size());
+        Set<Integer> slots = new HashSet<Integer>();
+        for (int i = 0; i < array.size(); i++) {
+            String path = "network." + key + "[" + i + "]";
+            Object entryRaw = array.get(i);
+            if (!(entryRaw instanceof JSONObject)) {
+                throw new IllegalArgumentException(path + " must be a JSONObject");
+            }
+            JSONObject entry = (JSONObject) entryRaw;
+            for (String field : entry.keySet()) {
+                if (!isAllowedKey(field, NETWORK_TCP_ALLOWED_KEYS)) {
+                    throw new IllegalArgumentException(path + "." + field + " is not an allowed key");
+                }
+            }
+            int slot = requireExactJsonNumberIntField(entry, "slot", path + ".slot", 0, Integer.MAX_VALUE);
+            if (!slots.add(Integer.valueOf(slot))) {
+                throw new IllegalArgumentException(path + ".slot duplicates " + slot);
+            }
+            String localAddr;
+            String remoteAddr;
+            if (ipv6) {
+                localAddr = requireHexAddress(entry.get("localIpv6"), path + ".localIpv6", 32);
+                remoteAddr = requireHexAddress(entry.get("remoteIpv6"), path + ".remoteIpv6", 32);
+            } else {
+                localAddr = requireIpv4StringField(entry, "localIpv4", path + ".localIpv4", true);
+                remoteAddr = requireIpv4StringField(entry, "remoteIpv4", path + ".remoteIpv4", true);
+            }
+            int localPort = requireExactJsonNumberIntField(entry, "localPort", path + ".localPort", 0, 65535);
+            int remotePort = requireExactJsonNumberIntField(entry, "remotePort", path + ".remotePort", 0, 65535);
+            String stateHex = requireTcpStateHex(entry.get("stateHex"), path + ".stateHex");
+            long txQueue = entry.containsKey("txQueue")
+                    ? requireExactJsonNumberLongField(entry, "txQueue", path + ".txQueue", 0L, 0xffffffffL)
+                    : 0L;
+            long rxQueue = entry.containsKey("rxQueue")
+                    ? requireExactJsonNumberLongField(entry, "rxQueue", path + ".rxQueue", 0L, 0xffffffffL)
+                    : 0L;
+            int uid = entry.containsKey("uid")
+                    ? requireExactJsonNumberIntField(entry, "uid", path + ".uid", 0, Integer.MAX_VALUE)
+                    : 0;
+            int timeout = entry.containsKey("timeout")
+                    ? requireExactJsonNumberIntField(entry, "timeout", path + ".timeout", 0, Integer.MAX_VALUE)
+                    : 0;
+            long inode = entry.containsKey("inode")
+                    ? requireExactJsonNumberLongField(entry, "inode", path + ".inode", 0L, Long.MAX_VALUE)
+                    : 0L;
+            built.add(new NetworkTcpConfig(slot, localAddr, localPort, remoteAddr, remotePort,
+                    stateHex, txQueue, rxQueue, uid, timeout, inode, ipv6));
+        }
+        if (ipv6) {
+            this.networkTcp6Configured = true;
+            this.networkTcp6 = Collections.unmodifiableList(built);
+        } else {
+            this.networkTcpConfigured = true;
+            this.networkTcp = Collections.unmodifiableList(built);
+        }
+    }
+
+    private static String requireTcpStateHex(Object raw, String path) {
+        if (!(raw instanceof String)) {
+            throw new IllegalArgumentException(path + " must be a 2-digit hex String");
+        }
+        String text = ((String) raw).toUpperCase(Locale.ROOT);
+        if (text.length() != 2) {
+            throw new IllegalArgumentException(path + " must be a 2-digit hex String");
+        }
+        for (int i = 0; i < 2; i++) {
+            if (Character.digit(text.charAt(i), 16) < 0) {
+                throw new IllegalArgumentException(path + " must be a 2-digit hex String");
+            }
+        }
+        return text;
+    }
+
+    private static String requireHexAddress(Object raw, String path, int hexLen) {
+        if (!(raw instanceof String)) {
+            throw new IllegalArgumentException(path + " must be a " + hexLen + "-digit hex String");
+        }
+        String text = ((String) raw).toLowerCase(Locale.ROOT);
+        if (text.length() != hexLen) {
+            throw new IllegalArgumentException(path + " must be a " + hexLen + "-digit hex String");
+        }
+        for (int i = 0; i < hexLen; i++) {
+            if (Character.digit(text.charAt(i), 16) < 0) {
+                throw new IllegalArgumentException(path + " must be a " + hexLen + "-digit hex String");
+            }
+        }
+        return text;
+    }
+
+    private static boolean isAllowedKey(String key, String[] allowed) {
+        for (int i = 0; i < allowed.length; i++) {
+            if (allowed[i].equals(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void validateNetworkCapabilities() {
+        JSONObject network = section("network");
+        if (network == null || !network.containsKey("capabilities")) {
+            this.networkCapabilitiesConfigured = false;
+            this.networkCapabilitiesConfig = null;
+            return;
+        }
+        Object raw = network.get("capabilities");
+        if (!(raw instanceof JSONObject)) {
+            throw new IllegalArgumentException("network.capabilities must be a JSONObject");
+        }
+        JSONObject node = (JSONObject) raw;
+        for (String field : node.keySet()) {
+            if (!isAllowedKey(field, NETWORK_CAPABILITIES_ALLOWED_KEYS)) {
+                throw new IllegalArgumentException("network.capabilities." + field
+                        + " is not an allowed key");
+            }
+        }
+        List<Integer> transports = parseUniqueIntArray(node.get("transportTypes"),
+                "network.capabilities.transportTypes", 0, 63, true);
+        List<Integer> caps = parseUniqueIntArray(node.get("networkCapabilities"),
+                "network.capabilities.networkCapabilities", 0, 63, true);
+        this.networkCapabilitiesConfigured = true;
+        this.networkCapabilitiesConfig = new NetworkCapabilitiesConfig(transports, caps);
+    }
+
+    private static List<Integer> parseUniqueIntArray(Object raw, String path, int min, int max,
+                                                     boolean allowMissingEmpty) {
+        if (raw == null) {
+            return Collections.emptyList();
+        }
+        if (!(raw instanceof JSONArray)) {
+            throw new IllegalArgumentException(path + " must be a JSONArray");
+        }
+        JSONArray array = (JSONArray) raw;
+        List<Integer> built = new ArrayList<Integer>(array.size());
+        Set<Integer> seen = new HashSet<Integer>();
+        for (int i = 0; i < array.size(); i++) {
+            int value = requireExactJsonNumberIntValue(array.get(i), path + "[" + i + "]", min, max);
+            Integer boxed = Integer.valueOf(value);
+            if (!seen.add(boxed)) {
+                throw new IllegalArgumentException(path + "[" + i + "] duplicates " + value);
+            }
+            built.add(boxed);
+        }
+        return Collections.unmodifiableList(built);
+    }
+
+    private void validateLinuxProcesses() {
+        JSONObject linux = section("linux");
+        if (linux == null || !linux.containsKey("processes")) {
+            this.linuxProcessesConfigured = false;
+            this.linuxProcesses = Collections.emptyList();
+            return;
+        }
+        Object raw = linux.get("processes");
+        if (!(raw instanceof JSONArray)) {
+            throw new IllegalArgumentException("linux.processes must be a JSONArray");
+        }
+        JSONArray array = (JSONArray) raw;
+        List<LinuxProcessConfig> built = new ArrayList<LinuxProcessConfig>(array.size());
+        Set<Integer> pids = new HashSet<Integer>();
+        for (int i = 0; i < array.size(); i++) {
+            String path = "linux.processes[" + i + "]";
+            Object entryRaw = array.get(i);
+            if (!(entryRaw instanceof JSONObject)) {
+                throw new IllegalArgumentException(path + " must be a JSONObject");
+            }
+            JSONObject entry = (JSONObject) entryRaw;
+            for (String field : entry.keySet()) {
+                if (!isAllowedKey(field, LINUX_PROCESS_ALLOWED_KEYS)) {
+                    throw new IllegalArgumentException(path + "." + field + " is not an allowed key");
+                }
+            }
+            int pid = requireExactJsonNumberIntField(entry, "pid", path + ".pid", 1, Integer.MAX_VALUE);
+            if (!pids.add(Integer.valueOf(pid))) {
+                throw new IllegalArgumentException(path + ".pid duplicates " + pid);
+            }
+            List<String> cmdline = Collections.emptyList();
+            if (entry.containsKey("cmdline")) {
+                Object cmdRaw = entry.get("cmdline");
+                if (!(cmdRaw instanceof JSONArray)) {
+                    throw new IllegalArgumentException(path + ".cmdline must be a JSONArray");
+                }
+                JSONArray cmdArray = (JSONArray) cmdRaw;
+                List<String> cmdBuilt = new ArrayList<String>(cmdArray.size());
+                for (int c = 0; c < cmdArray.size(); c++) {
+                    Object item = cmdArray.get(c);
+                    if (!(item instanceof String)) {
+                        throw new IllegalArgumentException(path + ".cmdline[" + c + "] must be a String");
+                    }
+                    cmdBuilt.add((String) item);
+                }
+                cmdline = Collections.unmodifiableList(cmdBuilt);
+            }
+            String comm = null;
+            if (entry.containsKey("comm")) {
+                Object commRaw = entry.get("comm");
+                if (!(commRaw instanceof String) || ((String) commRaw).isEmpty()) {
+                    throw new IllegalArgumentException(path + ".comm must be a non-empty String");
+                }
+                comm = (String) commRaw;
+            }
+            String exe = null;
+            if (entry.containsKey("exe")) {
+                Object exeRaw = entry.get("exe");
+                if (!(exeRaw instanceof String) || ((String) exeRaw).isEmpty()) {
+                    throw new IllegalArgumentException(path + ".exe must be a non-empty String");
+                }
+                exe = (String) exeRaw;
+            }
+            built.add(new LinuxProcessConfig(pid, cmdline, comm, exe));
+        }
+        this.linuxProcessesConfigured = true;
+        this.linuxProcesses = Collections.unmodifiableList(built);
+    }
+
+    private void validateLinuxCommands() {
+        JSONObject linux = section("linux");
+        if (linux == null || !linux.containsKey("commands")) {
+            this.linuxCommandsConfigured = false;
+            this.linuxCommands = Collections.emptyMap();
+            return;
+        }
+        Object raw = linux.get("commands");
+        if (!(raw instanceof JSONObject)) {
+            throw new IllegalArgumentException("linux.commands must be a JSONObject");
+        }
+        JSONObject node = (JSONObject) raw;
+        Map<String, String> built = new LinkedHashMap<String, String>();
+        for (String command : node.keySet()) {
+            if (command == null || command.isEmpty()) {
+                throw new IllegalArgumentException("linux.commands keys must be non-empty Strings");
+            }
+            Object value = node.get(command);
+            if (!(value instanceof String)) {
+                throw new IllegalArgumentException("linux.commands[\"" + command + "\"] must be a String");
+            }
+            built.put(command, (String) value);
+        }
+        this.linuxCommandsConfigured = true;
+        this.linuxCommands = Collections.unmodifiableMap(built);
+    }
+
+    private void validateLinuxMincore() {
+        JSONObject linux = section("linux");
+        if (linux == null || !linux.containsKey("mincore")) {
+            this.linuxMincoreConfigured = false;
+            this.linuxMincoreResident = false;
+            return;
+        }
+        Object raw = linux.get("mincore");
+        if (!(raw instanceof JSONObject)) {
+            throw new IllegalArgumentException("linux.mincore must be a JSONObject");
+        }
+        JSONObject node = (JSONObject) raw;
+        if (node.size() == 1 && node.containsKey("resident")) {
+            Object residentRaw = node.get("resident");
+            if (!(residentRaw instanceof Boolean)) {
+                throw new IllegalArgumentException("linux.mincore.resident must be a Boolean");
+            }
+            this.linuxMincoreConfigured = true;
+            this.linuxMincoreResident = ((Boolean) residentRaw).booleanValue();
+            return;
+        }
+        throw new IllegalArgumentException("linux.mincore only allows key resident");
+    }
+
+    private void validateAndroidDisplays() {
+        JSONObject android = android();
+        if (android == null || !android.containsKey("displays")) {
+            this.androidDisplaysConfigured = false;
+            this.androidDisplays = Collections.emptyList();
+            return;
+        }
+        Object raw = android.get("displays");
+        if (!(raw instanceof JSONArray)) {
+            throw new IllegalArgumentException("android.displays must be a JSONArray");
+        }
+        JSONArray array = (JSONArray) raw;
+        List<AndroidDisplayEntryConfig> built = new ArrayList<AndroidDisplayEntryConfig>(array.size());
+        Set<Integer> ids = new HashSet<Integer>();
+        for (int i = 0; i < array.size(); i++) {
+            String path = "android.displays[" + i + "]";
+            Object entryRaw = array.get(i);
+            if (!(entryRaw instanceof JSONObject)) {
+                throw new IllegalArgumentException(path + " must be a JSONObject");
+            }
+            JSONObject entry = (JSONObject) entryRaw;
+            for (String field : entry.keySet()) {
+                if (!isAllowedKey(field, ANDROID_DISPLAY_ENTRY_ALLOWED_KEYS)) {
+                    throw new IllegalArgumentException(path + "." + field + " is not an allowed key");
+                }
+            }
+            int id = requireExactJsonNumberIntField(entry, "id", path + ".id", 0, Integer.MAX_VALUE);
+            if (!ids.add(Integer.valueOf(id))) {
+                throw new IllegalArgumentException(path + ".id duplicates " + id);
+            }
+            String name = "";
+            if (entry.containsKey("name")) {
+                Object nameRaw = entry.get("name");
+                if (!(nameRaw instanceof String)) {
+                    throw new IllegalArgumentException(path + ".name must be a String");
+                }
+                name = (String) nameRaw;
+            }
+            int flags = entry.containsKey("flags")
+                    ? requireExactJsonNumberIntField(entry, "flags", path + ".flags", 0, Integer.MAX_VALUE)
+                    : 0;
+            int width = requireExactJsonNumberIntField(entry, "widthPixels", path + ".widthPixels",
+                    ANDROID_DISPLAY_PIXELS_MIN, ANDROID_DISPLAY_PIXELS_MAX);
+            int height = requireExactJsonNumberIntField(entry, "heightPixels", path + ".heightPixels",
+                    ANDROID_DISPLAY_PIXELS_MIN, ANDROID_DISPLAY_PIXELS_MAX);
+            int dpi = requireExactJsonNumberIntField(entry, "densityDpi", path + ".densityDpi",
+                    ANDROID_DISPLAY_DENSITY_DPI_MIN, ANDROID_DISPLAY_DENSITY_DPI_MAX);
+            built.add(new AndroidDisplayEntryConfig(id, name, flags, width, height, dpi));
+        }
+        this.androidDisplaysConfigured = true;
+        this.androidDisplays = Collections.unmodifiableList(built);
+    }
+
+    private void validateFilesystemDirectories(JSONObject filesystem) {
+        if (!filesystem.containsKey("directories")) {
+            this.filesystemDirectoriesConfigured = false;
+            this.filesystemDirectories = Collections.emptyMap();
+            return;
+        }
+        Object raw = filesystem.get("directories");
+        if (!(raw instanceof JSONObject)) {
+            throw new IllegalArgumentException("filesystem.directories must be a JSONObject");
+        }
+        JSONObject node = (JSONObject) raw;
+        Map<String, List<String>> built = new LinkedHashMap<String, List<String>>();
+        for (String pathKey : node.keySet()) {
+            String path = normalizePosixAbsolutePath(pathKey, "filesystem.directories[\"" + pathKey + "\"]");
+            Object listRaw = node.get(pathKey);
+            if (!(listRaw instanceof JSONArray)) {
+                throw new IllegalArgumentException("filesystem.directories[\"" + pathKey
+                        + "\"] must be a JSONArray of names");
+            }
+            JSONArray names = (JSONArray) listRaw;
+            List<String> builtNames = new ArrayList<String>(names.size());
+            Set<String> seen = new HashSet<String>();
+            for (int i = 0; i < names.size(); i++) {
+                Object item = names.get(i);
+                if (!(item instanceof String) || ((String) item).isEmpty()
+                        || ((String) item).indexOf('/') >= 0) {
+                    throw new IllegalArgumentException("filesystem.directories[\"" + pathKey
+                            + "\"][" + i + "] must be a non-empty single path segment");
+                }
+                String name = (String) item;
+                if (!seen.add(name)) {
+                    throw new IllegalArgumentException("filesystem.directories[\"" + pathKey
+                            + "\"] duplicates " + name);
+                }
+                builtNames.add(name);
+            }
+            built.put(path, Collections.unmodifiableList(builtNames));
+        }
+        this.filesystemDirectoriesConfigured = true;
+        this.filesystemDirectories = Collections.unmodifiableMap(built);
+    }
+
     /**
      * Six colon-separated hex octets (AA:BB:CC:DD:EE:FF). No whitespace or other separators.
      * Returns Locale.ROOT lowercase form.
@@ -17053,6 +17769,30 @@ public class TraceEnvironmentConfig {
     public byte[] getRandomBytes(String key, int length) {
         byte[] seed = getRandomSeed(key);
         return seed == null ? null : repeat(seed, length);
+    }
+
+    /**
+     * Shared Media DRM {@code deviceUniqueId} bytes for native {@code AMediaDrm} and
+     * Java {@code MediaDrm.getPropertyByteArray}. Preference: explicit
+     * {@code android.drm.deviceUniqueIdHex}, then {@code random.mediaDrmDeviceUniqueIdHex},
+     * then UTF-8 {@code android.drm.marker}. Returns {@code null} when DRM is not configured
+     * and no random hex is present.
+     */
+    public byte[] resolveMediaDrmDeviceUniqueId() {
+        if (isAndroidDrmConfigured()) {
+            AndroidDrmConfig drm = getAndroidDrmConfig();
+            if (drm != null && drm.isDeviceUniqueIdConfigured()) {
+                return drm.getDeviceUniqueId();
+            }
+            byte[] randomId = getRandomBytes("mediaDrmDeviceUniqueIdHex", 0x20);
+            if (randomId != null) {
+                return randomId;
+            }
+            if (drm != null && drm.getMarker() != null) {
+                return drm.getMarker().getBytes(StandardCharsets.UTF_8);
+            }
+        }
+        return getRandomBytes("mediaDrmDeviceUniqueIdHex", 0x20);
     }
 
     public UUID getUuid(UUID fallback) {
@@ -17604,6 +18344,10 @@ public class TraceEnvironmentConfig {
      */
     public byte[] readProfileOverlayFile(String pathname) {
         return profileFileOverlay == null ? null : profileFileOverlay.read(pathname);
+    }
+
+    public String[] listProfileOverlayDirectory(String pathname) {
+        return profileFileOverlay == null ? null : profileFileOverlay.list(pathname);
     }
 
     /**
@@ -19065,6 +19809,106 @@ public class TraceEnvironmentConfig {
      */
     public List<NetworkIpv6AddressConfig> getNetworkIpv6Addresses() {
         return networkIpv6Addresses;
+    }
+
+    public boolean isNetworkTcpConfigured() {
+        return networkTcpConfigured;
+    }
+
+    public List<NetworkTcpConfig> getNetworkTcp() {
+        return networkTcp;
+    }
+
+    public boolean isNetworkTcp6Configured() {
+        return networkTcp6Configured;
+    }
+
+    public List<NetworkTcpConfig> getNetworkTcp6() {
+        return networkTcp6;
+    }
+
+    public boolean isNetworkCapabilitiesConfigured() {
+        return networkCapabilitiesConfigured;
+    }
+
+    public NetworkCapabilitiesConfig getNetworkCapabilitiesConfig() {
+        return networkCapabilitiesConfig;
+    }
+
+    public boolean isLinuxProcessesConfigured() {
+        return linuxProcessesConfigured;
+    }
+
+    public List<LinuxProcessConfig> getLinuxProcesses() {
+        return linuxProcesses;
+    }
+
+    public LinuxProcessConfig findLinuxProcess(int pid) {
+        for (int i = 0; i < linuxProcesses.size(); i++) {
+            LinuxProcessConfig process = linuxProcesses.get(i);
+            if (process.getPid() == pid) {
+                return process;
+            }
+        }
+        return null;
+    }
+
+    public boolean isLinuxCommandsConfigured() {
+        return linuxCommandsConfigured;
+    }
+
+    public Map<String, String> getLinuxCommands() {
+        return linuxCommands;
+    }
+
+    public String getLinuxCommandStdout(String command) {
+        return command == null ? null : linuxCommands.get(command);
+    }
+
+    public boolean isLinuxMincoreConfigured() {
+        return linuxMincoreConfigured;
+    }
+
+    public boolean isLinuxMincoreResident() {
+        return linuxMincoreResident;
+    }
+
+    public boolean isFilesystemDirectoriesConfigured() {
+        return filesystemDirectoriesConfigured;
+    }
+
+    public List<String> getFilesystemDirectoryEntries(String path) {
+        return filesystemDirectories.get(path);
+    }
+
+    public boolean isAndroidDisplaysConfigured() {
+        return androidDisplaysConfigured;
+    }
+
+    public List<AndroidDisplayEntryConfig> getAndroidDisplays() {
+        return androidDisplays;
+    }
+
+    public AndroidDisplayEntryConfig findAndroidDisplay(int id) {
+        for (int i = 0; i < androidDisplays.size(); i++) {
+            AndroidDisplayEntryConfig display = androidDisplays.get(i);
+            if (display.getId() == id) {
+                return display;
+            }
+        }
+        return null;
+    }
+
+    public boolean isAndroidSensorSamplesConfigured() {
+        return androidSensorSamplesConfigured;
+    }
+
+    public float[] getAndroidSensorSample(int sensorType) {
+        float[] sample = androidSensorSamples.get(Integer.valueOf(sensorType));
+        if (sample == null) {
+            return null;
+        }
+        return Arrays.copyOf(sample, sample.length);
     }
 
     /**

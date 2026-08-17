@@ -111,6 +111,7 @@ public class AndroidARMEmulator extends AbstractARMEmulator<AndroidFileIO> imple
             throw new IllegalStateException("vm is already created");
         }
         vm = createDalvikVMInternal(apkFile);
+        AndroidEnvironmentModules.registerConfigured(this, vm);
         return vm;
     }
 

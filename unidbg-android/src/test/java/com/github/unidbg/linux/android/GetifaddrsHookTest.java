@@ -131,6 +131,21 @@ public class GetifaddrsHookTest {
     }
 
     @Test
+    public void testIpv6FromConfiguredAddressesArm32() throws Exception {
+        runIpv6FromConfiguredAddresses(false);
+    }
+
+    @Test
+    public void testIpv6FromConfiguredAddressesArm64() throws Exception {
+        runIpv6FromConfiguredAddresses(true);
+    }
+
+    @Test
+    public void testIpv6AbsentKeepsIpv4OnlyArm64() throws Exception {
+        runListIpv4MacFlags(true);
+    }
+
+    @Test
     public void testIsolationAndNoRawSidecarArm32() throws Exception {
         runIsolationAndNoRawSidecar(false);
     }
@@ -440,6 +455,45 @@ public class GetifaddrsHookTest {
         }
     }
 
+    private static void runIpv6FromConfiguredAddresses(boolean is64Bit) throws Exception {
+        String json = "{"
+                + "\"network\":{"
+                + "\"interfaces\":["
+                + "{\"name\":\"wlan0\",\"index\":2,\"ipv4\":\"192.168.1.100\",\"flags\":4355}"
+                + "],"
+                + "\"ipv6Addresses\":["
+                + "{\"interfaceName\":\"wlan0\",\"addressHex\":\"fe800000000000000000000000000001\","
+                + "\"prefixLength\":64,\"scope\":32,\"flags\":128}"
+                + "]"
+                + "}}";
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.parse(json);
+        AndroidEmulator emulator = null;
+        CapturingSink sink = new CapturingSink();
+        java.util.List<MemoryBlock> blocks = new java.util.ArrayList<MemoryBlock>();
+        try {
+            emulator = builder(is64Bit).setEnvironmentConfig(config).build();
+            TraceEnvironmentEventSink.register(emulator, sink);
+            GetifaddrsHook hook = new GetifaddrsHook(emulator);
+            MemoryBlock out = emulator.getMemory().malloc(emulator.getPointerSize(), true);
+            blocks.add(out);
+            Integer rc = hook.tryGetifaddrs(emulator, out.getPointer());
+            assertEquals(Integer.valueOf(0), rc);
+            java.util.List<Walked> walked = walk(emulator, out.getPointer().getPointer(0), is64Bit);
+            assertEquals(2, walked.size());
+            Walked inet = walked.get(0);
+            assertEquals(GetifaddrsHook.AF_INET, inet.family);
+            Walked inet6 = walked.get(1);
+            assertEquals(GetifaddrsHook.AF_INET6, inet6.family);
+            assertArrayEquals(GetifaddrsHook.parseIpv6Bytes("fe800000000000000000000000000001"), inet6.ipv6);
+            assertEquals(2, inet6.scopeId);
+            CapturedEvent ev = findLast(sink.events, "network_device", "getifaddrs");
+            assertNotNull(ev);
+            assertFalse(String.valueOf(ev.value).contains("fe80"));
+        } finally {
+            close(emulator, sink, blocks);
+        }
+    }
+
     private static AndroidEmulatorBuilder builder(boolean is64Bit) {
         return is64Bit ? AndroidEmulatorBuilder.for64Bit() : AndroidEmulatorBuilder.for32Bit();
     }
@@ -475,6 +529,10 @@ public class GetifaddrsHookTest {
                     assertEquals(GetifaddrsHook.AF_INET, broad.getShort(0) & 0xffff);
                     w.broadcast = broad.getByteArray(4, 4);
                 }
+            } else if (w.family == GetifaddrsHook.AF_INET6) {
+                w.ipv6 = addr.getByteArray(8, 16);
+                w.scopeId = addr.getInt(24);
+                assertNull(cur.getPointer(offIfu));
             } else if (w.family == GetifaddrsHook.AF_PACKET) {
                 w.ifindex = addr.getInt(4);
                 w.hatype = addr.getShort(8) & 0xffff;
@@ -556,6 +614,8 @@ public class GetifaddrsHookTest {
         int hatype;
         byte[] mac;
         byte[] ipv4;
+        byte[] ipv6;
+        int scopeId;
         byte[] broadcast;
         boolean netmaskNull;
         boolean dataNull;

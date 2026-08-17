@@ -47,6 +47,38 @@ public class LinuxFileSystem extends BaseFileSystem<AndroidFileIO> implements Fi
                         "读取画像文件 " + pathname);
                 return FileResult.<AndroidFileIO>success(new ByteArrayFileIO(oflags, pathname, overlayFile));
             }
+            String[] overlayDir = config.listProfileOverlayDirectory(pathname);
+            if (overlayDir != null) {
+                if ((oflags & 3) != O_RDONLY) {
+                    return FileResult.failed(UnixEmulator.EACCES);
+                }
+                DirectoryFileIO.DirectoryEntry[] entries =
+                        new DirectoryFileIO.DirectoryEntry[overlayDir.length];
+                for (int i = 0; i < overlayDir.length; i++) {
+                    entries[i] = new DirectoryFileIO.DirectoryEntry(true, overlayDir[i]);
+                }
+                TraceEnvironmentEventSink.emit(emulator, "linux_file", "open(\"" + pathname + "\")",
+                        "path=" + pathname + ",count=" + overlayDir.length, "profile-file",
+                        "枚举画像目录 " + pathname);
+                return FileResult.<AndroidFileIO>success(new DirectoryFileIO(oflags, pathname, entries));
+            }
+        }
+        if (config != null && config.isFilesystemDirectoriesConfigured()) {
+            java.util.List<String> names = config.getFilesystemDirectoryEntries(pathname);
+            if (names != null) {
+                if ((oflags & 3) != O_RDONLY) {
+                    return FileResult.failed(UnixEmulator.EACCES);
+                }
+                DirectoryFileIO.DirectoryEntry[] entries =
+                        new DirectoryFileIO.DirectoryEntry[names.size()];
+                for (int i = 0; i < names.size(); i++) {
+                    entries[i] = new DirectoryFileIO.DirectoryEntry(true, names.get(i));
+                }
+                TraceEnvironmentEventSink.emit(emulator, "filesystem_directory", "open(\"" + pathname + "\")",
+                        "path=" + pathname + ",count=" + names.size(), "json-config",
+                        "枚举配置目录 " + pathname);
+                return FileResult.<AndroidFileIO>success(new DirectoryFileIO(oflags, pathname, entries));
+            }
         }
         // 1) linux.files exact (and pid→self). Below overlay; still wins over generated / default.
         byte[] configuredFile = config == null ? null : config.getLinuxFileBytes(pathname);
@@ -292,6 +324,25 @@ public class LinuxFileSystem extends BaseFileSystem<AndroidFileIO> implements Fi
                     openConfiguredLinkLayerMulticastFile(config, pathname, oflags);
             if (mcastResult != null) {
                 return mcastResult;
+            }
+        }
+
+        if (config != null && config.isNetworkTcpConfigured()) {
+            FileResult<AndroidFileIO> tcpResult = openConfiguredTcpFile(config, pathname, oflags, false);
+            if (tcpResult != null) {
+                return tcpResult;
+            }
+        }
+        if (config != null && config.isNetworkTcp6Configured()) {
+            FileResult<AndroidFileIO> tcp6Result = openConfiguredTcpFile(config, pathname, oflags, true);
+            if (tcp6Result != null) {
+                return tcp6Result;
+            }
+        }
+        if (config != null && config.isLinuxProcessesConfigured()) {
+            FileResult<AndroidFileIO> processResult = openConfiguredProcessFile(config, pathname, oflags);
+            if (processResult != null) {
+                return processResult;
             }
         }
 
@@ -1331,6 +1382,115 @@ public class LinuxFileSystem extends BaseFileSystem<AndroidFileIO> implements Fi
                 "read(\"" + pathname + "\")", value, "json-config",
                 "读取配置的 IPv4 路由表 " + pathname);
         return FileResult.<AndroidFileIO>success(new ByteArrayFileIO(oflags, pathname, data));
+    }
+
+    private FileResult<AndroidFileIO> openConfiguredTcpFile(TraceEnvironmentConfig config,
+                                                           String pathname, int oflags,
+                                                           boolean ipv6) {
+        if (!isProcNetTcpPath(pathname, ipv6)) {
+            return null;
+        }
+        if ((oflags & 3) != 0 || (oflags & O_DIRECTORY) != 0) {
+            return null;
+        }
+        byte[] data = ipv6
+                ? ConfiguredTcpFiles.renderProcNetTcp6(config)
+                : ConfiguredTcpFiles.renderProcNetTcp(config);
+        if (data == null) {
+            return null;
+        }
+        int count = ipv6 ? config.getNetworkTcp6().size() : config.getNetworkTcp().size();
+        String format = ipv6 ? "proc-net-tcp6" : "proc-net-tcp";
+        String value = "path=" + pathname + ",format=" + format + ",rowCount=" + count
+                + ",bytes=" + data.length;
+        TraceEnvironmentEventSink.emit(emulator, "network_device",
+                "read(\"" + pathname + "\")", value, "json-config",
+                "读取配置的 TCP 表 " + pathname);
+        return FileResult.<AndroidFileIO>success(new ByteArrayFileIO(oflags, pathname, data));
+    }
+
+    private boolean isProcNetTcpPath(String pathname, boolean ipv6) {
+        String leaf = ipv6 ? "tcp6" : "tcp";
+        if (("/proc/net/" + leaf).equals(pathname) || ("/proc/self/net/" + leaf).equals(pathname)) {
+            return true;
+        }
+        return ("/proc/" + emulator.getPid() + "/net/" + leaf).equals(pathname);
+    }
+
+    private FileResult<AndroidFileIO> openConfiguredProcessFile(TraceEnvironmentConfig config,
+                                                               String pathname, int oflags) {
+        if (pathname == null) {
+            return null;
+        }
+        if ("/proc".equals(pathname)) {
+            if ((oflags & 3) != 0) {
+                return FileResult.failed(UnixEmulator.EACCES);
+            }
+            java.util.List<TraceEnvironmentConfig.LinuxProcessConfig> processes = config.getLinuxProcesses();
+            DirectoryFileIO.DirectoryEntry[] entries =
+                    new DirectoryFileIO.DirectoryEntry[processes.size() + 1];
+            entries[0] = new DirectoryFileIO.DirectoryEntry(false, "self");
+            for (int i = 0; i < processes.size(); i++) {
+                entries[i + 1] = new DirectoryFileIO.DirectoryEntry(false,
+                        Integer.toString(processes.get(i).getPid()));
+            }
+            TraceEnvironmentEventSink.emit(emulator, "linux_proc", "open(\"/proc\")",
+                    "count=" + processes.size(), "json-config", "枚举配置的进程列表");
+            return FileResult.<AndroidFileIO>success(new DirectoryFileIO(oflags, pathname, entries));
+        }
+        if ((oflags & 3) != 0 || (oflags & O_DIRECTORY) != 0) {
+            return null;
+        }
+        Integer pid = parseConfiguredProcPid(pathname, config);
+        if (pid == null) {
+            return null;
+        }
+        TraceEnvironmentConfig.LinuxProcessConfig process = config.findLinuxProcess(pid.intValue());
+        if (process == null) {
+            return null;
+        }
+        String suffix = pathname.substring(pathname.lastIndexOf('/') + 1);
+        byte[] data;
+        if ("cmdline".equals(suffix)) {
+            data = ConfiguredProcessFiles.renderCmdline(process);
+        } else if ("comm".equals(suffix)) {
+            data = ConfiguredProcessFiles.renderComm(process);
+        } else if ("exe".equals(suffix)) {
+            if (process.getExe() == null) {
+                return null;
+            }
+            data = process.getExe().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        } else {
+            return null;
+        }
+        if (data == null) {
+            return null;
+        }
+        TraceEnvironmentEventSink.emit(emulator, "linux_proc",
+                "read(\"" + pathname + "\")",
+                "path=" + pathname + ",format=" + suffix + ",bytes=" + data.length,
+                "json-config", "读取配置的进程文件");
+        return FileResult.<AndroidFileIO>success(new ByteArrayFileIO(oflags, pathname, data));
+    }
+
+    private Integer parseConfiguredProcPid(String pathname, TraceEnvironmentConfig config) {
+        if (pathname.startsWith("/proc/self/")) {
+            return Integer.valueOf(emulator.getPid());
+        }
+        if (!pathname.startsWith("/proc/")) {
+            return null;
+        }
+        String rest = pathname.substring("/proc/".length());
+        int slash = rest.indexOf('/');
+        if (slash <= 0) {
+            return null;
+        }
+        String pidText = rest.substring(0, slash);
+        try {
+            return Integer.valueOf(Integer.parseInt(pidText));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /** Exact {@code /proc/net/route} and self/emulator-pid net-namespace aliases only. */

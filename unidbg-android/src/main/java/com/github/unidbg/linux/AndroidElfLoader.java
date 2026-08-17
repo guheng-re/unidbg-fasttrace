@@ -86,6 +86,9 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
         if (GetifaddrsHook.shouldRegister(emulator)) {
             addHookListener(new GetifaddrsHook(emulator));
         }
+        if (com.github.unidbg.linux.android.LinuxCommandHook.shouldRegister(emulator)) {
+            addHookListener(new com.github.unidbg.linux.android.LinuxCommandHook(emulator));
+        }
 
         // init stack
         stackSize = STACK_SIZE_OF_PAGE * emulator.getPageAlign();

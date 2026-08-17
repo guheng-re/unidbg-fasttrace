@@ -1504,4 +1504,36 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
         return 0;
     }
 
+    /**
+     * {@code mincore}: when {@code linux.mincore} is configured, write one byte per page
+     * ({@code 1} if {@code resident} is true, else {@code 0}). Missing node does not take over.
+     */
+    public Integer tryMincore(Emulator<?> emulator) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        if (config == null || !config.isLinuxMincoreConfigured()) {
+            return null;
+        }
+        RegisterContext context = emulator.getContext();
+        long start = context.getLongArg(0);
+        long length = context.getLongArg(1);
+        Pointer vec = context.getPointerArg(2);
+        if (vec == null) {
+            emulator.getMemory().setErrno(UnixEmulator.EFAULT);
+            return Integer.valueOf(-1);
+        }
+        int pageSize = emulator.getPageAlign();
+        if (pageSize <= 0) {
+            pageSize = 4096;
+        }
+        long pages = (length + pageSize - 1) / pageSize;
+        byte fill = (byte) (config.isLinuxMincoreResident() ? 1 : 0);
+        for (long i = 0; i < pages; i++) {
+            vec.setByte(i, fill);
+        }
+        TraceEnvironmentEventSink.emit(emulator, "linux_sys", "mincore",
+                "pages=" + pages + ",resident=" + config.isLinuxMincoreResident(),
+                "json-config", "写入配置的 mincore 驻留标记");
+        return Integer.valueOf(0);
+    }
+
 }
