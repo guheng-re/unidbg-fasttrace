@@ -8558,7 +8558,10 @@ public class TraceEnvironmentConfigTest {
         // unknown keys
         assertInvalid("{\"android\":{\"battery\":{\"extra\":1}}}",
                 "android.battery.extra");
-        assertInvalid("{\"android\":{\"battery\":{\"health\":2}}}",
+        assertEquals(2, TraceEnvironmentConfig.parse(
+                "{\"android\":{\"battery\":{\"health\":2}}}")
+                .getAndroidBatteryConfig().getHealth());
+        assertInvalid("{\"android\":{\"battery\":{\"health\":0}}}",
                 "android.battery.health");
 
         // wrong types / range / overflow
@@ -8891,6 +8894,137 @@ public class TraceEnvironmentConfigTest {
         assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"infos\":"
                 + "[{\"facing\":0,\"orientation\":0,\"canDisableShutterSound\":1.0}]}}}",
                 "android.cameras.infos[0].canDisableShutterSound");
+
+        TraceEnvironmentConfig noStreams = TraceEnvironmentConfig.parse(
+                "{\"android\":{\"cameras\":{\"count\":1}}}");
+        assertFalse(noStreams.getAndroidCamerasConfig().isStreamsConfigured());
+        assertTrue(noStreams.getAndroidCamerasConfig().getStreams().isEmpty());
+        assertNull(noStreams.getAndroidCamerasConfig().findStream(0));
+
+        TraceEnvironmentConfig emptyStreams = TraceEnvironmentConfig.parse(
+                "{\"android\":{\"cameras\":{\"count\":1,\"streams\":[]}}}");
+        assertTrue(emptyStreams.getAndroidCamerasConfig().isStreamsConfigured());
+        assertTrue(emptyStreams.getAndroidCamerasConfig().getStreams().isEmpty());
+
+        TraceEnvironmentConfig oneStream = TraceEnvironmentConfig.parse("{"
+                + "\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":2,\"height\":2,"
+                + "\"previewHex\":\"000102030405\",\"jpegHex\":\"ffd8ffd9\"}]}}}");
+        assertTrue(oneStream.getAndroidCamerasConfig().isStreamsConfigured());
+        assertEquals(1, oneStream.getAndroidCamerasConfig().getStreams().size());
+        TraceEnvironmentConfig.AndroidCameraStreamConfig stream =
+                oneStream.getAndroidCamerasConfig().findStream(0);
+        assertNotNull(stream);
+        assertEquals(0, stream.getCameraId());
+        assertEquals(2, stream.getWidth());
+        assertEquals(2, stream.getHeight());
+        assertTrue(stream.isPreviewConfigured());
+        assertEquals(6, stream.getPreviewNv21().length);
+        assertNull(stream.getPreviewFile());
+        assertTrue(stream.isJpegConfigured());
+        assertEquals(4, stream.getJpeg().length);
+        assertNull(stream.getJpegFile());
+        assertArrayEquals(stream.getPreviewNv21(), oneStream.resolveCameraPreview(stream));
+        assertArrayEquals(stream.getJpeg(), oneStream.resolveCameraJpeg(stream));
+        assertNull(oneStream.getAndroidCamerasConfig().findStream(1));
+
+        TraceEnvironmentConfig fileOnly = TraceEnvironmentConfig.parse("{"
+                + "\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":2,\"height\":2,"
+                + "\"previewFile\":\"/data/local/tmp/preview.nv21\","
+                + "\"jpegFile\":\"/data/local/tmp/still.jpg\"}]}}}");
+        TraceEnvironmentConfig.AndroidCameraStreamConfig fileStream =
+                fileOnly.getAndroidCamerasConfig().findStream(0);
+        assertNotNull(fileStream);
+        assertTrue(fileStream.isPreviewConfigured());
+        assertNull(fileStream.getPreviewNv21());
+        assertEquals("/data/local/tmp/preview.nv21", fileStream.getPreviewFile());
+        assertTrue(fileStream.isJpegConfigured());
+        assertNull(fileStream.getJpeg());
+        assertEquals("/data/local/tmp/still.jpg", fileStream.getJpegFile());
+        assertNull(fileOnly.resolveCameraPreview(fileStream));
+        assertNull(fileOnly.resolveCameraJpeg(fileStream));
+
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"streams\":{}}}}",
+                "android.cameras.streams");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":0,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":2,\"height\":2,\"jpegHex\":\"ff\"}]}}}",
+                "android.cameras.streams[0].cameraId");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"width\":2,\"height\":2,\"jpegHex\":\"ff\"}]}}}",
+                "android.cameras.streams[0].cameraId");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":2,\"height\":2}]}}}",
+                "previewHex, previewFile, jpegHex and/or jpegFile");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":2,\"height\":2,\"previewHex\":\"00\"}]}}}",
+                "previewHex length");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":1,\"height\":2,\"previewHex\":\"000102\"}]}}}",
+                "even width");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":1,\"height\":2,"
+                + "\"previewFile\":\"/data/local/tmp/preview.nv21\"}]}}}",
+                "even width");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":2,\"height\":2,"
+                + "\"previewHex\":\"000102030405\","
+                + "\"previewFile\":\"/data/local/tmp/preview.nv21\"}]}}}",
+                "mutually exclusive");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":2,\"height\":2,"
+                + "\"jpegHex\":\"ff\",\"jpegFile\":\"/data/local/tmp/still.jpg\"}]}}}",
+                "mutually exclusive");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":2,\"height\":2,\"previewFile\":\"preview.nv21\"}]}}}",
+                "absolute POSIX overlay path");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":2,\"height\":2,"
+                + "\"previewFile\":\"/data/local/tmp/../preview.nv21\"}]}}}",
+                "absolute POSIX overlay path");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":2,\"height\":2,\"previewFile\":\"\"}]}}}",
+                "absolute POSIX overlay path");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":2,\"streams\":["
+                + "{\"cameraId\":0,\"width\":2,\"height\":2,\"jpegHex\":\"ff\"},"
+                + "{\"cameraId\":0,\"width\":2,\"height\":2,\"jpegHex\":\"aa\"}]}}}",
+                "unique");
+        assertInvalid("{\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":2,\"height\":2,\"jpegHex\":\"ff\",\"extra\":1}]}}}",
+                "android.cameras.streams[0].extra");
+    }
+
+    @Test
+    public void testAndroidCameraStreamOverlayFiles() throws Exception {
+        java.nio.file.Path dir = java.nio.file.Files.createTempDirectory("traceai-camera-overlay-");
+        java.io.File preview = new java.io.File(dir.toFile(), "files/data/local/tmp/preview.nv21");
+        java.io.File jpeg = new java.io.File(dir.toFile(), "files/data/local/tmp/still.jpg");
+        assertTrue(preview.getParentFile().mkdirs());
+        byte[] previewBytes = new byte[] { 0, 1, 2, 3, 4, 5 };
+        byte[] jpegBytes = new byte[] { (byte) 0xff, (byte) 0xd8, (byte) 0xff, (byte) 0xd9 };
+        java.nio.file.Files.write(preview.toPath(), previewBytes);
+        java.nio.file.Files.write(jpeg.toPath(), jpegBytes);
+        java.io.File json = new java.io.File(dir.toFile(), "device-fingerprint.json");
+        java.nio.file.Files.write(json.toPath(), ("{"
+                + "\"schemaVersion\":\"traceai-device-fingerprint/v1\","
+                + "\"android\":{\"cameras\":{\"count\":1,\"streams\":[{"
+                + "\"cameraId\":0,\"width\":2,\"height\":2,"
+                + "\"previewFile\":\"/data/local/tmp/preview.nv21\","
+                + "\"jpegFile\":\"/data/local/tmp/still.jpg\"}]}}}"
+                ).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+        DeviceFingerprintProfile profile = DeviceFingerprintProfile.load(json);
+        TraceEnvironmentConfig config = profile.getEnvironmentConfig();
+        TraceEnvironmentConfig.AndroidCameraStreamConfig stream =
+                config.getAndroidCamerasConfig().findStream(0);
+        assertNotNull(stream);
+        assertNull(stream.getPreviewNv21());
+        assertNull(stream.getJpeg());
+        assertArrayEquals(previewBytes, config.resolveCameraPreview(stream));
+        assertArrayEquals(jpegBytes, config.resolveCameraJpeg(stream));
+
+        java.nio.file.Files.write(preview.toPath(), new byte[] { 0, 1 });
+        assertNull(config.resolveCameraPreview(stream));
     }
 
     @Test

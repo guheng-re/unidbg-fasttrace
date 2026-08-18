@@ -3,6 +3,7 @@ package com.github.unidbg.linux.android.dvm;
 import com.github.unidbg.AndroidEmulator;
 import com.github.unidbg.env.TraceEnvironmentConfig;
 import com.github.unidbg.linux.android.AndroidEmulatorBuilder;
+import com.github.unidbg.linux.android.dvm.StringObject;
 import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import org.junit.Test;
 
@@ -170,14 +171,12 @@ public class AndroidDisplayJniTest {
             assertEquals(90.0f, invokeFloatMethodV(jni, baseVM, mode,
                     "android/view/Display$Mode", "getRefreshRate"), 0f);
 
-            // unsupported methods on markers
-            try {
-                invokeObjectMethod(jni, baseVM, useVaListForObjectInt, display,
-                        "android/view/Display", "getName", "()Ljava/lang/String;");
-                fail("expected UnsupportedOperationException for unsupported Display method");
-            } catch (UnsupportedOperationException expected) {
-                assertTrue(expected.getMessage() != null && expected.getMessage().contains("getName"));
-            }
+            DvmObject<?> displayName = invokeObjectMethod(jni, baseVM, useVaListForObjectInt, display,
+                    "android/view/Display", "getName", "()Ljava/lang/String;");
+            assertEquals("Built-in Screen", ((StringObject) displayName).getValue());
+            DvmObject<?> uniqueId = invokeObjectMethod(jni, baseVM, useVaListForObjectInt, display,
+                    "android/view/Display", "getUniqueId", "()Ljava/lang/String;");
+            assertEquals("local:0", ((StringObject) uniqueId).getValue());
             try {
                 invokeIntMethod(jni, baseVM, useVaListForObjectInt, mode,
                         "android/view/Display$Mode", "hashCode");

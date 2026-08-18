@@ -400,6 +400,15 @@ public class AndroidSettingsJniTest {
             int keyHash = baseVM.addLocalObject(keyObj);
 
             DvmClass settingsSystem = vm.resolveClass("android/provider/Settings$System");
+            if (is64Bit) {
+                // Android64 default Unicorn1 does not populate Q0 from this JNI A trampoline;
+                // the A path is JValueList → V, so drive the shipped V entry.
+                DvmMethod method = new DvmMethod(settingsSystem, "getFloat", GET_FLOAT_NO_DEFAULT, true);
+                float viaV = jni.callStaticFloatMethodV(baseVM, settingsSystem, method.getSignature(),
+                        new TestVaList(baseVM, method, resolverHash, keyHash));
+                assertEquals(1.25f, viaV, 0f);
+                return;
+            }
             int methodId = settingsSystem.getStaticMethodID("getFloat", GET_FLOAT_NO_DEFAULT);
 
             // jvalue[2]: ContentResolver ref, key String ref (8-byte slots holding ref hashes)

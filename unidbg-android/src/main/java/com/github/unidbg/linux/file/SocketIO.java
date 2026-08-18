@@ -9,6 +9,7 @@ import com.github.unidbg.file.linux.IOConstants;
 import com.github.unidbg.linux.struct.IFConf;
 import com.github.unidbg.linux.struct.IFReq;
 import com.github.unidbg.pointer.UnidbgPointer;
+import com.github.unidbg.trace.EnvAccessProbe;
 import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import com.github.unidbg.unix.IO;
 import com.github.unidbg.unix.UnixEmulator;
@@ -94,6 +95,13 @@ public abstract class SocketIO extends BaseAndroidFileIO implements AndroidFileI
 
     @Override
     public int ioctl(Emulator<?> emulator, long request, long argp) {
+        TraceEnvironmentConfig ioctlConfig = TraceEnvironmentConfig.get(emulator);
+        if ((ioctlConfig == null || !ioctlConfig.isNetworkInterfacesConfigured())
+                && EnvAccessProbe.isNetworkIoctl(request)) {
+            EnvAccessProbe.miss(emulator, EnvAccessProbe.networkIoctlName(request),
+                    "request=0x" + Long.toHexString(request),
+                    "目标读取未配置的网卡 ioctl");
+        }
         if (request == SIOCGIFCONF) {
             return getIFaceList(emulator, argp);
         }

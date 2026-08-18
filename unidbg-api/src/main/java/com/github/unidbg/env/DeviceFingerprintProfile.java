@@ -146,7 +146,7 @@ public final class DeviceFingerprintProfile {
     }
 
     /**
-     * Original reserved payloads (samples / cellInfo / capabilities / native / backendStatus).
+     * Original reserved payloads (graphics.native / backendStatus / legacy capabilities).
      * Not applied to the current backend; kept so later wiring need not change the profile format.
      */
     public Map<String, Object> getReservedFields() {
@@ -230,7 +230,6 @@ public final class DeviceFingerprintProfile {
 
     private static void collectReserved(JSONObject root, Map<String, Object> reservedFields,
                                         List<String> reserved) {
-        snapshotReserved(root, "android.telephony.cellInfo", reservedFields, reserved);
         snapshotReserved(root, "graphics.native", reservedFields, reserved);
         if (isLegacyNetworkCapabilities(root)) {
             snapshotReserved(root, "network.capabilities", reservedFields, reserved);
@@ -312,13 +311,6 @@ public final class DeviceFingerprintProfile {
         converted.remove("profileName");
         converted.remove("fileOverlayRoot");
         converted.remove("backendStatus");
-        JSONObject android = converted.getJSONObject("android");
-        if (android != null) {
-            JSONObject telephony = android.getJSONObject("telephony");
-            if (telephony != null) {
-                telephony.remove("cellInfo");
-            }
-        }
         JSONObject network = converted.getJSONObject("network");
         if (network != null && isLegacyNetworkCapabilitiesObject(network.get("capabilities"))) {
             network.remove("capabilities");

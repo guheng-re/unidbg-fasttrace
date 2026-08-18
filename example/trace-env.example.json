@@ -251,7 +251,10 @@
       "system": {
         "screen_brightness": "128",
         "accelerometer_rotation": "1",
-        "font_scale": "1.0"
+        "font_scale": "1.0",
+        "ringtone": "TRACEAI_RINGTONE",
+        "notification_sound": "TRACEAI_NOTIFICATION",
+        "alarm_alert": "TRACEAI_ALARM"
       },
       "global": {
         "adb_enabled": "0",
@@ -289,6 +292,20 @@
           "subscriberId": "TRACEAI_IMSI_SLOT1_V1",
           "simSerialNumber": "TRACEAI_ICCID_SLOT1_V1",
           "simState": 1
+        }
+      ],
+      "cellInfo": [
+        {
+          "type": "lte",
+          "registered": true,
+          "mcc": "460",
+          "mnc": "00",
+          "ci": 12345678,
+          "pci": 10,
+          "tac": 4321,
+          "earfcn": 1850,
+          "alphaLong": "TRACEAI_CELL_ALPHA",
+          "alphaShort": "TRACEAI"
         }
       ]
     },
@@ -407,7 +424,14 @@
       "ydpi": 411.0,
       "refreshRate": 60.0,
       "rotation": 0,
-      "modeId": 1
+      "modeId": 1,
+      "uniqueId": "local:0"
+    },
+    "powerProfile": {
+      "averagePower": {
+        "battery.capacity": 4500.0,
+        "cpu.active": 120.0
+      }
     },
     "configuration": {
       "orientation": 1,
@@ -447,13 +471,32 @@
       "energyCounterNwh": 55000000000,
       "status": 3,
       "chargeTimeRemainingMillis": -1,
-      "plugged": 0
+      "plugged": 0,
+      "health": 2,
+      "voltageMv": 4000,
+      "temperatureTenthsC": 280
     },
     "cameras": {
       "count": 2,
       "infos": [
         { "facing": 1, "orientation": 270, "canDisableShutterSound": true },
         { "facing": 0, "orientation": 90, "canDisableShutterSound": false }
+      ],
+      "streams": [
+        {
+          "cameraId": 0,
+          "width": 2,
+          "height": 2,
+          "previewHex": "000102030405",
+          "jpegHex": "ffd8ffd9"
+        },
+        {
+          "cameraId": 1,
+          "width": 2,
+          "height": 2,
+          "previewFile": "/data/local/tmp/camera1-preview.nv21",
+          "jpegFile": "/data/local/tmp/camera1-still.jpg"
+        }
       ]
     },
     "sensors": {
@@ -923,7 +966,15 @@
       "rssi": -55,
       "linkSpeedMbps": 866,
       "frequencyMhz": 5180,
-      "networkId": 42
+      "networkId": 42,
+      "scanResults": [
+        {
+          "ssid": "TRACEAI_WIFI_SSID_V1",
+          "bssid": "02:54:52:41:43:45",
+          "rssi": -55,
+          "frequencyMhz": 5180
+        }
+      ]
     },
     "links": {
       "connected": true,

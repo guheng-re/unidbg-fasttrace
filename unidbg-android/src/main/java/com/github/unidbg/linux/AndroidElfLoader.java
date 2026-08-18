@@ -16,6 +16,7 @@ import com.github.unidbg.linux.android.SelinuxGetconHook;
 import com.github.unidbg.linux.android.SelinuxIsEnabledHook;
 import com.github.unidbg.linux.android.SysconfHook;
 import com.github.unidbg.linux.android.SystemPropertyHook;
+import com.github.unidbg.trace.EnvAccessProbe;
 import com.github.unidbg.linux.thread.PThreadInternal;
 import com.github.unidbg.memory.MemRegion;
 import com.github.unidbg.memory.Memory;
@@ -70,7 +71,8 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
     public AndroidElfLoader(Emulator<AndroidFileIO> emulator, UnixSyscallHandler<AndroidFileIO> syscallHandler) {
         super(emulator, syscallHandler);
         TraceEnvironmentConfig environmentConfig = TraceEnvironmentConfig.get(emulator);
-        if (environmentConfig != null && environmentConfig.hasAndroidProperties()) {
+        if ((environmentConfig != null && environmentConfig.hasAndroidProperties())
+                || EnvAccessProbe.isEnabled()) {
             addHookListener(new SystemPropertyHook(emulator));
         }
         if (environmentConfig != null && environmentConfig.isLinuxCpuConfigured()) {
@@ -83,7 +85,7 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
         if (SelinuxGetconHook.shouldRegister(emulator)) {
             addHookListener(new SelinuxGetconHook(emulator));
         }
-        if (GetifaddrsHook.shouldRegister(emulator)) {
+        if (GetifaddrsHook.shouldRegister(emulator) || EnvAccessProbe.isEnabled()) {
             addHookListener(new GetifaddrsHook(emulator));
         }
         if (com.github.unidbg.linux.android.LinuxCommandHook.shouldRegister(emulator)) {
@@ -358,7 +360,7 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
     @Override
     public Symbol dlsym(long handle, String symbolName) {
         if ("environ".equals(symbolName)) {
-            return new VirtualSymbol(symbolName, null, environ.toUIntPeer());
+            return new VirtualSymbol(symbolName, null, UnidbgPointer.nativeValue(environ));
         }
         Module sm = null;
         Symbol ret = null;

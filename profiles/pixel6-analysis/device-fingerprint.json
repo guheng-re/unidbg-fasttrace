@@ -339,9 +339,20 @@
           "simState": 5
         }
       ],
-      "cellInfo": {
-        "marker": "TRACEAI_CELL_INFO_V1"
-      }
+      "cellInfo": [
+        {
+          "type": "lte",
+          "registered": true,
+          "mcc": "310",
+          "mnc": "260",
+          "ci": 12345678,
+          "pci": 12,
+          "tac": 4321,
+          "earfcn": 1850,
+          "alphaLong": "TRACEAI_CELL_ALPHA",
+          "alphaShort": "TRACEAI"
+        }
+      ]
     },
     "cameras": {
       "count": 2,
@@ -544,7 +555,6 @@
     "eglExtensions": ["EGL_KHR_image_base"]
   },
   "backendStatus": {
-    "android.telephony.cellInfo": "reserved",
     "graphics.native": "reserved"
   }
 }

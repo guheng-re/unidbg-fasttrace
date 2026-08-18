@@ -2,6 +2,21 @@
 
 `TraceEnvironmentConfig` 用一个 JSON 文件固定 Android unidbg 运行时环境。没有配置的字段会保留当前 unidbg 默认行为。
 
+## 环境读取探测（默认开启）
+
+SO / JNI 读取指纹、网卡、`/proc`、`/sys`、随机数、时间等时，**无论模板有没有填**，都会提醒：
+
+- 已配置命中：原 sidecar（`kind=time` / `linux_file` / `network_device` …），并额外打 `[环境探测]` 日志
+- 模板未填：`kind=env_probe`，`source=unconfigured`（不编造返回值；Java 仍 UOE / native 仍走原路径）
+
+默认开启。关闭：
+
+```text
+-Dunidbg.env.probe=false
+```
+
+或 `EnvAccessProbe.setEnabled(false)`。开了 `traceCodeText(..., "trace.log")` 时，这些行也会进 `trace.log.env.jsonl`。
+
 示例文件：
 
 ```text
@@ -40,7 +55,7 @@ AndroidEmulator emulator = AndroidEmulatorBuilder.for64Bit()
 
 `profiles/pixel6-analysis/` 第 1 批已集中填写签名算法高频稳定输入（`linux.uname`/`linux.cpu`/`linux.environ`/`linux.auxv`、补全的 `Build`/`ro.*`、`android.identifiers`/`settings.secure.android_id`、`android.packages.signaturesHex`、`android.runtime`、`android.features`、`android.configuration`、`filesystem.statfs`，以及 `files/proc/*` 与 `files/sys/*` 文本）。详见 `docs/device-fingerprint-quick-profile.md`「第 1 批」。不新增后端。
 
-加载器只把已实现字段转换成现有 `TraceEnvironmentConfig`，并挂上 `fileOverlayRoot` 只读覆盖（优先于 `linux.files`；省略该键时默认为画像目录下的 `files`）。仅从文件加载时才解析覆盖根；`DeviceFingerprintProfile.parse(json, null)` 不挂覆盖层。`schemaVersion` 必须是 `traceai-device-fingerprint/v1`，否则整份画像失败。guest 路径与 `fileOverlayRoot` **不**折叠 `//` / `.` / 尾 `/`。写/`O_RDWR` 为 `EACCES`。覆盖层**文件**上的 `O_DIRECTORY` 为 `ENOTDIR`；覆盖层**目录**可 `getdents` 枚举。不回落宿主机，不跟随符号链接，不接管 `/proc/self|pid/fd/*`。`reserved` 字段现为 `android.telephony.cellInfo`、`graphics.native`、`backendStatus`，以及**旧形状** `network.capabilities`（仅 `internet`/`vpn` 等布尔、无 `transportTypes`）。`android.sensors.samples` 与新形状 `network.capabilities`（`transportTypes`/`networkCapabilities`）已转正，不再剥离。其它非法已实现字段仍走现有配置校验并失败。`android.tee.securityLevel` 的整数 `0/1/2` 转为 `SOFTWARE`/`TRUSTED_ENVIRONMENT`/`STRONGBOX`。同一 builder 上若同时调用，**显式** `setEnvironmentConfig(...)` 优先于 `setEnvironmentProfile(...)`；系统属性同样是 `-Dunidbg.env.config` 优先于 `-Dunidbg.env.profile`。画像命中 sidecar 的 source 为 `profile-json`（转换后的 JSON 字段和 `linux.files`）或 `profile-file`（覆盖层 `open/read`）。
+加载器只把已实现字段转换成现有 `TraceEnvironmentConfig`，并挂上 `fileOverlayRoot` 只读覆盖（优先于 `linux.files`；省略该键时默认为画像目录下的 `files`）。仅从文件加载时才解析覆盖根；`DeviceFingerprintProfile.parse(json, null)` 不挂覆盖层。`schemaVersion` 必须是 `traceai-device-fingerprint/v1`，否则整份画像失败。guest 路径与 `fileOverlayRoot` **不**折叠 `//` / `.` / 尾 `/`。写/`O_RDWR` 为 `EACCES`。覆盖层**文件**上的 `O_DIRECTORY` 为 `ENOTDIR`；覆盖层**目录**可 `getdents` 枚举。不回落宿主机，不跟随符号链接，不接管 `/proc/self|pid/fd/*`。`reserved` 字段现为 `graphics.native`、`backendStatus`，以及**旧形状** `network.capabilities`（仅 `internet`/`vpn` 等布尔、无 `transportTypes`）。`android.telephony.cellInfo`、`android.sensors.samples` 与新形状 `network.capabilities`（`transportTypes`/`networkCapabilities`）已转正，不再剥离。其它非法已实现字段仍走现有配置校验并失败。`android.tee.securityLevel` 的整数 `0/1/2` 转为 `SOFTWARE`/`TRUSTED_ENVIRONMENT`/`STRONGBOX`。同一 builder 上若同时调用，**显式** `setEnvironmentConfig(...)` 优先于 `setEnvironmentProfile(...)`；系统属性同样是 `-Dunidbg.env.config` 优先于 `-Dunidbg.env.profile`。画像命中 sidecar 的 source 为 `profile-json`（转换后的 JSON 字段和 `linux.files`）或 `profile-file`（覆盖层 `open/read`）。
 
 ## process
 
@@ -836,6 +851,7 @@ Java 运行时只读子集（v1）。路径为 `android.runtime`（可选 **JSON
 | `android.telephony.dataActivity` | 否 | 精确整数 **仅** `0..4`（`DATA_ACTIVITY_NONE`/`IN`/`OUT`/`INOUT`/`DORMANT`）；**不**从 `dataState` / `dataNetworkType` / wifi / links 推导、无默认 | `getDataActivity()` |
 | `android.telephony.phoneType` | 否 | 精确整数 `0..3`（不可 null） | `getPhoneType()` |
 | `android.telephony.networkRoaming` | 否 | Boolean `true`/`false`（不可 null） | `isNetworkRoaming()` |
+| `android.telephony.cellInfo` | 否 | JSONArray。键缺失不接管；显式 `[]` 为权威空快照。每项必填 `type`=`gsm`/`cdma`/`lte`/`wcdma`/`nr`；可选 `registered`（Boolean）、`mcc`/`mnc`/`alphaLong`/`alphaShort`（String 或 null）、`ci`/`pci`/`tac`/`earfcn`（精确非负整数）。字段独立 presence，**不**从运营商/品牌推导 | `getAllCellInfo()` / `getCellLocation()` |
 
 ### JNI 支持的 API
 
@@ -857,12 +873,13 @@ Java 运行时只读子集（v1）。路径为 `android.runtime`（可选 **JSON
 | `getPhoneType()` | `()I` | 同上 | `phoneType` |
 | `getSimState()` / `getSimState(int)` | `()I` / `(I)I` | 同上 | 无参用 slot 0；有参用 arg0 |
 | `isNetworkRoaming()` | `()Z` | `callBooleanMethod` / `callBooleanMethodV` | `networkRoaming` |
+| `getAllCellInfo()` | `()Ljava/util/List;` | `callObjectMethod` / `callObjectMethodV` | `cellInfo` 键存在才接管；返回同 VM `CellInfo*` marker 列表；sidecar `count=<n>` |
+| `getCellLocation()` | `()Landroid/telephony/CellLocation;` | 同上 | 首个 `registered=true` 行，否则第一行；空数组 → Java `null`。identity 子集：`CellInfo*.isRegistered` / `getCellIdentity`、`CellIdentity*.getCi`、`GsmCellLocation.getCid` |
 
 Helper **先匹配完整签名再读参数**。命中时 sidecar kind=`telephony`、source=`json-config`、api=`TelephonyManager.<method>`。类型化 / 字符串 `getSystemService` **不**发 sidecar。
 
 ### 明确未覆盖（勿与上表混淆）
 
-- `getAllCellInfo` / `getCellLocation` 及基站列表构造。
 - 基于 **subscriptionId** 的重载（如部分 `getImei(int)` 语义若被目标当作 subscription 而非 slot，本配置仍按 **slotIndex** 解释）。
 - `TelephonyCallback` / `PhoneStateListener`、数据开关、特性探测、subscription 切换。
 - 其它 `TelephonyManager` 方法（信号强度等）。
@@ -1219,7 +1236,7 @@ MediaDrm / Widevine **分析型固定标记**配置。路径为 `android.drm`（
 | **显式 `{}`** | `true` | 非 null | 使用下列确定性默认值 |
 | **有字段** | `true` | 非 null | 已配字段覆盖默认；`density` 始终由 `densityDpi` 推导 |
 
-### 字段说明（仅允许下列 9 键）
+### 字段说明（仅允许下列 10 键）
 
 | 字段 | 必填 | 类型与校验 | 默认（键缺失时） |
 | --- | --- | --- | --- |
@@ -1232,6 +1249,7 @@ MediaDrm / Widevine **分析型固定标记**配置。路径为 `android.drm`（
 | `refreshRate` | 否 | JSON Number → 有限 float，`(0, 1000]` | `60.0` |
 | `rotation` | 否 | 精确 JSON Number 整数，`0..3`（Surface 旋转常量） | `0` |
 | `modeId` | 否 | 精确 JSON Number 整数，`1..Integer.MAX_VALUE` | `1` |
+| `uniqueId` | 否 | 非空 String，最长 128，无 NUL/CR/LF | JNI 使用 `local:0`（未配键时） |
 
 未知键（如 `density`、`extra`）在 parse 时抛 `IllegalArgumentException`，路径形如 `android.display.density`。拒绝 Boolean/String/null、整数字段的小数、超出范围、NaN/Infinite，消息带配置路径。不保留 JSONObject，不暴露可变共享状态。
 
@@ -1281,6 +1299,8 @@ MediaDrm / Widevine **分析型固定标记**配置。路径为 `android.drm`（
 **getDisplayId：** 精确签名 `getDisplayId()I`。**仅**配置 `ConfiguredDisplay` marker 时固定返回 `0`（与 `getDefaultDisplay` / `getDisplay(0)` / `getDisplays()[0]` 的唯一默认 profile 一致）；**不**新增 JSON 字段、**不**建模多显示器编号。普通 `Display`、节点缺失或错误签名保持既有 UOE / notHandled，**不发** sidecar。
 
 **旧版宽高：** `Display.getWidth` / `Display.getHeight` 分别读取配置的 `widthPixels` / `heightPixels`；**仅当** `android.display` 节点存在且 receiver 为配置 `ConfiguredDisplay` marker 时返回（与其它 Display 整型接口相同的 `callIntMethod` / `callIntMethodV` 路径）。普通 `Display` 或节点缺失仍不支持。
+
+**Point 出参与身份：** `Display.getSize` / `getRealSize` 以及通用 `IWindowManager`/`IDisplayManager` `$Stub.asInterface` marker 上的 `getInitialDisplaySize` / `getBaseDisplaySize` / `getRealDisplaySize` 把 `widthPixels`/`heightPixels` 写入 `android.graphics.Point`（随后 `Point.x`/`Point.y`）。`Display.getName` 固定 `Built-in Screen`；`getUniqueId` 用配置 `uniqueId` 或默认 `local:0`；`isValid`/`hasAccess` 为 true；`getType`=`TYPE_INTERNAL`(1)；`getState`=`STATE_ON`(2)；`getFlags`=`FLAG_SECURE`(2)。节点缺失时这些签名不接管。
 
 **getMetrics / getRealMetrics（v1 同 profile）：** 二者均把接收者配置写入输出 `DisplayMetrics` 的私有 marker，随后现有 `DisplayMetrics` 字段路径可读 `widthPixels`/`heightPixels`/`densityDpi`/`density`/`scaledDensity`/`xdpi`/`ydpi`。**不**区分应用区域与真实区域，**不**建模系统栏 insets。
 
@@ -1574,7 +1594,7 @@ GPU / GLES / EGL 查询字符串 **v1 子集**（八字段：可选 **`vendor`**
 
 ## android.battery
 
-电池容量、电荷/能量计数、瞬时/平均电流、状态、固定剩余充电时间与充电布尔子集（**八字段**：`capacityPercent` / `charging` / `chargeCounterUah` / `currentNowUa` / `currentAverageUa` / `energyCounterNwh` / `status` / `chargeTimeRemainingMillis`，彼此独立、**不**互相推导）。`getIntProperty`/`getLongProperty`：`propertyId=4`→`capacityPercent`；`1`→`chargeCounterUah`；`2`→`currentNowUa`；`3`→`currentAverageUa`；`5`→`energyCounterNwh`（**仅** long）；`6`→`status`（**仅** int）。`computeChargeTimeRemaining()J` **仅**在 `chargeTimeRemainingMillis` 键存在时返回固定 long（`-1` 为官方 unable-to-compute 标记，或非负毫秒；**不**从 charging/capacity/current/status 计算）。`isCharging()Z` 读 `charging`。路径为 `android.battery`（可选 **JSONObject**）。实现类：`TraceEnvironmentConfig.AndroidBatteryConfig`；JNI 在 `AbstractJni`（VarArg + VaList）。另支持 **仅** `BatteryManager` 的类型化 `Application`/`Context.getSystemService(Class)` → 同一 `SystemService("batterymanager")`（**不**要求 `android.battery` 节点即可拿到服务标记；lookup **不发** `android_battery` sidecar）。
+电池容量、电荷/能量计数、瞬时/平均电流、状态、固定剩余充电时间、充电布尔与 extras 子集（**十一字段**：`capacityPercent` / `charging` / `chargeCounterUah` / `currentNowUa` / `currentAverageUa` / `energyCounterNwh` / `status` / `chargeTimeRemainingMillis` / `plugged` / `health` / `voltageMv` / `temperatureTenthsC`，彼此独立、**不**互相推导）。`health` 1..7；`voltageMv` 毫伏；`temperatureTenthsC` 十分之一摄氏度。键存在时另渲染只读 `/sys/class/power_supply/battery/{health,voltage_now,temp}`。`android.powerProfile.averagePower` 为 name→瓦特 map，仅命中键时接管 `PowerProfile.getAveragePower`。`getIntProperty`/`getLongProperty`：`propertyId=4`→`capacityPercent`；`1`→`chargeCounterUah`；`2`→`currentNowUa`；`3`→`currentAverageUa`；`5`→`energyCounterNwh`（**仅** long）；`6`→`status`（**仅** int）。`computeChargeTimeRemaining()J` **仅**在 `chargeTimeRemainingMillis` 键存在时返回固定 long（`-1` 为官方 unable-to-compute 标记，或非负毫秒；**不**从 charging/capacity/current/status 计算）。`isCharging()Z` 读 `charging`。路径为 `android.battery`（可选 **JSONObject**）。实现类：`TraceEnvironmentConfig.AndroidBatteryConfig`；JNI 在 `AbstractJni`（VarArg + VaList）。另支持 **仅** `BatteryManager` 的类型化 `Application`/`Context.getSystemService(Class)` → 同一 `SystemService("batterymanager")`（**不**要求 `android.battery` 节点即可拿到服务标记；lookup **不发** `android_battery` sidecar）。
 
 **节点缺失 vs 显式空对象：**
 
@@ -1584,7 +1604,7 @@ GPU / GLES / EGL 查询字符串 **v1 子集**（八字段：可选 **`vendor`**
 | **显式 `{}`** | `true` | 非 null | 默认 `capacityPercent=73`、`charging=false`；可选键未配置 → 对应 API 仍 UOE |
 | **有字段** | `true` | 非 null | 已配键覆盖/启用；未写可选键不默认 |
 
-### 字段说明（仅允许下列 8 键）
+### 字段说明（仅允许下列 12 键）
 
 | 字段 | 必填 | 类型与校验 | 默认（键缺失时） |
 | --- | --- | --- | --- |
@@ -1596,6 +1616,10 @@ GPU / GLES / EGL 查询字符串 **v1 子集**（八字段：可选 **`vendor`**
 | `energyCounterNwh` | 否 | 精确 JSON Number 非负 64 位整数，`0..9223372036854775807`；**无**默认 | 未配置（`isEnergyCounterNwhConfigured()=false`） |
 | `status` | 否 | 精确 JSON Number 整数，**仅** `1..5`；**无**默认；**不**从 `charging` 推导 | 未配置（`isStatusConfigured()=false`） |
 | `chargeTimeRemainingMillis` | 否 | 精确 JSON Number long：`-1`（无法计算）或非负 `0..9223372036854775807`；**无**默认；**不**计算/推导 | 未配置（`isChargeTimeRemainingMillisConfigured()=false`） |
+| `plugged` | 否 | 精确 JSON Number 整数，**仅** `0`/`1`/`2`/`4`；**无**默认 | 未配置（`isPluggedConfigured()=false`） |
+| `health` | 否 | 精确 JSON Number 整数，**仅** `1..7`；**无**默认；**不**从 status/charging 推导 | 未配置（`isHealthConfigured()=false`） |
+| `voltageMv` | 否 | 精确 JSON Number 整数，`0..Integer.MAX_VALUE` 毫伏；**无**默认 | 未配置（`isVoltageMvConfigured()=false`） |
+| `temperatureTenthsC` | 否 | 精确 JSON Number 整数，`-2000..2000`（十分之一摄氏度）；**无**默认 | 未配置（`isTemperatureTenthsCConfigured()=false`） |
 
 未知键在 parse 时抛 `IllegalArgumentException`。数值/布尔字段拒绝 null / 错误类型 / 小数 / 越界，路径 `android.battery.<field>`。配置对象不可变；**不**保留 JSONObject。
 
@@ -1615,7 +1639,7 @@ GPU / GLES / EGL 查询字符串 **v1 子集**（八字段：可选 **`vendor`**
 | `computeChargeTimeRemaining()J` | 节点存在 **且** `chargeTimeRemainingMillis` 键存在 | 返回固定 long（`-1` 或非负） | 键缺失 / 节点缺失：UOE 无事件 |
 | `isCharging()Z` | 节点存在 | 返回 `charging` | 节点缺失 UOE 无事件 |
 
-**已实现** propertyId `4` 与 **可选** `1`、`2`、`3`，**可选 long-only** `5`，**可选 int-only** `6`，以及 **可选** `computeChargeTimeRemaining` 固定标记。**另：** 可选 `plugged`（仅 `0`/`1`/`2`/`4`）在键存在时接管粘性 `registerReceiver(null, …)` 的 `Intent.getIntExtra("plugged"|"status"|"level")`。**不**支持其它 propertyId、health/voltage/temperature、真实充电时间估算/状态机迁移。
+**已实现** propertyId `4` 与 **可选** `1`、`2`、`3`，**可选 long-only** `5`，**可选 int-only** `6`，以及 **可选** `computeChargeTimeRemaining` 固定标记。**另：** 可选 `plugged`（仅 `0`/`1`/`2`/`4`）在键存在时接管粘性 `registerReceiver(null, …)` 的 `Intent.getIntExtra("plugged"|"status"|"level"|"health"|"voltage"|"temperature")`。`health`/`voltageMv`/`temperatureTenthsC` 键存在时另渲染只读 `/sys/class/power_supply/battery/{health,voltage_now,temp}`（`voltage_now` 为微伏＝毫伏×1000）。`android.powerProfile.averagePower` 为独立节点：name→有限 double 瓦特 map，仅命中 name 时接管 `PowerProfile.getAveragePower(String)`。**不**支持其它 propertyId、真实充电时间估算/状态机迁移。
 
 ### Sidecar（旁路事件，仅命中时）
 
@@ -1638,13 +1662,12 @@ GPU / GLES / EGL 查询字符串 **v1 子集**（八字段：可选 **`vendor`**
 - `getLongProperty` 的 `propertyId=6`（status 仅 int）
 - `getIntProperty` / `getLongProperty` 的其它未列出 propertyId
 - 从 capacity/current/charging **实时估算**剩余充电时间（仅固定配置标记）
-- 电池 `health` / `voltage` / `temperature` 字段
-- 非粘性 `ACTION_BATTERY_CHANGED` 注册（仅 `registerReceiver(null)` + 已配置 `plugged`）、status 状态迁移
-- `/sys/class/power_supply/*` 自动生成（可用 `linux.files` 手工）
+- 非粘性 `ACTION_BATTERY_CHANGED` 注册（仅 `registerReceiver(null)` + 已配置 extras）、status 状态迁移
+- `/sys/class/thermal/*` 与其它 `power_supply` 节点自动生成（battery `health`/`voltage_now`/`temp` 已由 extras 渲染；其余可用 `linux.files` 手工）
 
 ## android.cameras
 
-摄像头数量与信息子集（**两字段**：`count`、可选 `infos`）。路径为 `android.cameras`（可选 **JSONObject**）。实现类：`TraceEnvironmentConfig.AndroidCamerasConfig` / `AndroidCameraInfoConfig`；JNI 接线在 `AbstractJni`：静态 `callStaticIntMethod` / `V`、`callStaticVoidMethod` / `V`，以及 `getIntField` / **`getBooleanField`**（VarArg 与 VaList）。
+摄像头数量、信息与 Camera1 喂帧子集（**三字段**：`count`、可选 `infos`、可选 **`streams`**）。路径为 `android.cameras`（可选 **JSONObject**）。实现类：`TraceEnvironmentConfig.AndroidCamerasConfig` / `AndroidCameraInfoConfig` / `AndroidCameraStreamConfig`；JNI 接线在 `AbstractJni`：静态 `getNumberOfCameras` / `getCameraInfo` / **`open`**，实例 `getParameters` / preview / `takePicture`，以及 `CameraInfo` / `Camera.Size` 字段。
 
 **节点缺失 vs 显式空对象：**
 
@@ -1652,15 +1675,17 @@ GPU / GLES / EGL 查询字符串 **v1 子集**（八字段：可选 **`vendor`**
 | --- | --- | --- | --- |
 | **节点缺失** | `false` | `null` | `getNumberOfCameras` / `getCameraInfo` / `CameraInfo` 字段保持原先 `UnsupportedOperationException`，**不发** sidecar |
 | **显式 `{}`** | `true` | 非 null | 默认 `count=0`，`infos` 未配置 |
-| **仅 count** | `true` | 非 null | `getNumberOfCameras` 可用；**无** `infos` 时 `getCameraInfo` 仍 UOE |
+| **仅 count** | `true` | 非 null | `getNumberOfCameras` 可用；`open(id)` 在 `0<=id<count` 时返回 Camera marker；**无** `infos` 时 `getCameraInfo` 仍 UOE；**无** `streams` 时 preview/`takePicture` 不接管 |
 | **count + infos** | `true` | 非 null | `infos.length` 必须等于 `count`；`getCameraInfo` + `facing`/`orientation` 可用；可选 `canDisableShutterSound` 仅在该条目显式配置时可读 |
+| **count + streams** | `true` | 非 null | `streams` 键存在才接管 preview / JPEG；显式 `[]` 为权威空快照（`open` 仍可用，无帧） |
 
-### 字段说明（仅允许下列 2 键）
+### 字段说明（仅允许下列 3 键）
 
 | 字段 | 必填 | 类型与校验 | 默认（键缺失时） |
 | --- | --- | --- | --- |
 | `count` | 当存在 `infos` 时**必填**；否则可选 | 精确 JSON Number 整数，`0..16` | `0`（无 `infos` 时） |
 | `infos` | 否 | JSONArray，长度必须等于 `count`；每项见下表 | 未配置（空列表，`isInfosConfigured()=false`） |
+| `streams` | 否 | JSONArray；键缺失不接管喂帧；显式 `[]` 为空快照；每项见下表 | 未配置（`isStreamsConfigured()=false`） |
 
 #### `infos[i]` 对象（`facing`、`orientation` 必填；可选 `canDisableShutterSound`）
 
@@ -1670,7 +1695,18 @@ GPU / GLES / EGL 查询字符串 **v1 子集**（八字段：可选 **`vendor`**
 | `orientation` | 精确 JSON 整数，仅 `0`/`90`/`180`/`270` |
 | `canDisableShutterSound` | 可选；严格 JSON Boolean；**独立 presence**；键缺失为未配置、**不**默认、**不**从 facing/orientation 或其它摄像头推导 |
 
-未知键（如 `ids`、`extra`）在 parse 时抛 `IllegalArgumentException`，路径形如 `android.cameras.ids` / `android.cameras.infos[0].extra`。`count` 存在时拒绝 null / String / Boolean / 小数 / 越界，错误路径为 `android.cameras.count`。存在 `infos` 但缺 `count` 时错误路径含 `android.cameras.count`；长度不一致错误路径含 `android.cameras.infos`。`canDisableShutterSound` 存在时拒绝 null / String / Number，错误路径为 `android.cameras.infos[i].canDisableShutterSound`。配置对象不可变，提供 `getCount()` / `isCountConfigured()` / `getInfos()` / `isInfosConfigured()` 与 `AndroidCameraInfoConfig.getFacing()` / `getOrientation()` / `isCanDisableShutterSoundConfigured()` / `getCanDisableShutterSound()`；**不**保留 JSONObject/JSONArray。
+#### `streams[i]` 对象（`cameraId`/`width`/`height` 必填；至少一项预览或 JPEG 源）
+
+| 字段 | 类型与校验 |
+| --- | --- |
+| `cameraId` | 精确整数 `0..count-1`，数组内唯一；**不**从 `infos` 推导 |
+| `width` / `height` | 精确整数 `1..8192` |
+| `previewHex` | 可选偶数位 hex（空白/`:` 忽略）；解码后必须是 NV21，长度 `width*height*3/2`；此时 width/height 须为偶数；与 `previewFile` **互斥** |
+| `previewFile` | 可选绝对 POSIX overlay 路径（`1..256`，与 `fileOverlayRoot` 相同 guest 规则：禁 `..` / 反斜杠 / 盘符 / 空白）；指向 NV21 原始字节；与 `previewHex` **互斥**；parse 不读文件，投递时 `resolveCameraPreview` 校验长度 `width*height*3/2` |
+| `jpegHex` | 可选偶数位 hex；解码后至少 1 字节；与 `jpegFile` **互斥** |
+| `jpegFile` | 可选绝对 POSIX overlay 路径（规则同 `previewFile`）；与 `jpegHex` **互斥**；parse 不读文件，投递时 `resolveCameraJpeg` 要求非空 |
+
+未知键（如 `ids`、`extra`）在 parse 时抛 `IllegalArgumentException`，路径形如 `android.cameras.ids` / `android.cameras.infos[0].extra` / `android.cameras.streams[0].extra`。`count` 存在时拒绝 null / String / Boolean / 小数 / 越界，错误路径为 `android.cameras.count`。存在 `infos` 但缺 `count` 时错误路径含 `android.cameras.count`；长度不一致错误路径含 `android.cameras.infos`。`canDisableShutterSound` 存在时拒绝 null / String / Number，错误路径为 `android.cameras.infos[i].canDisableShutterSound`。配置对象不可变，提供 `getCount()` / `isCountConfigured()` / `getInfos()` / `isInfosConfigured()` / `getStreams()` / `isStreamsConfigured()` / `findStream` 与 `AndroidCameraInfoConfig.getFacing()` / `getOrientation()` / `isCanDisableShutterSoundConfigured()` / `getCanDisableShutterSound()`；stream 行提供 `getPreviewNv21()` / `getPreviewFile()` / `getJpeg()` / `getJpegFile()`；投递用 `resolveCameraPreview` / `resolveCameraJpeg`（hex 内联或 overlay 文件，二者互斥）；**不**保留 JSONObject/JSONArray。
 
 ### 对 `AbstractJni` 的精确影响
 
@@ -1681,6 +1717,15 @@ GPU / GLES / EGL 查询字符串 **v1 子集**（八字段：可选 **`vendor`**
 | `android/hardware/Camera$CameraInfo->facing:I` | `getIntField` | 存活 `ConfiguredCameraInfo` 标记 | 返回配置 `facing` | 普通/外来/过期标记：UOE 无事件 |
 | `android/hardware/Camera$CameraInfo->orientation:I` | `getIntField` | 同上 | 返回配置 `orientation` | 同上；其它 `CameraInfo` 整型字段在存活标记上亦 UOE 无事件 |
 | `android/hardware/Camera$CameraInfo->canDisableShutterSound:Z` | `getBooleanField` | 存活同 VM 标记 **且该条目显式配置了该字段** | 返回配置 Boolean | 缺字段 / 普通 / 外来 / 过期标记 / 错误签名 / 其它字段：UOE 无事件 |
+| `android/hardware/Camera->open()Landroid/hardware/Camera;` / `open(I)` | 静态 Object VarArg/VaList | 节点存在且 `0<=id<count`（无参视为 0） | 新 `ConfiguredCameraDevice` | 节点缺失 / 越界：不接管 |
+| `Camera.release` / `stopPreview` / `setPreviewDisplay` / `setPreviewTexture` / `setDisplayOrientation` / `setParameters` | 实例 void | 存活 Camera marker | 成功空操作 | 普通/外来 Camera：UOE |
+| `setPreviewCallback` / `setOneShotPreviewCallback` / `setPreviewCallbackWithBuffer` | 实例 void | 存活 Camera marker | 记录回调；one-shot 在投递后清除 | 缺 marker：UOE |
+| `startPreview()V` | 实例 void | 存活 marker **且** 该 `cameraId` 能 `resolveCameraPreview`（`previewHex` 或 overlay `previewFile`） | 若已设回调则投递 NV21 副本到 `onPreviewFrame` | 无 stream / 无预览源 / overlay 缺失或长度不对：不接管 |
+| `takePicture`（3/4 参） | 实例 void | 存活 marker **且** 该 `cameraId` 能 `resolveCameraJpeg`（`jpegHex` 或 overlay `jpegFile`） | 末个 `PictureCallback` 收到 JPEG 副本 | 无 JPEG 源 / overlay 缺失或空文件：不接管 |
+| `getParameters()` | 实例 Object | 存活 Camera marker | 新 `ConfiguredCameraParameters` | 非 marker：UOE |
+| `Parameters.getPreviewSize` / `getPictureSize` / `getSupportedPreviewSizes` / `getSupportedPictureSizes` | 实例 Object | 存活 Parameters **且** 该 id 有 stream | `Camera.Size` 读 `width`/`height`；supported 为单元素列表 | 无 stream：不接管 |
+| `Parameters.getPreviewFormat()I` | 实例 int | 存活 Parameters **且** 该 id 有预览源（`previewHex` 或 `previewFile`） | `17`（NV21） | 无预览源：不接管 |
+| `Camera.Size.width` / `height` | `getIntField` | 存活 Size 标记 | 配置宽高 | 普通 Size：UOE |
 
 ### Sidecar（旁路事件，仅命中时）
 
@@ -1691,14 +1736,21 @@ GPU / GLES / EGL 查询字符串 **v1 子集**（八字段：可选 **`vendor`**
 | `CameraInfo.facing` | `field=facing,result=<n>` | 读取配置的摄像头朝向 |
 | `CameraInfo.orientation` | `field=orientation,result=<n>` | 读取配置的摄像头传感器方向 |
 | `CameraInfo.canDisableShutterSound` | `field=canDisableShutterSound,result=true\|false` | 读取配置的摄像头快门音关闭能力 |
+| `Camera.open` | `cameraId=<n>` | 打开配置的摄像头 |
+| `Camera.startPreview` | `cameraId=<n>,format=nv21,bytes=<n>,delivered=true\|false` | 投递配置的预览帧（**不**写 hex） |
+| `Camera.takePicture` | `cameraId=<n>,format=jpeg,bytes=<n>,delivered=true\|false` | 投递配置的 JPEG（**不**写 hex） |
 
 共性：`kind=android_camera`，`source=json-config`。
 
+**Camera2 子集（复用同一 `count` / `infos` / `streams`，不新增 JSON 键）：** `Context.CAMERA_SERVICE` / `getSystemService("camera")` / **仅** `CameraManager` 的类型化 `getSystemService(Class)` → 同一 `SystemService("camera")`（**不**要求节点；lookup 无 sidecar）。节点存在时：`getCameraIdList` 返回 `"0".."count-1"`；`getCameraCharacteristics(id)` 在合法 id 时返回 marker；`get(LENS_FACING)` / `get(SENSOR_ORIENTATION)` 仅 `infos` 已配置；`get(SENSOR_INFO_PIXEL_ARRAY_SIZE)` 仅该 id 有 `streams` 行，返回 `android.util.Size`。`openCamera(id, StateCallback, Handler)` 投递 `onOpened`。`createCaptureSession(List, StateCallback, Handler)` 立即 `onConfigured`；`createCaptureRequest` / `Builder.addTarget` / `Builder.set`（忽略 Key）/ `build`；`capture` / `setRepeatingRequest` 再投递 `onImageAvailable` 并调用 `CaptureCallback.onCaptureCompleted`（`TotalCaptureResult` 为空 marker）。`ImageReader.newInstance(w,h,format,max)` **仅**当某条 stream 的宽高匹配且 format 为 JPEG(`256`) 且能 resolve JPEG，或 NV21(`17`)/YUV_420_888(`35`) 且能 resolve preview；`setOnImageAvailableListener` 立即 `onImageAvailable`；`acquireLatestImage` / `acquireNextImage` 返回 Image。JPEG / NV21 为单 plane；**YUV_420_888 拆成 Y/U/V 三 plane**（由 NV21 解交织为 packed I420，`pixelStride=1`，U/V `rowStride=width/2`）。`android.cameras` 存在时，`CaptureRequest`/`CameraMetadata`/`CameraDevice.TEMPLATE_*` 静态常量可读（Key 为 dummy、整型为 `0`/`1`），**不是**指纹源。
+
+**NDK 子集（复用同一 `count` / `streams`，不新增 JSON 键）：** `android.cameras` 存在时自动注册 `libcamera2ndk.so`；`streams` 存在时同时把 `AImageReader`/`AImage` 挂到 `libmediandk.so`（与 DRM 同库，仅注册一次）。`ACameraManager_create` / `getCameraIdList` / `openCamera` / `ACameraDevice_getId`/`close` 读 `count`（id 为 `"0".."count-1"`）。`AImageReader_new(w,h,format,max)` **仅**当某条 stream 宽高匹配且能 resolve 对应帧（JPEG=`0x100` / NV21=`17` / YUV_420_888=`0x23`）；`acquireLatestImage` / `acquireNextImage` 立即返回配置帧。YUV_420_888 三 plane（与 Java ImageReader 相同：NV21→packed I420）；JPEG/NV21 单 plane。`AImage_getPlaneData`/`getPlaneRowStride`/`getPlanePixelStride` 读这些 plane。`ACaptureSession*` / `ACaptureRequest*` 为成功空 stub（不推动 HAL）。sidecar `kind=android_camera`，`source=json-config`，**不**写 hex。缺节点 / 缺 streams / 尺寸不匹配 / overlay 失败：返回 `ACAMERA_ERROR_INVALID_PARAMETER` / `AMEDIA_ERROR_INVALID_PARAMETER`，**不**虚构帧。
+
 ### 明确未实现
 
-- `Camera` 实例创建 / `open`
-- `CameraManager` / camera2 / `getCameraIdList` / `getCameraCharacteristics`
-- 权限、分辨率、其它未列出的 `CameraInfo` 字段
+- 真实 Surface 合成、`SessionConfiguration` / high-speed session
+- `ACameraMetadata` / `getCameraCharacteristics`、权限、真实 HAL、主机摄像头、C 回调实际调用
+- 连续预览时钟、`addCallbackBuffer` 缓冲语义、其它未列出的 `Camera` / `Parameters` / Camera2 / NDK API
 
 ## android.sensors
 
@@ -2469,8 +2521,13 @@ Android Settings（安卓设置）数据库的可配置命名空间。节点路�
 | 示例 `android.settings.system.screen_brightness` | 屏幕亮度（`getInt` 时解析为整数）。 |
 | 示例 `android.settings.system.accelerometer_rotation` | 自动旋转开关。 |
 | 示例 `android.settings.system.font_scale` | 字体缩放（`getFloat` 时解析为浮点）。 |
+| 示例 `android.settings.system.ringtone` | 默认铃声名。键存在时 `Settings.System.getString` 与 `RingtoneManager.getActualDefaultRingtoneUri(TYPE_RINGTONE)` / `getRingtone` / `Ringtone.getTitle` 读该值。 |
+| 示例 `android.settings.system.notification_sound` | 默认通知音。对应 `RingtoneManager.TYPE_NOTIFICATION`。 |
+| 示例 `android.settings.system.alarm_alert` | 默认闹钟音。对应 `RingtoneManager.TYPE_ALARM`。 |
 | 示例 `android.settings.global.adb_enabled` | ADB（安卓调试桥）开关。 |
 | 示例 `android.settings.global.development_settings_enabled` | 开发者选项相关开关。 |
+
+铃声回退：上述三个 Settings 键缺失时，可读 `android.properties` 的 `ro.config.ringtone` / `ro.config.notification_sound` / `ro.config.alarm_alert`。Settings 优先于 property。两者都缺时 RingtoneManager 不接管。
 
 ### JNI 支持的 API
 
@@ -2883,6 +2940,7 @@ parse（解析）时严格校验：非法类型、重复 name/index、非法 IPv
 | `network.wifi.linkSpeedMbps` | 否 | 精确整数 `0..100000` | `WifiInfo.getLinkSpeed()`。**仅** Java 层；与 native `/sys/class/net/<name>/speed`（显式 `network.interfaces[].speedMbps`）相互独立，互不推导 |
 | `network.wifi.frequencyMhz` | 否 | 精确整数 `0..100000` | `WifiInfo.getFrequency()` |
 | `network.wifi.networkId` | 否 | 精确整数 `-1..Integer.MAX_VALUE` | `WifiInfo.getNetworkId()` |
+| `network.wifi.scanResults` | 否 | JSONArray。键缺失不接管；显式 `[]` 为权威空快照。每项可选 `ssid`（String 或 null）、`bssid`（六段冒号 MAC 或 null）、`rssi`（精确整数 `-127..0`）、`frequencyMhz`（精确整数 `0..100000`）。**不**从当前连接 `ssid`/`bssid`/`rssi` 推导 | `WifiManager.getScanResults()` |
 
 ### JNI 支持的 API
 
@@ -2895,6 +2953,7 @@ parse（解析）时严格校验：非法类型、重复 name/index、非法 IPv
 | `WifiManager.getConnectionInfo()` | `()Landroid/net/wifi/WifiInfo;` | 任一 wifi 字段已配置时返回 `WifiInfo` 实例 |
 | `WifiManager.isWifiEnabled()` | `()Z` | 读取 `enabled`（键缺失 UOE） |
 | `WifiManager.getWifiState()` | `()I` | 读取固定 `state`（0..4；键缺失 UOE；**不**从 `enabled` 推导） |
+| `WifiManager.getScanResults()` | `()Ljava/util/List;` | `scanResults` 键存在才接管；返回同 VM `ScanResult` 列表（字段 `SSID`/`BSSID`/`level`/`frequency`）；sidecar `count=<n>` |
 | `WifiInfo.getSSID()` / `getBSSID()` / `getMacAddress()` | `()Ljava/lang/String;` | 读对应字符串；显式 null → Java null |
 | `WifiInfo.getIpAddress()` | `()I` | 点分 IPv4 `a.b.c.d` 转为 Android 小端整型 `a\|(b<<8)\|(c<<16)\|(d<<24)`；配置 null → `0` |
 | `WifiInfo.getRssi()` | `()I` | `rssi` |
@@ -2906,7 +2965,7 @@ parse（解析）时严格校验：非法类型、重复 name/index、非法 IPv
 
 ### 明确未覆盖
 
-扫描结果、安全类型、已配置网络列表、`setWifiEnabled`、Wi-Fi 广播/`WIFI_STATE_CHANGED`、状态机迁移、`WifiNetworkSpecifier` / `WifiNetworkSuggestion`。只读 `/proc/net/wireless` 见 `network.wirelessProcStats`（本节点**不**推导该文本，也**不**实现无线 ioctl/netlink/真实扫描）。`ConnectivityManager` / `LinkProperties` / DHCP 投影见下一节 `network.links`（及与 `wifi.ipv4` 的交叉字段）。蓝牙适配器见 `network.bluetooth`。`network.wifi.linkSpeedMbps` **不**生成 native `/sys/class/net/<name>/speed`（该路径仅来自显式 `network.interfaces[].speedMbps`，二者相互独立）。
+安全类型、已配置网络列表、`setWifiEnabled`、Wi-Fi 广播/`WIFI_STATE_CHANGED`、状态机迁移、`WifiNetworkSpecifier` / `WifiNetworkSuggestion`。扫描结果见上表 `network.wifi.scanResults`（固定 JSON 快照，**不是**真实扫描）。只读 `/proc/net/wireless` 见 `network.wirelessProcStats`（本节点**不**推导该文本，也**不**实现无线 ioctl/netlink）。`ConnectivityManager` / `LinkProperties` / DHCP 投影见下一节 `network.links`（及与 `wifi.ipv4` 的交叉字段）。蓝牙适配器见 `network.bluetooth`。`network.wifi.linkSpeedMbps` **不**生成 native `/sys/class/net/<name>/speed`（该路径仅来自显式 `network.interfaces[].speedMbps`，二者相互独立）。
 
 ## network.bluetooth
 

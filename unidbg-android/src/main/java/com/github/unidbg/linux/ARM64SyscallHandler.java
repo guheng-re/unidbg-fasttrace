@@ -1308,17 +1308,17 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
 
         Memory memory = emulator.getMemory();
         byte[] data = old_address.getByteArray(0, old_size);
-        int prot = memory.munmap(old_address.toUIntPeer(), old_size);
+        int prot = memory.munmap(old_address.peer, old_size);
         final long address;
         if (fixed) {
-            address = memory.mmap2(new_address.toUIntPeer(), new_size, prot, AndroidElfLoader.MAP_ANONYMOUS | AndroidElfLoader.MAP_FIXED, 0, 0);
+            address = memory.mmap2(new_address.peer, new_size, prot, AndroidElfLoader.MAP_ANONYMOUS | AndroidElfLoader.MAP_FIXED, 0, 0);
         } else {
             address = memory.mmap2(0, new_size, prot, AndroidElfLoader.MAP_ANONYMOUS, 0, 0);
         }
         UnidbgPointer pointer = UnidbgPointer.pointer(emulator, address);
         assert pointer != null;
         pointer.write(0, data, 0, data.length);
-        return pointer.toUIntPeer();
+        return UnidbgPointer.nativeValue(pointer);
     }
 
     private static final int PR_GET_DUMPABLE = 3;

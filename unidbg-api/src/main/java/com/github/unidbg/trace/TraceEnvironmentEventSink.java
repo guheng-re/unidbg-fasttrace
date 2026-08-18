@@ -41,15 +41,16 @@ public interface TraceEnvironmentEventSink {
     }
 
     static void emit(Emulator<?> emulator, String kind, String api, Object value, String source, String note) {
-        TraceEnvironmentEventSink sink = current(emulator);
-        if (sink == null) {
-            return;
-        }
         if ("json-config".equals(source)) {
             TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
             if (config != null && config.isProfileLoaded()) {
                 source = "profile-json";
             }
+        }
+        EnvAccessProbe.logEmit(kind, api, value, source, note);
+        TraceEnvironmentEventSink sink = current(emulator);
+        if (sink == null) {
+            return;
         }
         try {
             sink.emitEnvironmentEvent(kind, api, value, source, note);

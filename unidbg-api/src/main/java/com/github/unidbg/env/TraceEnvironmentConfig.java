@@ -3666,6 +3666,8 @@ public class TraceEnvironmentConfig {
         private final boolean rotationConfigured;
         private final int modeId;
         private final boolean modeIdConfigured;
+        private final String uniqueId;
+        private final boolean uniqueIdConfigured;
 
         private AndroidDisplayConfig(int widthPixels, boolean widthPixelsConfigured,
                                      int heightPixels, boolean heightPixelsConfigured,
@@ -3675,7 +3677,8 @@ public class TraceEnvironmentConfig {
                                      float ydpi, boolean ydpiConfigured,
                                      float refreshRate, boolean refreshRateConfigured,
                                      int rotation, boolean rotationConfigured,
-                                     int modeId, boolean modeIdConfigured) {
+                                     int modeId, boolean modeIdConfigured,
+                                     String uniqueId, boolean uniqueIdConfigured) {
             this.widthPixels = widthPixels;
             this.widthPixelsConfigured = widthPixelsConfigured;
             this.heightPixels = heightPixels;
@@ -3694,6 +3697,8 @@ public class TraceEnvironmentConfig {
             this.rotationConfigured = rotationConfigured;
             this.modeId = modeId;
             this.modeIdConfigured = modeIdConfigured;
+            this.uniqueId = uniqueId;
+            this.uniqueIdConfigured = uniqueIdConfigured;
         }
 
         public boolean isWidthPixelsConfigured() {
@@ -3774,6 +3779,18 @@ public class TraceEnvironmentConfig {
 
         public int getModeId() {
             return modeId;
+        }
+
+        public boolean isUniqueIdConfigured() {
+            return uniqueIdConfigured;
+        }
+
+        /**
+         * Optional {@code android.display.uniqueId}. When the key is omitted the JNI layer
+         * uses the deterministic default {@code local:0} (not stored here).
+         */
+        public String getUniqueId() {
+            return uniqueId;
         }
     }
 
@@ -4309,6 +4326,12 @@ public class TraceEnvironmentConfig {
         private final boolean chargeTimeRemainingMillisConfigured;
         private final int plugged;
         private final boolean pluggedConfigured;
+        private final int health;
+        private final boolean healthConfigured;
+        private final int voltageMv;
+        private final boolean voltageMvConfigured;
+        private final int temperatureTenthsC;
+        private final boolean temperatureTenthsCConfigured;
 
         private AndroidBatteryConfig(int capacityPercent, boolean capacityPercentConfigured,
                                      boolean charging, boolean chargingConfigured,
@@ -4319,7 +4342,10 @@ public class TraceEnvironmentConfig {
                                      int status, boolean statusConfigured,
                                      long chargeTimeRemainingMillis,
                                      boolean chargeTimeRemainingMillisConfigured,
-                                     int plugged, boolean pluggedConfigured) {
+                                     int plugged, boolean pluggedConfigured,
+                                     int health, boolean healthConfigured,
+                                     int voltageMv, boolean voltageMvConfigured,
+                                     int temperatureTenthsC, boolean temperatureTenthsCConfigured) {
             this.capacityPercent = capacityPercent;
             this.capacityPercentConfigured = capacityPercentConfigured;
             this.charging = charging;
@@ -4338,6 +4364,12 @@ public class TraceEnvironmentConfig {
             this.chargeTimeRemainingMillisConfigured = chargeTimeRemainingMillisConfigured;
             this.plugged = plugged;
             this.pluggedConfigured = pluggedConfigured;
+            this.health = health;
+            this.healthConfigured = healthConfigured;
+            this.voltageMv = voltageMv;
+            this.voltageMvConfigured = voltageMvConfigured;
+            this.temperatureTenthsC = temperatureTenthsC;
+            this.temperatureTenthsCConfigured = temperatureTenthsCConfigured;
         }
 
         public boolean isCapacityPercentConfigured() {
@@ -4450,6 +4482,267 @@ public class TraceEnvironmentConfig {
         public int getPlugged() {
             return plugged;
         }
+
+        public boolean isHealthConfigured() {
+            return healthConfigured;
+        }
+
+        /**
+         * {@code BatteryManager.EXTRA_HEALTH}: Android constants 1..7. Never inferred from
+         * status/charging/capacity.
+         */
+        public int getHealth() {
+            return health;
+        }
+
+        public boolean isVoltageMvConfigured() {
+            return voltageMvConfigured;
+        }
+
+        /**
+         * Battery voltage in millivolts. Never inferred from health/status/capacity.
+         */
+        public int getVoltageMv() {
+            return voltageMv;
+        }
+
+        public boolean isTemperatureTenthsCConfigured() {
+            return temperatureTenthsCConfigured;
+        }
+
+        /**
+         * Battery temperature in tenths of a degree Celsius. Never inferred from other battery fields.
+         */
+        public int getTemperatureTenthsC() {
+            return temperatureTenthsC;
+        }
+    }
+
+    /**
+     * One {@code android.telephony.cellInfo[]} row after parse validation.
+     * Fields are independent and never inferred from {@code networkOperator} / slots.
+     */
+    public static final class CellInfoConfig {
+        private final String type;
+        private final boolean registered;
+        private final boolean registeredConfigured;
+        private final String mcc;
+        private final boolean mccConfigured;
+        private final String mnc;
+        private final boolean mncConfigured;
+        private final int ci;
+        private final boolean ciConfigured;
+        private final int pci;
+        private final boolean pciConfigured;
+        private final int tac;
+        private final boolean tacConfigured;
+        private final int earfcn;
+        private final boolean earfcnConfigured;
+        private final String alphaLong;
+        private final boolean alphaLongConfigured;
+        private final String alphaShort;
+        private final boolean alphaShortConfigured;
+
+        private CellInfoConfig(String type,
+                               boolean registered, boolean registeredConfigured,
+                               String mcc, boolean mccConfigured,
+                               String mnc, boolean mncConfigured,
+                               int ci, boolean ciConfigured,
+                               int pci, boolean pciConfigured,
+                               int tac, boolean tacConfigured,
+                               int earfcn, boolean earfcnConfigured,
+                               String alphaLong, boolean alphaLongConfigured,
+                               String alphaShort, boolean alphaShortConfigured) {
+            this.type = type;
+            this.registered = registered;
+            this.registeredConfigured = registeredConfigured;
+            this.mcc = mcc;
+            this.mccConfigured = mccConfigured;
+            this.mnc = mnc;
+            this.mncConfigured = mncConfigured;
+            this.ci = ci;
+            this.ciConfigured = ciConfigured;
+            this.pci = pci;
+            this.pciConfigured = pciConfigured;
+            this.tac = tac;
+            this.tacConfigured = tacConfigured;
+            this.earfcn = earfcn;
+            this.earfcnConfigured = earfcnConfigured;
+            this.alphaLong = alphaLong;
+            this.alphaLongConfigured = alphaLongConfigured;
+            this.alphaShort = alphaShort;
+            this.alphaShortConfigured = alphaShortConfigured;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public boolean isRegisteredConfigured() {
+            return registeredConfigured;
+        }
+
+        public boolean isRegistered() {
+            return registered;
+        }
+
+        public boolean isMccConfigured() {
+            return mccConfigured;
+        }
+
+        public String getMcc() {
+            return mcc;
+        }
+
+        public boolean isMncConfigured() {
+            return mncConfigured;
+        }
+
+        public String getMnc() {
+            return mnc;
+        }
+
+        public boolean isCiConfigured() {
+            return ciConfigured;
+        }
+
+        public int getCi() {
+            return ci;
+        }
+
+        public boolean isPciConfigured() {
+            return pciConfigured;
+        }
+
+        public int getPci() {
+            return pci;
+        }
+
+        public boolean isTacConfigured() {
+            return tacConfigured;
+        }
+
+        public int getTac() {
+            return tac;
+        }
+
+        public boolean isEarfcnConfigured() {
+            return earfcnConfigured;
+        }
+
+        public int getEarfcn() {
+            return earfcn;
+        }
+
+        public boolean isAlphaLongConfigured() {
+            return alphaLongConfigured;
+        }
+
+        public String getAlphaLong() {
+            return alphaLong;
+        }
+
+        public boolean isAlphaShortConfigured() {
+            return alphaShortConfigured;
+        }
+
+        public String getAlphaShort() {
+            return alphaShort;
+        }
+    }
+
+    /**
+     * One {@code network.wifi.scanResults[]} row after parse validation.
+     * Never inferred from {@code network.wifi} connection fields.
+     */
+    public static final class WifiScanResultConfig {
+        private final String ssid;
+        private final boolean ssidConfigured;
+        private final String bssid;
+        private final boolean bssidConfigured;
+        private final int rssi;
+        private final boolean rssiConfigured;
+        private final int frequencyMhz;
+        private final boolean frequencyMhzConfigured;
+
+        private WifiScanResultConfig(String ssid, boolean ssidConfigured,
+                                     String bssid, boolean bssidConfigured,
+                                     int rssi, boolean rssiConfigured,
+                                     int frequencyMhz, boolean frequencyMhzConfigured) {
+            this.ssid = ssid;
+            this.ssidConfigured = ssidConfigured;
+            this.bssid = bssid;
+            this.bssidConfigured = bssidConfigured;
+            this.rssi = rssi;
+            this.rssiConfigured = rssiConfigured;
+            this.frequencyMhz = frequencyMhz;
+            this.frequencyMhzConfigured = frequencyMhzConfigured;
+        }
+
+        public boolean isSsidConfigured() {
+            return ssidConfigured;
+        }
+
+        public String getSsid() {
+            return ssid;
+        }
+
+        public boolean isBssidConfigured() {
+            return bssidConfigured;
+        }
+
+        public String getBssid() {
+            return bssid;
+        }
+
+        public boolean isRssiConfigured() {
+            return rssiConfigured;
+        }
+
+        public int getRssi() {
+            return rssi;
+        }
+
+        public boolean isFrequencyMhzConfigured() {
+            return frequencyMhzConfigured;
+        }
+
+        public int getFrequencyMhz() {
+            return frequencyMhz;
+        }
+    }
+
+    /**
+     * Immutable view of optional {@code android.powerProfile} after parse validation.
+     * {@code averagePower} is a name→watts map; missing names do not take over.
+     */
+    public static final class AndroidPowerProfileConfig {
+        private final Map<String, Double> averagePower;
+        private final boolean averagePowerConfigured;
+
+        private AndroidPowerProfileConfig(Map<String, Double> averagePower, boolean averagePowerConfigured) {
+            this.averagePower = averagePower;
+            this.averagePowerConfigured = averagePowerConfigured;
+        }
+
+        public boolean isAveragePowerConfigured() {
+            return averagePowerConfigured;
+        }
+
+        public boolean hasAveragePower(String name) {
+            return averagePowerConfigured && name != null && averagePower.containsKey(name);
+        }
+
+        public Double getAveragePower(String name) {
+            if (!hasAveragePower(name)) {
+                return null;
+            }
+            return averagePower.get(name);
+        }
+
+        public Map<String, Double> getAveragePowerMap() {
+            return averagePower;
+        }
     }
 
     /**
@@ -4509,18 +4802,101 @@ public class TraceEnvironmentConfig {
      * Immutable view of optional {@code android.cameras} after parse validation (v1 subset).
      * Presence-tracked integer {@code count} and optional {@code infos} list; never exposes JSONObject.
      */
+    /**
+     * One {@code android.cameras.streams[]} row: optional NV21 preview and/or JPEG still
+     * for a single {@code cameraId}. Hex bytes are copied at parse time; overlay file
+     * paths are stored and resolved later. Never inferred from {@code infos} or other cameras.
+     */
+    public static final class AndroidCameraStreamConfig {
+        private final int cameraId;
+        private final int width;
+        private final int height;
+        private final byte[] previewNv21;
+        private final boolean previewConfigured;
+        private final String previewFile;
+        private final byte[] jpeg;
+        private final boolean jpegConfigured;
+        private final String jpegFile;
+
+        private AndroidCameraStreamConfig(int cameraId, int width, int height,
+                                          byte[] previewNv21, boolean previewConfigured,
+                                          String previewFile,
+                                          byte[] jpeg, boolean jpegConfigured,
+                                          String jpegFile) {
+            this.cameraId = cameraId;
+            this.width = width;
+            this.height = height;
+            this.previewNv21 = previewNv21;
+            this.previewConfigured = previewConfigured;
+            this.previewFile = previewFile;
+            this.jpeg = jpeg;
+            this.jpegConfigured = jpegConfigured;
+            this.jpegFile = jpegFile;
+        }
+
+        public int getCameraId() {
+            return cameraId;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public boolean isPreviewConfigured() {
+            return previewConfigured;
+        }
+
+        /**
+         * NV21 preview bytes from {@code previewHex}, or {@code null} when only {@code previewFile}
+         * is set. Callers must not mutate the returned array. Use
+         * {@link TraceEnvironmentConfig#resolveCameraPreview(AndroidCameraStreamConfig)} to also
+         * load overlay files.
+         */
+        public byte[] getPreviewNv21() {
+            return previewNv21;
+        }
+
+        public String getPreviewFile() {
+            return previewFile;
+        }
+
+        public boolean isJpegConfigured() {
+            return jpegConfigured;
+        }
+
+        /**
+         * JPEG bytes from {@code jpegHex}, or {@code null} when only {@code jpegFile} is set.
+         */
+        public byte[] getJpeg() {
+            return jpeg;
+        }
+
+        public String getJpegFile() {
+            return jpegFile;
+        }
+    }
+
     public static final class AndroidCamerasConfig {
         private final int count;
         private final boolean countConfigured;
         private final List<AndroidCameraInfoConfig> infos;
         private final boolean infosConfigured;
+        private final List<AndroidCameraStreamConfig> streams;
+        private final boolean streamsConfigured;
 
         private AndroidCamerasConfig(int count, boolean countConfigured,
-                                     List<AndroidCameraInfoConfig> infos, boolean infosConfigured) {
+                                     List<AndroidCameraInfoConfig> infos, boolean infosConfigured,
+                                     List<AndroidCameraStreamConfig> streams, boolean streamsConfigured) {
             this.count = count;
             this.countConfigured = countConfigured;
             this.infos = infos;
             this.infosConfigured = infosConfigured;
+            this.streams = streams;
+            this.streamsConfigured = streamsConfigured;
         }
 
         public boolean isCountConfigured() {
@@ -4546,6 +4922,33 @@ public class TraceEnvironmentConfig {
          */
         public List<AndroidCameraInfoConfig> getInfos() {
             return infos;
+        }
+
+        /**
+         * Whether {@code streams} was present (including an explicit empty array).
+         */
+        public boolean isStreamsConfigured() {
+            return streamsConfigured;
+        }
+
+        /**
+         * Immutable stream rows when {@code streams} was present; empty list when omitted.
+         */
+        public List<AndroidCameraStreamConfig> getStreams() {
+            return streams;
+        }
+
+        /**
+         * Stream for {@code cameraId}, or {@code null} when that id has no row.
+         */
+        public AndroidCameraStreamConfig findStream(int cameraId) {
+            for (int i = 0; i < streams.size(); i++) {
+                AndroidCameraStreamConfig row = streams.get(i);
+                if (row.getCameraId() == cameraId) {
+                    return row;
+                }
+            }
+            return null;
         }
     }
 
@@ -7246,6 +7649,18 @@ public class TraceEnvironmentConfig {
     private boolean androidPowerConfigured;
     private AndroidPowerConfig androidPowerConfig;
 
+    /** Whether {@code android.powerProfile} was present (including explicit empty object). */
+    private boolean androidPowerProfileConfigured;
+    private AndroidPowerProfileConfig androidPowerProfileConfig;
+
+    /** Whether {@code android.telephony.cellInfo} was present (including an explicit empty array). */
+    private boolean androidCellInfoConfigured;
+    private List<CellInfoConfig> androidCellInfo = Collections.emptyList();
+
+    /** Whether {@code network.wifi.scanResults} was present (including an explicit empty array). */
+    private boolean networkWifiScanResultsConfigured;
+    private List<WifiScanResultConfig> networkWifiScanResults = Collections.emptyList();
+
     /** Whether {@code android.thermal} was present (including explicit empty object). */
     private boolean androidThermalConfigured;
     private AndroidThermalConfig androidThermalConfig;
@@ -7429,7 +7844,7 @@ public class TraceEnvironmentConfig {
 
     private static final String[] ANDROID_DISPLAY_ALLOWED_KEYS = {
             "widthPixels", "heightPixels", "densityDpi", "scaledDensity", "xdpi", "ydpi",
-            "refreshRate", "rotation", "modeId"
+            "refreshRate", "rotation", "modeId", "uniqueId"
     };
 
     private static final String[] ANDROID_CONFIGURATION_ALLOWED_KEYS = {
@@ -7458,12 +7873,37 @@ public class TraceEnvironmentConfig {
 
     private static final String[] ANDROID_BATTERY_ALLOWED_KEYS = {
             "capacityPercent", "charging", "chargeCounterUah", "currentNowUa", "currentAverageUa",
-            "energyCounterNwh", "status", "chargeTimeRemainingMillis", "plugged"
+            "energyCounterNwh", "status", "chargeTimeRemainingMillis", "plugged",
+            "health", "voltageMv", "temperatureTenthsC"
+    };
+
+    private static final String[] ANDROID_POWER_PROFILE_ALLOWED_KEYS = {
+            "averagePower"
+    };
+
+    private static final String[] ANDROID_CELL_INFO_ALLOWED_KEYS = {
+            "type", "registered", "mcc", "mnc", "ci", "pci", "tac", "earfcn",
+            "alphaLong", "alphaShort"
+    };
+
+    private static final String[] ANDROID_CELL_INFO_TYPES = {
+            "gsm", "cdma", "lte", "wcdma", "nr"
+    };
+
+    private static final String[] NETWORK_WIFI_SCAN_RESULT_ALLOWED_KEYS = {
+            "ssid", "bssid", "rssi", "frequencyMhz"
     };
 
     private static final String[] ANDROID_CAMERAS_ALLOWED_KEYS = {
-            "count", "infos"
+            "count", "infos", "streams"
     };
+
+    private static final String[] ANDROID_CAMERA_STREAM_ALLOWED_KEYS = {
+            "cameraId", "width", "height", "previewHex", "jpegHex", "previewFile", "jpegFile"
+    };
+    private static final int ANDROID_CAMERA_FILE_PATH_MAX = 256;
+    private static final int ANDROID_CAMERA_STREAM_SIZE_MIN = 1;
+    private static final int ANDROID_CAMERA_STREAM_SIZE_MAX = 8192;
 
     private static final String[] ANDROID_CAMERA_INFO_ALLOWED_KEYS = {
             "facing", "orientation", "canDisableShutterSound"
@@ -7606,6 +8046,13 @@ public class TraceEnvironmentConfig {
      */
     private static final long ANDROID_BATTERY_CHARGE_TIME_REMAINING_MILLIS_MIN = -1L;
     private static final long ANDROID_BATTERY_CHARGE_TIME_REMAINING_MILLIS_MAX = Long.MAX_VALUE;
+    /** BatteryManager.BATTERY_HEALTH_UNKNOWN..COLD (1..7). */
+    private static final int ANDROID_BATTERY_HEALTH_MIN = 1;
+    private static final int ANDROID_BATTERY_HEALTH_MAX = 7;
+    private static final int ANDROID_BATTERY_VOLTAGE_MV_MIN = 0;
+    private static final int ANDROID_BATTERY_VOLTAGE_MV_MAX = Integer.MAX_VALUE;
+    private static final int ANDROID_BATTERY_TEMPERATURE_TENTHS_C_MIN = -2000;
+    private static final int ANDROID_BATTERY_TEMPERATURE_TENTHS_C_MAX = 2000;
 
     private static final int ANDROID_CAMERAS_DEFAULT_COUNT = 0;
     private static final int ANDROID_CAMERAS_COUNT_MIN = 0;
@@ -7793,6 +8240,7 @@ public class TraceEnvironmentConfig {
     private static final float ANDROID_DISPLAY_REFRESH_RATE_MAX = 1000f;
     private static final int ANDROID_DISPLAY_ROTATION_MIN = 0;
     private static final int ANDROID_DISPLAY_ROTATION_MAX = 3;
+    private static final int ANDROID_DISPLAY_UNIQUE_ID_MAX_LEN = 128;
     private static final int ANDROID_DISPLAY_MODE_ID_MIN = 1;
 
     private static final String ANDROID_DRM_DEFAULT_MARKER = "TRACEAI_DRM_MARKER_V1";
@@ -7880,6 +8328,7 @@ public class TraceEnvironmentConfig {
         validateAndroidDisplay();
         validateAndroidConfiguration();
         validateAndroidPower();
+        validateAndroidPowerProfile();
         validateAndroidThermal();
         validateGraphics();
         validateAndroidBattery();
@@ -9082,7 +9531,8 @@ public class TraceEnvironmentConfig {
                 throw new IllegalArgumentException("android.battery." + key
                         + " is not an allowed key"
                         + " (capacityPercent|charging|chargeCounterUah|currentNowUa|"
-                        + "currentAverageUa|energyCounterNwh|status|chargeTimeRemainingMillis)");
+                        + "currentAverageUa|energyCounterNwh|status|chargeTimeRemainingMillis|"
+                        + "plugged|health|voltageMv|temperatureTenthsC)");
             }
         }
 
@@ -9163,6 +9613,31 @@ public class TraceEnvironmentConfig {
             }
         }
 
+        boolean healthConfigured = battery.containsKey("health");
+        int health = 0;
+        if (healthConfigured) {
+            health = requireExactJsonNumberIntField(battery, "health",
+                    "android.battery.health",
+                    ANDROID_BATTERY_HEALTH_MIN, ANDROID_BATTERY_HEALTH_MAX);
+        }
+
+        boolean voltageMvConfigured = battery.containsKey("voltageMv");
+        int voltageMv = 0;
+        if (voltageMvConfigured) {
+            voltageMv = requireExactJsonNumberIntField(battery, "voltageMv",
+                    "android.battery.voltageMv",
+                    ANDROID_BATTERY_VOLTAGE_MV_MIN, ANDROID_BATTERY_VOLTAGE_MV_MAX);
+        }
+
+        boolean temperatureTenthsCConfigured = battery.containsKey("temperatureTenthsC");
+        int temperatureTenthsC = 0;
+        if (temperatureTenthsCConfigured) {
+            temperatureTenthsC = requireExactJsonNumberIntField(battery, "temperatureTenthsC",
+                    "android.battery.temperatureTenthsC",
+                    ANDROID_BATTERY_TEMPERATURE_TENTHS_C_MIN,
+                    ANDROID_BATTERY_TEMPERATURE_TENTHS_C_MAX);
+        }
+
         this.androidBatteryConfigured = true;
         this.androidBatteryConfig = new AndroidBatteryConfig(
                 capacityPercent, capacityPercentConfigured,
@@ -9173,7 +9648,10 @@ public class TraceEnvironmentConfig {
                 energyCounterNwh, energyCounterNwhConfigured,
                 status, statusConfigured,
                 chargeTimeRemainingMillis, chargeTimeRemainingMillisConfigured,
-                plugged, pluggedConfigured);
+                plugged, pluggedConfigured,
+                health, healthConfigured,
+                voltageMv, voltageMvConfigured,
+                temperatureTenthsC, temperatureTenthsCConfigured);
     }
 
     private static boolean isAllowedAndroidBatteryKey(String key) {
@@ -9186,13 +9664,248 @@ public class TraceEnvironmentConfig {
     }
 
     /**
-     * Parse-time rules for optional {@code android.cameras} when present (v1 count + infos subset).
-     * Missing node leaves {@link #isAndroidCamerasConfigured()} false; explicit empty object is
-     * configured with default {@code count=0} and infos unconfigured. When {@code infos} is present,
+     * Optional {@code android.powerProfile}. Missing node does not take over.
+     * Explicit empty object is configured with no averagePower names.
+     */
+    private void validateAndroidPowerProfile() {
+        JSONObject android = android();
+        if (android == null || !android.containsKey("powerProfile")) {
+            this.androidPowerProfileConfigured = false;
+            this.androidPowerProfileConfig = null;
+            return;
+        }
+        Object raw = android.get("powerProfile");
+        if (!(raw instanceof JSONObject)) {
+            throw new IllegalArgumentException("android.powerProfile must be a JSONObject");
+        }
+        JSONObject profile = (JSONObject) raw;
+        for (String key : profile.keySet()) {
+            if (!isAllowedKey(key, ANDROID_POWER_PROFILE_ALLOWED_KEYS)) {
+                throw new IllegalArgumentException("android.powerProfile." + key
+                        + " is not an allowed key (averagePower)");
+            }
+        }
+        boolean averagePowerConfigured = profile.containsKey("averagePower");
+        Map<String, Double> averagePower = Collections.emptyMap();
+        if (averagePowerConfigured) {
+            Object mapRaw = profile.get("averagePower");
+            if (!(mapRaw instanceof JSONObject)) {
+                throw new IllegalArgumentException("android.powerProfile.averagePower must be a JSONObject");
+            }
+            JSONObject map = (JSONObject) mapRaw;
+            Map<String, Double> built = new LinkedHashMap<String, Double>();
+            for (String name : map.keySet()) {
+                if (name == null || name.isEmpty() || name.indexOf('\0') >= 0
+                        || name.indexOf('\n') >= 0 || name.indexOf('\r') >= 0) {
+                    throw new IllegalArgumentException(
+                            "android.powerProfile.averagePower key must be a non-empty string without NUL/CR/LF");
+                }
+                Object valueRaw = map.get(name);
+                if (!(valueRaw instanceof Number) || valueRaw instanceof Boolean) {
+                    throw new IllegalArgumentException("android.powerProfile.averagePower." + name
+                            + " must be a finite JSON Number");
+                }
+                double value = ((Number) valueRaw).doubleValue();
+                if (Double.isNaN(value) || Double.isInfinite(value)) {
+                    throw new IllegalArgumentException("android.powerProfile.averagePower." + name
+                            + " must be a finite JSON Number");
+                }
+                built.put(name, Double.valueOf(value));
+            }
+            averagePower = Collections.unmodifiableMap(built);
+        }
+        this.androidPowerProfileConfigured = true;
+        this.androidPowerProfileConfig = new AndroidPowerProfileConfig(averagePower, averagePowerConfigured);
+    }
+
+    private void validateAndroidCellInfo(JSONObject telephony) {
+        if (!telephony.containsKey("cellInfo")) {
+            this.androidCellInfoConfigured = false;
+            this.androidCellInfo = Collections.emptyList();
+            return;
+        }
+        Object raw = telephony.get("cellInfo");
+        if (!(raw instanceof JSONArray)) {
+            throw new IllegalArgumentException("android.telephony.cellInfo must be a JSON array");
+        }
+        JSONArray array = (JSONArray) raw;
+        List<CellInfoConfig> built = new ArrayList<CellInfoConfig>(array.size());
+        for (int i = 0; i < array.size(); i++) {
+            String path = "android.telephony.cellInfo[" + i + "]";
+            Object item = array.get(i);
+            if (!(item instanceof JSONObject)) {
+                throw new IllegalArgumentException(path + " must be a JSONObject");
+            }
+            JSONObject row = (JSONObject) item;
+            for (String field : row.keySet()) {
+                if (!isAllowedKey(field, ANDROID_CELL_INFO_ALLOWED_KEYS)) {
+                    throw new IllegalArgumentException(path + "." + field
+                            + " is not an allowed field (type|registered|mcc|mnc|ci|pci|tac|earfcn|"
+                            + "alphaLong|alphaShort)");
+                }
+            }
+            if (!row.containsKey("type")) {
+                throw new IllegalArgumentException(path + ".type is required");
+            }
+            Object typeRaw = row.get("type");
+            if (!(typeRaw instanceof String)) {
+                throw new IllegalArgumentException(path + ".type must be a String (gsm|cdma|lte|wcdma|nr)");
+            }
+            String type = ((String) typeRaw);
+            if (!isAllowedKey(type, ANDROID_CELL_INFO_TYPES)) {
+                throw new IllegalArgumentException(path + ".type must be gsm|cdma|lte|wcdma|nr");
+            }
+
+            boolean registeredConfigured = row.containsKey("registered");
+            boolean registered = false;
+            if (registeredConfigured) {
+                Object registeredRaw = row.get("registered");
+                if (!(registeredRaw instanceof Boolean)) {
+                    throw new IllegalArgumentException(path + ".registered must be a Boolean");
+                }
+                registered = ((Boolean) registeredRaw).booleanValue();
+            }
+
+            boolean mccConfigured = row.containsKey("mcc");
+            String mcc = null;
+            if (mccConfigured) {
+                mcc = requireOptionalNullableNoTrimString(row.get("mcc"), path + ".mcc");
+            }
+            boolean mncConfigured = row.containsKey("mnc");
+            String mnc = null;
+            if (mncConfigured) {
+                mnc = requireOptionalNullableNoTrimString(row.get("mnc"), path + ".mnc");
+            }
+
+            boolean ciConfigured = row.containsKey("ci");
+            int ci = 0;
+            if (ciConfigured) {
+                ci = requireExactJsonNumberIntField(row, "ci", path + ".ci", 0, Integer.MAX_VALUE);
+            }
+            boolean pciConfigured = row.containsKey("pci");
+            int pci = 0;
+            if (pciConfigured) {
+                pci = requireExactJsonNumberIntField(row, "pci", path + ".pci", 0, Integer.MAX_VALUE);
+            }
+            boolean tacConfigured = row.containsKey("tac");
+            int tac = 0;
+            if (tacConfigured) {
+                tac = requireExactJsonNumberIntField(row, "tac", path + ".tac", 0, Integer.MAX_VALUE);
+            }
+            boolean earfcnConfigured = row.containsKey("earfcn");
+            int earfcn = 0;
+            if (earfcnConfigured) {
+                earfcn = requireExactJsonNumberIntField(row, "earfcn", path + ".earfcn", 0, Integer.MAX_VALUE);
+            }
+
+            boolean alphaLongConfigured = row.containsKey("alphaLong");
+            String alphaLong = null;
+            if (alphaLongConfigured) {
+                alphaLong = requireOptionalNullableNoTrimString(row.get("alphaLong"), path + ".alphaLong");
+            }
+            boolean alphaShortConfigured = row.containsKey("alphaShort");
+            String alphaShort = null;
+            if (alphaShortConfigured) {
+                alphaShort = requireOptionalNullableNoTrimString(row.get("alphaShort"), path + ".alphaShort");
+            }
+
+            built.add(new CellInfoConfig(type, registered, registeredConfigured,
+                    mcc, mccConfigured, mnc, mncConfigured,
+                    ci, ciConfigured, pci, pciConfigured, tac, tacConfigured,
+                    earfcn, earfcnConfigured,
+                    alphaLong, alphaLongConfigured, alphaShort, alphaShortConfigured));
+        }
+        this.androidCellInfoConfigured = true;
+        this.androidCellInfo = Collections.unmodifiableList(built);
+    }
+
+    private void validateNetworkWifiScanResults(JSONObject wifi) {
+        if (!wifi.containsKey("scanResults")) {
+            this.networkWifiScanResultsConfigured = false;
+            this.networkWifiScanResults = Collections.emptyList();
+            return;
+        }
+        Object raw = wifi.get("scanResults");
+        if (!(raw instanceof JSONArray)) {
+            throw new IllegalArgumentException("network.wifi.scanResults must be a JSON array");
+        }
+        JSONArray array = (JSONArray) raw;
+        List<WifiScanResultConfig> built = new ArrayList<WifiScanResultConfig>(array.size());
+        for (int i = 0; i < array.size(); i++) {
+            String path = "network.wifi.scanResults[" + i + "]";
+            Object item = array.get(i);
+            if (!(item instanceof JSONObject)) {
+                throw new IllegalArgumentException(path + " must be a JSONObject");
+            }
+            JSONObject row = (JSONObject) item;
+            for (String field : row.keySet()) {
+                if (!isAllowedKey(field, NETWORK_WIFI_SCAN_RESULT_ALLOWED_KEYS)) {
+                    throw new IllegalArgumentException(path + "." + field
+                            + " is not an allowed field (ssid|bssid|rssi|frequencyMhz)");
+                }
+            }
+            boolean ssidConfigured = row.containsKey("ssid");
+            String ssid = null;
+            if (ssidConfigured) {
+                ssid = requireOptionalNullableNoTrimString(row.get("ssid"), path + ".ssid");
+            }
+            boolean bssidConfigured = row.containsKey("bssid");
+            String bssid = null;
+            if (bssidConfigured) {
+                Object bssidRaw = row.get("bssid");
+                if (bssidRaw != null) {
+                    bssid = requireMacStringValue(bssidRaw, path + ".bssid");
+                }
+            }
+            boolean rssiConfigured = row.containsKey("rssi");
+            int rssi = 0;
+            if (rssiConfigured) {
+                rssi = requireExactJsonNumberIntField(row, "rssi", path + ".rssi", -127, 0);
+            }
+            boolean frequencyMhzConfigured = row.containsKey("frequencyMhz");
+            int frequencyMhz = 0;
+            if (frequencyMhzConfigured) {
+                frequencyMhz = requireExactJsonNumberIntField(row, "frequencyMhz",
+                        path + ".frequencyMhz", 0, 100000);
+            }
+            built.add(new WifiScanResultConfig(ssid, ssidConfigured, bssid, bssidConfigured,
+                    rssi, rssiConfigured, frequencyMhz, frequencyMhzConfigured));
+        }
+        this.networkWifiScanResultsConfigured = true;
+        this.networkWifiScanResults = Collections.unmodifiableList(built);
+    }
+
+    private static String requireAndroidDisplayUniqueId(Object raw) {
+        if (!(raw instanceof String)) {
+            throw new IllegalArgumentException("android.display.uniqueId must be a String");
+        }
+        String value = (String) raw;
+        if (value.isEmpty() || value.length() > ANDROID_DISPLAY_UNIQUE_ID_MAX_LEN
+                || value.indexOf('\0') >= 0 || value.indexOf('\n') >= 0 || value.indexOf('\r') >= 0) {
+            throw new IllegalArgumentException(
+                    "android.display.uniqueId must be a non-empty string of at most "
+                            + ANDROID_DISPLAY_UNIQUE_ID_MAX_LEN + " chars without NUL/CR/LF");
+        }
+        return value;
+    }
+
+    /**
+     * Parse-time rules for optional {@code android.cameras} when present (count + infos +
+     * optional {@code streams} subset). Missing node leaves
+     * {@link #isAndroidCamerasConfigured()} false; explicit empty object is configured with
+     * default {@code count=0} and infos/streams unconfigured. When {@code infos} is present,
      * {@code count} must be explicit and {@code infos.length == count}. Each info entry requires
      * {@code facing} and {@code orientation}; optional {@code canDisableShutterSound} is a strict
      * JSON Boolean with independent presence (absent is not configured, never defaulted).
-     * Materializes {@link AndroidCamerasConfig}; never retains JSONObject/JSONArray.
+     * {@code streams} is independently presence-gated: omitted does not take over preview/JPEG;
+     * explicit {@code []} is an empty snapshot. Each stream requires {@code cameraId} (unique,
+     * {@code 0..count-1}), {@code width}/{@code height}, and at least one of {@code previewHex}
+     * (NV21, length {@code width*height*3/2}), {@code previewFile} (POSIX overlay path to NV21),
+     * {@code jpegHex}, or {@code jpegFile}. {@code previewHex} and {@code previewFile} are
+     * mutually exclusive; {@code jpegHex} and {@code jpegFile} are mutually exclusive.
+     * Overlay file bytes are resolved at delivery via {@link #resolveCameraPreview} /
+     * {@link #resolveCameraJpeg}, not at parse time. Materializes
+     * {@link AndroidCamerasConfig}; never retains JSONObject/JSONArray.
      */
     private void validateAndroidCameras() {
         JSONObject android = android();
@@ -9209,7 +9922,7 @@ public class TraceEnvironmentConfig {
         for (String key : cameras.keySet()) {
             if (!isAllowedAndroidCamerasKey(key)) {
                 throw new IllegalArgumentException("android.cameras." + key
-                        + " is not an allowed key (count, infos)");
+                        + " is not an allowed key (count, infos, streams)");
             }
         }
 
@@ -9279,9 +9992,175 @@ public class TraceEnvironmentConfig {
             infos = Collections.unmodifiableList(built);
         }
 
+        boolean streamsConfigured = cameras.containsKey("streams");
+        List<AndroidCameraStreamConfig> streams;
+        if (!streamsConfigured) {
+            streams = Collections.emptyList();
+        } else {
+            Object streamsRaw = cameras.get("streams");
+            if (!(streamsRaw instanceof JSONArray)) {
+                throw new IllegalArgumentException("android.cameras.streams must be a JSON array");
+            }
+            JSONArray array = (JSONArray) streamsRaw;
+            List<AndroidCameraStreamConfig> built = new ArrayList<AndroidCameraStreamConfig>(array.size());
+            Set<Integer> seenIds = new HashSet<Integer>();
+            for (int i = 0; i < array.size(); i++) {
+                String itemPath = "android.cameras.streams[" + i + "]";
+                Object item = array.get(i);
+                if (!(item instanceof JSONObject)) {
+                    throw new IllegalArgumentException(itemPath + " must be a JSONObject");
+                }
+                JSONObject row = (JSONObject) item;
+                for (String key : row.keySet()) {
+                    if (!isAllowedAndroidCameraStreamKey(key)) {
+                        throw new IllegalArgumentException(itemPath + "." + key
+                                + " is not an allowed field "
+                                + "(cameraId|width|height|previewHex|jpegHex|previewFile|jpegFile)");
+                    }
+                }
+                if (!row.containsKey("cameraId")) {
+                    throw new IllegalArgumentException(itemPath + ".cameraId is required");
+                }
+                int cameraId = requireExactJsonNumberIntField(row, "cameraId",
+                        itemPath + ".cameraId", 0, ANDROID_CAMERAS_COUNT_MAX - 1);
+                if (cameraId >= count) {
+                    throw new IllegalArgumentException(itemPath
+                            + ".cameraId must be less than android.cameras.count");
+                }
+                if (!seenIds.add(Integer.valueOf(cameraId))) {
+                    throw new IllegalArgumentException(itemPath + ".cameraId must be unique");
+                }
+                if (!row.containsKey("width") || !row.containsKey("height")) {
+                    throw new IllegalArgumentException(itemPath
+                            + " requires width and height");
+                }
+                int width = requireExactJsonNumberIntField(row, "width",
+                        itemPath + ".width",
+                        ANDROID_CAMERA_STREAM_SIZE_MIN, ANDROID_CAMERA_STREAM_SIZE_MAX);
+                int height = requireExactJsonNumberIntField(row, "height",
+                        itemPath + ".height",
+                        ANDROID_CAMERA_STREAM_SIZE_MIN, ANDROID_CAMERA_STREAM_SIZE_MAX);
+
+                boolean previewHexConfigured = row.containsKey("previewHex");
+                boolean previewFileConfigured = row.containsKey("previewFile");
+                if (previewHexConfigured && previewFileConfigured) {
+                    throw new IllegalArgumentException(itemPath
+                            + " previewHex and previewFile are mutually exclusive");
+                }
+                byte[] previewNv21 = null;
+                String previewFile = null;
+                if (previewHexConfigured) {
+                    previewNv21 = parseHex(itemPath + ".previewHex",
+                            requireHexString(row.get("previewHex"), itemPath + ".previewHex"));
+                    requireEvenCameraPreviewSize(itemPath, "previewHex", width, height);
+                    requireCameraPreviewNv21Length(itemPath, ".previewHex",
+                            width, height, previewNv21.length);
+                }
+                if (previewFileConfigured) {
+                    previewFile = requireCameraOverlayPath(row.get("previewFile"),
+                            itemPath + ".previewFile");
+                    requireEvenCameraPreviewSize(itemPath, "previewFile", width, height);
+                }
+                boolean previewConfigured = previewHexConfigured || previewFileConfigured;
+
+                boolean jpegHexConfigured = row.containsKey("jpegHex");
+                boolean jpegFileConfigured = row.containsKey("jpegFile");
+                if (jpegHexConfigured && jpegFileConfigured) {
+                    throw new IllegalArgumentException(itemPath
+                            + " jpegHex and jpegFile are mutually exclusive");
+                }
+                byte[] jpeg = null;
+                String jpegFile = null;
+                if (jpegHexConfigured) {
+                    jpeg = parseHex(itemPath + ".jpegHex",
+                            requireHexString(row.get("jpegHex"), itemPath + ".jpegHex"));
+                    if (jpeg.length < 1) {
+                        throw new IllegalArgumentException(itemPath + ".jpegHex must not be empty");
+                    }
+                }
+                if (jpegFileConfigured) {
+                    jpegFile = requireCameraOverlayPath(row.get("jpegFile"),
+                            itemPath + ".jpegFile");
+                }
+                boolean jpegConfigured = jpegHexConfigured || jpegFileConfigured;
+                if (!previewConfigured && !jpegConfigured) {
+                    throw new IllegalArgumentException(itemPath
+                            + " requires previewHex, previewFile, jpegHex and/or jpegFile");
+                }
+                built.add(new AndroidCameraStreamConfig(cameraId, width, height,
+                        previewNv21, previewConfigured, previewFile,
+                        jpeg, jpegConfigured, jpegFile));
+            }
+            streams = Collections.unmodifiableList(built);
+        }
+
         this.androidCamerasConfigured = true;
         this.androidCamerasConfig = new AndroidCamerasConfig(
-                count, countConfigured, infos, infosConfigured);
+                count, countConfigured, infos, infosConfigured, streams, streamsConfigured);
+    }
+
+    private static boolean isAllowedAndroidCameraStreamKey(String key) {
+        for (String allowed : ANDROID_CAMERA_STREAM_ALLOWED_KEYS) {
+            if (allowed.equals(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String requireHexString(Object raw, String path) {
+        if (!(raw instanceof String)) {
+            throw new IllegalArgumentException(path + " must be a hex String");
+        }
+        return (String) raw;
+    }
+
+    /**
+     * Absolute POSIX overlay path, 1..{@link #ANDROID_CAMERA_FILE_PATH_MAX}. Same guest-path
+     * rules as {@link ProfileFileOverlay}: no {@code ..}, backslash, drive letter, or whitespace.
+     * Bytes are not loaded here; delivery uses {@link #resolveCameraPreview} / {@link #resolveCameraJpeg}.
+     */
+    private static String requireCameraOverlayPath(Object raw, String path) {
+        if (!(raw instanceof String)) {
+            throw new IllegalArgumentException(path
+                    + " must be an absolute POSIX overlay path (1.."
+                    + ANDROID_CAMERA_FILE_PATH_MAX + ")");
+        }
+        String value = (String) raw;
+        if (value.length() < 1 || value.length() > ANDROID_CAMERA_FILE_PATH_MAX) {
+            throw new IllegalArgumentException(path
+                    + " must be an absolute POSIX overlay path (1.."
+                    + ANDROID_CAMERA_FILE_PATH_MAX + ")");
+        }
+        String normalized = ProfileFileOverlay.normalizeGuestPath(value);
+        if (normalized == null) {
+            throw new IllegalArgumentException(path
+                    + " must be an absolute POSIX overlay path (1.."
+                    + ANDROID_CAMERA_FILE_PATH_MAX + ")");
+        }
+        return normalized;
+    }
+
+    private static void requireEvenCameraPreviewSize(String itemPath, String field,
+                                                     int width, int height) {
+        if ((width & 1) != 0 || (height & 1) != 0) {
+            throw new IllegalArgumentException(itemPath
+                    + " " + field + " requires even width and height (NV21)");
+        }
+    }
+
+    private static void requireCameraPreviewNv21Length(String itemPath, String fieldSuffix,
+                                                       int width, int height, int length) {
+        long expected = cameraPreviewNv21Length(width, height);
+        if (expected < 0 || length != (int) expected) {
+            throw new IllegalArgumentException(itemPath
+                    + fieldSuffix + " length must be width*height*3/2");
+        }
+    }
+
+    private static long cameraPreviewNv21Length(int width, int height) {
+        long expected = (long) width * (long) height * 3L / 2L;
+        return expected > Integer.MAX_VALUE ? -1L : expected;
     }
 
     private static boolean isAllowedAndroidCamerasKey(String key) {
@@ -12220,7 +13099,7 @@ public class TraceEnvironmentConfig {
             if (!isAllowedAndroidDisplayKey(key)) {
                 throw new IllegalArgumentException("android.display." + key
                         + " is not an allowed key (widthPixels|heightPixels|densityDpi|"
-                        + "scaledDensity|xdpi|ydpi|refreshRate|rotation|modeId)");
+                        + "scaledDensity|xdpi|ydpi|refreshRate|rotation|modeId|uniqueId)");
             }
         }
 
@@ -12292,6 +13171,12 @@ public class TraceEnvironmentConfig {
                     ANDROID_DISPLAY_MODE_ID_MIN, Integer.MAX_VALUE);
         }
 
+        boolean uniqueIdConfigured = display.containsKey("uniqueId");
+        String uniqueId = null;
+        if (uniqueIdConfigured) {
+            uniqueId = requireAndroidDisplayUniqueId(display.get("uniqueId"));
+        }
+
         this.androidDisplayConfigured = true;
         this.androidDisplayConfig = new AndroidDisplayConfig(
                 widthPixels, widthPixelsConfigured,
@@ -12302,7 +13187,8 @@ public class TraceEnvironmentConfig {
                 ydpi, ydpiConfigured,
                 refreshRate, refreshRateConfigured,
                 rotation, rotationConfigured,
-                modeId, modeIdConfigured);
+                modeId, modeIdConfigured,
+                uniqueId, uniqueIdConfigured);
     }
 
     private static boolean isAllowedAndroidDisplayKey(String key) {
@@ -13336,7 +14222,8 @@ public class TraceEnvironmentConfig {
 
     private static final String[] NETWORK_WIFI_ALLOWED_KEYS = {
             "enabled", "ssid", "bssid", "macAddress", "ipv4",
-            "rssi", "linkSpeedMbps", "frequencyMhz", "networkId", "state"
+            "rssi", "linkSpeedMbps", "frequencyMhz", "networkId", "state",
+            "scanResults"
     };
     /** WifiManager.WIFI_STATE_DISABLING..UNKNOWN (0..4). No default; presence-gated. */
     private static final int NETWORK_WIFI_STATE_MIN = 0;
@@ -13401,7 +14288,8 @@ public class TraceEnvironmentConfig {
             "phoneCount", "slots",
             "networkOperator", "networkOperatorName", "simOperator", "simOperatorName",
             "networkCountryIso", "simCountryIso",
-            "dataNetworkType", "dataState", "dataActivity", "phoneType", "networkRoaming"
+            "dataNetworkType", "dataState", "dataActivity", "phoneType", "networkRoaming",
+            "cellInfo"
     };
 
     private static final String[] TELEPHONY_GLOBAL_STRING_KEYS = {
@@ -13542,7 +14430,7 @@ public class TraceEnvironmentConfig {
                 throw new IllegalArgumentException("android.telephony." + key
                         + " is not an allowed key (phoneCount|slots|networkOperator|networkOperatorName|"
                         + "simOperator|simOperatorName|networkCountryIso|simCountryIso|"
-                        + "dataNetworkType|dataState|dataActivity|phoneType|networkRoaming)");
+                        + "dataNetworkType|dataState|dataActivity|phoneType|networkRoaming|cellInfo)");
             }
         }
         if (!telephony.containsKey("phoneCount")) {
@@ -13628,6 +14516,7 @@ public class TraceEnvironmentConfig {
                         "android.telephony.networkRoaming must be a Boolean");
             }
         }
+        validateAndroidCellInfo(telephony);
     }
 
     /**
@@ -16652,7 +17541,7 @@ public class TraceEnvironmentConfig {
             if (!isAllowedNetworkWifiKey(key)) {
                 throw new IllegalArgumentException("network.wifi." + key
                         + " is not an allowed key (enabled|ssid|bssid|macAddress|ipv4|"
-                        + "rssi|linkSpeedMbps|frequencyMhz|networkId|state)");
+                        + "rssi|linkSpeedMbps|frequencyMhz|networkId|state|scanResults)");
             }
         }
         if (wifi.containsKey("enabled")) {
@@ -16702,6 +17591,7 @@ public class TraceEnvironmentConfig {
             requireExactJsonNumberIntField(wifi, "state", "network.wifi.state",
                     NETWORK_WIFI_STATE_MIN, NETWORK_WIFI_STATE_MAX);
         }
+        validateNetworkWifiScanResults(wifi);
     }
 
     private static boolean isAllowedNetworkWifiKey(String key) {
@@ -18375,6 +19265,52 @@ public class TraceEnvironmentConfig {
     }
 
     /**
+     * Whether {@code android.powerProfile} is present (including an explicit empty object).
+     */
+    public boolean isAndroidPowerProfileConfigured() {
+        return androidPowerProfileConfigured;
+    }
+
+    /**
+     * Immutable {@code android.powerProfile} view, or {@code null} when the key is absent.
+     */
+    public AndroidPowerProfileConfig getAndroidPowerProfileConfig() {
+        return androidPowerProfileConfig;
+    }
+
+    /**
+     * Whether {@code android.telephony.cellInfo} is present (including an explicit empty array).
+     * Independent of other telephony fields; missing key does not take over cell JNI.
+     */
+    public boolean isAndroidCellInfoConfigured() {
+        return androidCellInfoConfigured;
+    }
+
+    /**
+     * Immutable {@code android.telephony.cellInfo} rows. Empty when configured as {@code []}.
+     * Never {@code null}.
+     */
+    public List<CellInfoConfig> getAndroidCellInfo() {
+        return androidCellInfo;
+    }
+
+    /**
+     * Whether {@code network.wifi.scanResults} is present (including an explicit empty array).
+     * Independent of other wifi connection fields.
+     */
+    public boolean isNetworkWifiScanResultsConfigured() {
+        return networkWifiScanResultsConfigured;
+    }
+
+    /**
+     * Immutable {@code network.wifi.scanResults} rows. Empty when configured as {@code []}.
+     * Never {@code null}.
+     */
+    public List<WifiScanResultConfig> getNetworkWifiScanResults() {
+        return networkWifiScanResults;
+    }
+
+    /**
      * Whether {@code android.cameras} is present (including an explicit empty object).
      * Missing node returns false so callers keep UOE for camera count JNI.
      */
@@ -18388,6 +19324,57 @@ public class TraceEnvironmentConfig {
      */
     public AndroidCamerasConfig getAndroidCamerasConfig() {
         return androidCamerasConfig;
+    }
+
+    /**
+     * NV21 preview bytes for a stream: inlined {@code previewHex}, or the overlay file at
+     * {@code previewFile}. Returns {@code null} when the stream has no preview, the overlay
+     * is missing, or the file length is not {@code width*height*3/2}. Callers must not
+     * mutate the returned array.
+     */
+    public byte[] resolveCameraPreview(AndroidCameraStreamConfig stream) {
+        if (stream == null || !stream.isPreviewConfigured()) {
+            return null;
+        }
+        if (stream.getPreviewNv21() != null) {
+            return stream.getPreviewNv21();
+        }
+        String path = stream.getPreviewFile();
+        if (path == null) {
+            return null;
+        }
+        byte[] raw = readProfileOverlayFile(path);
+        if (raw == null) {
+            return null;
+        }
+        long expected = cameraPreviewNv21Length(stream.getWidth(), stream.getHeight());
+        if (expected < 0 || raw.length != (int) expected) {
+            return null;
+        }
+        return raw;
+    }
+
+    /**
+     * JPEG still bytes for a stream: inlined {@code jpegHex}, or the overlay file at
+     * {@code jpegFile}. Returns {@code null} when the stream has no JPEG, the overlay is
+     * missing, or the file is empty. Callers must not mutate the returned array.
+     */
+    public byte[] resolveCameraJpeg(AndroidCameraStreamConfig stream) {
+        if (stream == null || !stream.isJpegConfigured()) {
+            return null;
+        }
+        if (stream.getJpeg() != null) {
+            return stream.getJpeg();
+        }
+        String path = stream.getJpegFile();
+        if (path == null) {
+            return null;
+        }
+        byte[] raw = readProfileOverlayFile(path);
+        if (raw == null || raw.length < 1) {
+            return null;
+        }
+        return raw;
     }
 
     /**

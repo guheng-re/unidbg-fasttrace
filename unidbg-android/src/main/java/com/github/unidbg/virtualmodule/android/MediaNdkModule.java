@@ -47,6 +47,7 @@ public class MediaNdkModule extends VirtualModule<VM> {
     private int sessionIdCapacity;
     private byte[] activeSessionId;
     private final boolean sessionApisRegistered;
+    private CameraNdkImageSupport imageSupport;
 
     public MediaNdkModule(Emulator<?> emulator, VM vm) {
         super(emulator, vm, "libmediandk.so");
@@ -135,6 +136,16 @@ public class MediaNdkModule extends VirtualModule<VM> {
                 }
             }));
         }
+        if (hasConfiguredCameraStreams(config)) {
+            this.imageSupport = new CameraNdkImageSupport();
+            this.imageSupport.registerSymbols(emulator, svcMemory, symbols, is64Bit);
+        }
+    }
+
+    public static boolean hasConfiguredCameraStreams(TraceEnvironmentConfig config) {
+        return config != null && config.isAndroidCamerasConfigured()
+                && config.getAndroidCamerasConfig() != null
+                && config.getAndroidCamerasConfig().isStreamsConfigured();
     }
 
     private long createByUUID(Emulator<?> emulator) {
@@ -333,6 +344,9 @@ public class MediaNdkModule extends VirtualModule<VM> {
     }
 
     long release() {
+        if (imageSupport != null) {
+            imageSupport.release();
+        }
         if (propertyStringBlock != null) {
             propertyStringBlock.free();
             propertyStringBlock = null;
@@ -579,5 +593,13 @@ public class MediaNdkModule extends VirtualModule<VM> {
     /** Package-visible for tests. */
     byte[] getActiveSessionIdForTest() {
         return activeSessionId == null ? null : Arrays.copyOf(activeSessionId, activeSessionId.length);
+    }
+
+    boolean isImageReaderApiRegisteredForTest() {
+        return imageSupport != null;
+    }
+
+    CameraNdkImageSupport imageSupportForTest() {
+        return imageSupport;
     }
 }

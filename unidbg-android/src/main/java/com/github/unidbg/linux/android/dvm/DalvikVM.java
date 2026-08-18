@@ -2658,6 +2658,7 @@ public class DalvikVM extends BaseVM implements VM {
                 byte[] data = Arrays.copyOf(bytes, bytes.length + 1);
                 UnidbgPointer pointer = string.allocateMemoryBlock(emulator, data.length);
                 pointer.write(0, data, 0, data.length);
+                // Guest C pointer: ARM32 VAS fits in 32 bits.
                 return pointer.toIntPeer();
             }
         });
@@ -2986,6 +2987,7 @@ public class DalvikVM extends BaseVM implements VM {
                 byte[] data = Arrays.copyOf(bytes, bytes.length + 1);
                 UnidbgPointer pointer = string.allocateMemoryBlock(emulator, data.length);
                 pointer.write(0, data, 0, data.length);
+                // Guest C pointer: ARM32 VAS fits in 32 bits.
                 return pointer.toIntPeer();
             }
         });

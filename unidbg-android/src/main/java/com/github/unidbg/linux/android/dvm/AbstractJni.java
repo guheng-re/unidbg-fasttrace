@@ -1,6 +1,7 @@
 package com.github.unidbg.linux.android.dvm;
 
 import com.github.unidbg.env.TraceEnvironmentConfig;
+import com.github.unidbg.trace.EnvAccessProbe;
 import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import com.github.unidbg.linux.android.dvm.api.ApplicationInfo;
 import com.github.unidbg.linux.android.dvm.api.AssetManager;
@@ -39,6 +40,14 @@ public abstract class AbstractJni implements Jni {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractJni.class);
 
+    private static UnsupportedOperationException jniUnimplemented(BaseVM vm, String signature) {
+        if (EnvAccessProbe.isInterestingJniSignature(signature)) {
+            EnvAccessProbe.miss(vm == null ? null : vm.getEmulator(), signature,
+                    "signature=" + signature, "目标读取未配置的 JNI 环境项");
+        }
+        return new UnsupportedOperationException(signature);
+    }
+
     @Override
     public DvmObject<?> getStaticObjectField(BaseVM vm, DvmClass dvmClass, DvmField dvmField) {
         return getStaticObjectField(vm, dvmClass, dvmField.getSignature());
@@ -50,6 +59,14 @@ public abstract class AbstractJni implements Jni {
         DvmObject<?> supportedAbis = tryAndroidBuildSupportedAbis(vm, signature);
         if (supportedAbis != null) {
             return supportedAbis;
+        }
+        AndroidCamerasObjectResult cameraKey = tryAndroidCameraCharacteristicsKey(vm, signature);
+        if (cameraKey.handled) {
+            return cameraKey.value;
+        }
+        AndroidCamerasObjectResult requestKey = tryAndroidCaptureRequestKey(vm, signature);
+        if (requestKey.handled) {
+            return requestKey.value;
         }
         String androidBuildString = getAndroidBuildString(vm, signature);
         if (androidBuildString != null) {
@@ -88,6 +105,8 @@ public abstract class AbstractJni implements Jni {
                 return new StringObject(vm, SystemService.CLIPBOARD_SERVICE);  // "clipboard"
             case "android/content/Context->USER_SERVICE:Ljava/lang/String;":
                 return new StringObject(vm, SystemService.USER_SERVICE);      // "user"
+            case "android/content/Context->CAMERA_SERVICE:Ljava/lang/String;":
+                return new StringObject(vm, SystemService.CAMERA_SERVICE);    // "camera"
             
             // ==================== Java 基本类型包装类的 TYPE 字段 ====================
             // 用于反射获取原始类型的 Class 对象，如 int.class == Integer.TYPE
@@ -111,7 +130,7 @@ public abstract class AbstractJni implements Jni {
                 return vm.resolveClass("java/lang/Double");
         }
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -122,7 +141,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public boolean getStaticBooleanField(BaseVM vm, DvmClass dvmClass, String signature) {
         log.info("getStaticBooleanField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -133,7 +152,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public byte getStaticByteField(BaseVM vm, DvmClass dvmClass, String signature) {
         log.info("getStaticByteField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -149,6 +168,10 @@ public abstract class AbstractJni implements Jni {
         if (androidBuildInt != null) {
             return androidBuildInt;
         }
+        Integer cameraConst = tryAndroidCameraStaticInt(vm, signature);
+        if (cameraConst != null) {
+            return cameraConst.intValue();
+        }
         switch (signature) {
             // MODE_PRIVATE=0: 文件私有模式，只有本应用可访问
             // 其他值: MODE_WORLD_READABLE=1(废弃), MODE_WORLD_WRITEABLE=2(废弃), MODE_MULTI_PROCESS=4(废弃), MODE_APPEND=32768
@@ -160,7 +183,7 @@ public abstract class AbstractJni implements Jni {
             case "android/content/pm/PackageManager->GET_SIGNATURES:I":
                 return 0x40;
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -172,6 +195,10 @@ public abstract class AbstractJni implements Jni {
     @Override
     public DvmObject<?> getObjectField(BaseVM vm, DvmObject<?> dvmObject, String signature) {
         log.info("getObjectField [Unidbg]: {}", signature);
+        AndroidDisplayObjectResult scanResultField = tryAndroidWifiScanResultField(vm, dvmObject, signature);
+        if (scanResultField.handled) {
+            return scanResultField.value;
+        }
         AndroidPackageObjectFieldResult packageField = tryAndroidPackageObjectField(vm, dvmObject, signature);
         if (packageField.handled) {
             return packageField.value;
@@ -199,7 +226,7 @@ public abstract class AbstractJni implements Jni {
             // Live missing/unsupported field, or foreign-VM marker: never fall through
             // to api.PackageInfo casts (no sidecar). Live configured values were already
             // returned by isLiveConfiguredPackageInfo readers.
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         if (dvmObject != null && dvmObject.getValue() instanceof ConfiguredApplicationInfo
                 && signature != null
@@ -207,7 +234,7 @@ public abstract class AbstractJni implements Jni {
             // Live missing/unsupported field, or foreign-VM marker: never fall through
             // to current-app ApplicationInfo defaults (no sidecar). Live configured
             // values were already returned by isLiveConfiguredApplicationInfo readers.
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         if (isConfiguredFeatureInfo(dvmObject)
                 && signature != null
@@ -215,7 +242,7 @@ public abstract class AbstractJni implements Jni {
             // Live missing/unsupported field, or foreign-VM marker: never fall through
             // (no sidecar). Live configured values were already returned by
             // isLiveConfiguredFeatureInfo readers.
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         switch (signature) {
             // APK安装路径，用于签名校验、读取APK资源
@@ -291,7 +318,7 @@ public abstract class AbstractJni implements Jni {
                 }
         }
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -334,7 +361,7 @@ public abstract class AbstractJni implements Jni {
         if (externalStorageBool.handled) {
             return externalStorageBool.value;
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -388,7 +415,7 @@ public abstract class AbstractJni implements Jni {
                 return value.toString().isEmpty();
             }
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     /**
@@ -554,7 +581,7 @@ public abstract class AbstractJni implements Jni {
         if (processIdentity != null) {
             return processIdentity.intValue();
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -581,7 +608,7 @@ public abstract class AbstractJni implements Jni {
         if (processIdentity != null) {
             return processIdentity.intValue();
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     /**
@@ -659,7 +686,7 @@ public abstract class AbstractJni implements Jni {
             return val.value;
         }
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -721,7 +748,7 @@ public abstract class AbstractJni implements Jni {
                 return time;
             }
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -732,7 +759,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public char callCharMethodV(BaseVM vm, DvmObject<?> dvmObject, String signature, VaList vaList) {
         log.info("callCharMethodV [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
 
@@ -761,7 +788,7 @@ public abstract class AbstractJni implements Jni {
         if (sensorFloat.handled) {
             return sensorFloat.value;
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -894,6 +921,22 @@ public abstract class AbstractJni implements Jni {
         if (displayObjectResult.handled) {
             return displayObjectResult.value;
         }
+        AndroidDisplayObjectResult ringtoneObjectV = tryAndroidRingtoneObject(vm, dvmObject, signature);
+        if (ringtoneObjectV.handled) {
+            return ringtoneObjectV.value;
+        }
+        AndroidDisplayObjectResult cellInfoObjectV = tryAndroidCellInfoObject(vm, dvmObject, signature);
+        if (cellInfoObjectV.handled) {
+            return cellInfoObjectV.value;
+        }
+        AndroidDisplayObjectResult scanResultsV = tryAndroidWifiScanResultsObject(vm, signature);
+        if (scanResultsV.handled) {
+            return scanResultsV.value;
+        }
+        AndroidDisplayObjectResult scanFieldV = tryAndroidWifiScanResultField(vm, dvmObject, signature);
+        if (scanFieldV.handled) {
+            return scanFieldV.value;
+        }
         AndroidConfigurationObjectResult configurationObjectResult =
                 tryAndroidConfigurationObjectMethod(vm, signature);
         if (configurationObjectResult.handled) {
@@ -908,6 +951,14 @@ public abstract class AbstractJni implements Jni {
                 tryAndroidSensorObjectMethod(vm, dvmObject, signature, vaList);
         if (sensorObjectResult.handled) {
             return sensorObjectResult.value;
+        }
+        AndroidCamerasObjectResult cameraObjectV = tryAndroidCameraObjectMethod(vm, dvmObject, signature);
+        if (cameraObjectV.handled) {
+            return cameraObjectV.value;
+        }
+        AndroidCamerasObjectResult camera2ObjectV = tryAndroidCamera2ObjectMethod(vm, dvmObject, signature, vaList);
+        if (camera2ObjectV.handled) {
+            return camera2ObjectV.value;
         }
         AndroidAudioObjectResult audioObjectResult =
                 tryAndroidAudioGetProperty(vm, dvmObject, signature, vaList);
@@ -1168,7 +1219,7 @@ public abstract class AbstractJni implements Jni {
                 if (packageName.value.equals(vm.getPackageName())) {
                     return new ApplicationInfo(vm);
                 } else {
-                    throw new UnsupportedOperationException(signature);
+                    throw jniUnimplemented(vm, signature);
                 }
             case "java/lang/String->trim()Ljava/lang/String;": {
                 StringObject stringObject = (StringObject) dvmObject;
@@ -1270,7 +1321,7 @@ public abstract class AbstractJni implements Jni {
                 return vm.resolveClass("android/content/res/AssetManager").newObject(signature);
         }
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -1287,6 +1338,22 @@ public abstract class AbstractJni implements Jni {
             if (graphicsResult.handled) {
                 return graphicsResult.value;
             }
+        }
+        AndroidDisplayObjectResult displayStatic = tryAndroidDisplayStaticObject(vm, signature);
+        if (displayStatic.handled) {
+            return displayStatic.value;
+        }
+        AndroidDisplayObjectResult ringtoneStatic = tryAndroidRingtoneStaticObject(vm, signature, varArg);
+        if (ringtoneStatic.handled) {
+            return ringtoneStatic.value;
+        }
+        AndroidCamerasObjectResult cameraOpen = tryAndroidCameraOpen(vm, signature, varArg);
+        if (cameraOpen.handled) {
+            return cameraOpen.value;
+        }
+        AndroidCamerasObjectResult camera2Static = tryAndroidCamera2StaticObject(vm, signature, varArg);
+        if (camera2Static.handled) {
+            return camera2Static.value;
         }
         AndroidSettingsGetStringResult identifiersAndroidId =
                 tryAndroidIdentifiersAndroidIdSecureGetString(vm, signature, varArg);
@@ -1373,7 +1440,7 @@ public abstract class AbstractJni implements Jni {
                 return new StringObject(vm, packageName);
             }
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -1390,6 +1457,22 @@ public abstract class AbstractJni implements Jni {
             if (graphicsResult.handled) {
                 return graphicsResult.value;
             }
+        }
+        AndroidDisplayObjectResult displayStaticV = tryAndroidDisplayStaticObject(vm, signature);
+        if (displayStaticV.handled) {
+            return displayStaticV.value;
+        }
+        AndroidDisplayObjectResult ringtoneStaticV = tryAndroidRingtoneStaticObject(vm, signature, vaList);
+        if (ringtoneStaticV.handled) {
+            return ringtoneStaticV.value;
+        }
+        AndroidCamerasObjectResult cameraOpenV = tryAndroidCameraOpen(vm, signature, vaList);
+        if (cameraOpenV.handled) {
+            return cameraOpenV.value;
+        }
+        AndroidCamerasObjectResult camera2StaticV = tryAndroidCamera2StaticObject(vm, signature, vaList);
+        if (camera2StaticV.handled) {
+            return camera2StaticV.value;
         }
         AndroidSettingsGetStringResult identifiersAndroidId =
                 tryAndroidIdentifiersAndroidIdSecureGetString(vm, signature, vaList);
@@ -1552,7 +1635,7 @@ public abstract class AbstractJni implements Jni {
                 return new StringObject(vm, Integer.toString(vaList.getIntArg(0)));
         }
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -1563,7 +1646,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public byte callByteMethodV(BaseVM vm, DvmObject<?> dvmObject, String signature, VaList vaList) {
         log.info("callByteMethodV [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -1575,7 +1658,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public short callShortMethodV(BaseVM vm, DvmObject<?> dvmObject, String signature, VaList vaList) {
         log.info("callShortMethodV [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -1623,6 +1706,14 @@ public abstract class AbstractJni implements Jni {
         if (displayIntMethod.handled) {
             return displayIntMethod.value;
         }
+        AndroidDisplayIntFieldResult cellInfoInt = tryAndroidCellInfoInt(vm, dvmObject, signature);
+        if (cellInfoInt.handled) {
+            return cellInfoInt.value;
+        }
+        AndroidDisplayIntFieldResult scanInt = tryAndroidWifiScanResultInt(vm, dvmObject, signature);
+        if (scanInt.handled) {
+            return scanInt.value;
+        }
         AndroidThermalIntResult thermalResult = tryAndroidThermalInt(vm, signature);
         if (thermalResult.handled) {
             return thermalResult.value;
@@ -1647,6 +1738,14 @@ public abstract class AbstractJni implements Jni {
         AndroidSensorIntResult sensorIntResult = tryAndroidSensorInt(vm, dvmObject, signature);
         if (sensorIntResult.handled) {
             return sensorIntResult.value;
+        }
+        AndroidCamerasIntResult cameraIntV = tryAndroidCameraIntMethod(vm, dvmObject, signature);
+        if (cameraIntV.handled) {
+            return cameraIntV.value;
+        }
+        AndroidCamerasIntResult camera2IntV = tryAndroidCamera2IntMethod(vm, dvmObject, signature, vaList);
+        if (camera2IntV.handled) {
+            return camera2IntV.value;
         }
         NetworkInterfaceIntResult networkInterfaceIntResult =
                 tryNetworkInterfaceInt(vm, dvmObject, signature);
@@ -1717,7 +1816,7 @@ public abstract class AbstractJni implements Jni {
             }
         }
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -1744,7 +1843,7 @@ public abstract class AbstractJni implements Jni {
         if (nanoTime != null) {
             return nanoTime.longValue();
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -1772,7 +1871,7 @@ public abstract class AbstractJni implements Jni {
         if (nanoTime != null) {
             return nanoTime.longValue();
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -1791,6 +1890,10 @@ public abstract class AbstractJni implements Jni {
                 tryAndroidSensorBoolean(vm, dvmObject, signature, varArg);
         if (sensorBoolResult.handled) {
             return sensorBoolResult.value;
+        }
+        Boolean camera2Bool = tryAndroidCamera2BooleanMethod(vm, dvmObject, signature);
+        if (camera2Bool != null) {
+            return camera2Bool.booleanValue();
         }
         Boolean sensorRegister = tryAndroidSensorRegisterListener(vm, dvmObject, signature, varArg);
         if (sensorRegister != null) {
@@ -1888,6 +1991,14 @@ public abstract class AbstractJni implements Jni {
         if (networkInterfaceBool.handled) {
             return networkInterfaceBool.value;
         }
+        AndroidDisplayBooleanResult displayBool = tryAndroidDisplayBoolean(vm, dvmObject, signature);
+        if (displayBool.handled) {
+            return displayBool.value;
+        }
+        AndroidDisplayBooleanResult cellInfoBool = tryAndroidCellInfoBoolean(vm, dvmObject, signature);
+        if (cellInfoBool.handled) {
+            return cellInfoBool.value;
+        }
         switch (signature) {
             case "java/util/Enumeration->hasMoreElements()Z":
                 return ((Enumeration) dvmObject).hasMoreElements();
@@ -1898,7 +2009,7 @@ public abstract class AbstractJni implements Jni {
                 Map<?, ?> map = (Map<?, ?>) dvmObject.getValue();
                 return map.isEmpty();
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -1917,6 +2028,10 @@ public abstract class AbstractJni implements Jni {
                 tryAndroidSensorBoolean(vm, dvmObject, signature, vaList);
         if (sensorBoolResult.handled) {
             return sensorBoolResult.value;
+        }
+        Boolean camera2BoolV = tryAndroidCamera2BooleanMethod(vm, dvmObject, signature);
+        if (camera2BoolV != null) {
+            return camera2BoolV.booleanValue();
         }
         Boolean sensorRegisterV = tryAndroidSensorRegisterListener(vm, dvmObject, signature, vaList);
         if (sensorRegisterV != null) {
@@ -2014,6 +2129,14 @@ public abstract class AbstractJni implements Jni {
         if (networkInterfaceBool.handled) {
             return networkInterfaceBool.value;
         }
+        AndroidDisplayBooleanResult displayBoolV = tryAndroidDisplayBoolean(vm, dvmObject, signature);
+        if (displayBoolV.handled) {
+            return displayBoolV.value;
+        }
+        AndroidDisplayBooleanResult cellInfoBoolV = tryAndroidCellInfoBoolean(vm, dvmObject, signature);
+        if (cellInfoBoolV.handled) {
+            return cellInfoBoolV.value;
+        }
         switch (signature) {
             case "java/util/Enumeration->hasMoreElements()Z":
                 return ((Enumeration) dvmObject).hasMoreElements();
@@ -2051,7 +2174,7 @@ public abstract class AbstractJni implements Jni {
                 
         }
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2062,7 +2185,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public byte getByteField(BaseVM vm, DvmObject<?> dvmObject, String signature) {
         log.info("getByteField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2089,10 +2212,18 @@ public abstract class AbstractJni implements Jni {
         if (displayIntField.handled) {
             return displayIntField.value;
         }
+        AndroidDisplayIntFieldResult scanResultIntField = tryAndroidWifiScanResultInt(vm, dvmObject, signature);
+        if (scanResultIntField.handled) {
+            return scanResultIntField.value;
+        }
         AndroidCameraInfoIntFieldResult cameraInfoIntField =
                 tryAndroidCameraInfoIntField(vm, dvmObject, signature);
         if (cameraInfoIntField.handled) {
             return cameraInfoIntField.value;
+        }
+        AndroidCamerasIntResult cameraSizeInt = tryAndroidCameraSizeIntField(vm, dvmObject, signature);
+        if (cameraSizeInt.handled) {
+            return cameraSizeInt.value;
         }
         AndroidConfigurationIntFieldResult configurationIntField =
                 tryAndroidConfigurationIntField(vm, dvmObject, signature);
@@ -2103,14 +2234,14 @@ public abstract class AbstractJni implements Jni {
                 && "android/content/pm/PackageInfo->versionCode:I".equals(signature)) {
             // Live marker without configured versionCode, or foreign-VM marker:
             // must not fall through to APK versionCode (no sidecar).
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         if (isLiveConfiguredApplicationInfo(vm, dvmObject)
                 && signature != null
                 && signature.startsWith("android/content/pm/ApplicationInfo->")
                 && signature.endsWith(":I")) {
             // Live marker without configured uid/flags must not fall through to unrelated defaults.
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         if (isConfiguredFeatureInfo(dvmObject)
                 && signature != null
@@ -2118,7 +2249,7 @@ public abstract class AbstractJni implements Jni {
             // Live missing/unsupported field, or foreign-VM marker: never fall through
             // (no sidecar). Live configured values were already returned by
             // isLiveConfiguredFeatureInfo readers.
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         // versionCode: 整数版本号，每次发布必须递增
         // unidbg 已实现，源码在 ApkFile.java:
@@ -2131,7 +2262,7 @@ public abstract class AbstractJni implements Jni {
                 return (int) vm.getVersionCode();
         }
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2156,9 +2287,9 @@ public abstract class AbstractJni implements Jni {
                 && signature.endsWith(":J")) {
             // Live marker without configured install times, or foreign-VM marker:
             // must not invent defaults (no sidecar).
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2178,7 +2309,7 @@ public abstract class AbstractJni implements Jni {
         if (configurationFloatField.handled) {
             return configurationFloatField.value;
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2193,7 +2324,7 @@ public abstract class AbstractJni implements Jni {
         if (settingsResult.handled) {
             return settingsResult.value;
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2208,7 +2339,7 @@ public abstract class AbstractJni implements Jni {
         if (settingsResult.handled) {
             return settingsResult.value;
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2219,7 +2350,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public double callStaticDoubleMethod(BaseVM vm, DvmClass dvmClass, String signature, VarArg varArg) {
         log.info("callStaticDoubleMethod [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2234,7 +2365,7 @@ public abstract class AbstractJni implements Jni {
         if (camerasVoid.handled) {
             return;
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2249,7 +2380,7 @@ public abstract class AbstractJni implements Jni {
         if (camerasVoid.handled) {
             return;
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2286,16 +2417,16 @@ public abstract class AbstractJni implements Jni {
                 && signature.startsWith("android/content/pm/ApplicationInfo->")
                 && signature.endsWith(":Z")) {
             // Live marker without configured enabled must not invent a default.
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         if (isLiveConfiguredCameraInfo(vm, dvmObject)
                 && signature != null
                 && signature.startsWith("android/hardware/Camera$CameraInfo->")
                 && signature.endsWith(":Z")) {
             // Marker without configured canDisableShutterSound must not invent a default.
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2358,7 +2489,7 @@ public abstract class AbstractJni implements Jni {
                 return vm.resolveClass("java/util/HashMap").newObject(new HashMap<>(size_tmp));
         }
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2421,7 +2552,7 @@ public abstract class AbstractJni implements Jni {
             }
         }
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
 
@@ -2470,7 +2601,7 @@ public abstract class AbstractJni implements Jni {
                 return dvmClass.newObject(null);
         }
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2493,7 +2624,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public void setLongField(BaseVM vm, DvmObject<?> dvmObject, String signature, long value) {
         log.info("setLongField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2504,7 +2635,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public void setBooleanField(BaseVM vm, DvmObject<?> dvmObject, String signature, boolean value) {
         log.info("setBooleanField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2515,7 +2646,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public void setFloatField(BaseVM vm, DvmObject<?> dvmObject, String signature, float value) {
         log.info("setFloatField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2527,7 +2658,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public void setDoubleField(BaseVM vm, DvmObject<?> dvmObject, String signature, double value) {
         log.info("setDoubleField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2661,6 +2792,22 @@ public abstract class AbstractJni implements Jni {
         if (displayObjectResult.handled) {
             return displayObjectResult.value;
         }
+        AndroidDisplayObjectResult ringtoneObject = tryAndroidRingtoneObject(vm, dvmObject, signature);
+        if (ringtoneObject.handled) {
+            return ringtoneObject.value;
+        }
+        AndroidDisplayObjectResult cellInfoObject = tryAndroidCellInfoObject(vm, dvmObject, signature);
+        if (cellInfoObject.handled) {
+            return cellInfoObject.value;
+        }
+        AndroidDisplayObjectResult scanResults = tryAndroidWifiScanResultsObject(vm, signature);
+        if (scanResults.handled) {
+            return scanResults.value;
+        }
+        AndroidDisplayObjectResult scanField = tryAndroidWifiScanResultField(vm, dvmObject, signature);
+        if (scanField.handled) {
+            return scanField.value;
+        }
         AndroidConfigurationObjectResult configurationObjectResult =
                 tryAndroidConfigurationObjectMethod(vm, signature);
         if (configurationObjectResult.handled) {
@@ -2675,6 +2822,14 @@ public abstract class AbstractJni implements Jni {
                 tryAndroidSensorObjectMethod(vm, dvmObject, signature, varArg);
         if (sensorObjectResult.handled) {
             return sensorObjectResult.value;
+        }
+        AndroidCamerasObjectResult cameraObject = tryAndroidCameraObjectMethod(vm, dvmObject, signature);
+        if (cameraObject.handled) {
+            return cameraObject.value;
+        }
+        AndroidCamerasObjectResult camera2Object = tryAndroidCamera2ObjectMethod(vm, dvmObject, signature, varArg);
+        if (camera2Object.handled) {
+            return camera2Object.value;
         }
         AndroidAudioObjectResult audioObjectResult =
                 tryAndroidAudioGetProperty(vm, dvmObject, signature, varArg);
@@ -2848,7 +3003,7 @@ public abstract class AbstractJni implements Jni {
         }
 
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -2896,6 +3051,14 @@ public abstract class AbstractJni implements Jni {
         if (displayIntMethod.handled) {
             return displayIntMethod.value;
         }
+        AndroidDisplayIntFieldResult cellInfoInt = tryAndroidCellInfoInt(vm, dvmObject, signature);
+        if (cellInfoInt.handled) {
+            return cellInfoInt.value;
+        }
+        AndroidDisplayIntFieldResult scanInt = tryAndroidWifiScanResultInt(vm, dvmObject, signature);
+        if (scanInt.handled) {
+            return scanInt.value;
+        }
         AndroidThermalIntResult thermalResult = tryAndroidThermalInt(vm, signature);
         if (thermalResult.handled) {
             return thermalResult.value;
@@ -2920,6 +3083,14 @@ public abstract class AbstractJni implements Jni {
         AndroidSensorIntResult sensorIntResult = tryAndroidSensorInt(vm, dvmObject, signature);
         if (sensorIntResult.handled) {
             return sensorIntResult.value;
+        }
+        AndroidCamerasIntResult cameraInt = tryAndroidCameraIntMethod(vm, dvmObject, signature);
+        if (cameraInt.handled) {
+            return cameraInt.value;
+        }
+        AndroidCamerasIntResult camera2Int = tryAndroidCamera2IntMethod(vm, dvmObject, signature, varArg);
+        if (camera2Int.handled) {
+            return camera2Int.value;
         }
         NetworkInterfaceIntResult networkInterfaceIntResult =
                 tryNetworkInterfaceInt(vm, dvmObject, signature);
@@ -2986,7 +3157,7 @@ public abstract class AbstractJni implements Jni {
                 break;
         }
 
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -3002,7 +3173,11 @@ public abstract class AbstractJni implements Jni {
         if (locationDouble.handled) {
             return locationDouble.value;
         }
-        throw new UnsupportedOperationException(signature);
+        double averagePower = tryAndroidPowerProfileAveragePower(vm, signature, varArg);
+        if (!Double.isNaN(averagePower)) {
+            return averagePower;
+        }
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -3015,6 +3190,12 @@ public abstract class AbstractJni implements Jni {
         log.info("callVoidMethod [Unidbg]: {}", signature);
         AndroidDisplayVoidResult displayVoid = tryAndroidDisplayVoidMethod(vm, dvmObject, signature, varArg);
         if (displayVoid.handled) {
+            return;
+        }
+        if (tryAndroidCameraVoidMethod(vm, dvmObject, signature, varArg)) {
+            return;
+        }
+        if (tryAndroidCamera2VoidMethod(vm, dvmObject, signature, varArg)) {
             return;
         }
         if (tryAndroidLocationRequestUpdates(vm, dvmObject, signature, varArg)) {
@@ -3053,7 +3234,7 @@ public abstract class AbstractJni implements Jni {
                 }
                 return;
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -3066,6 +3247,12 @@ public abstract class AbstractJni implements Jni {
         log.info("callVoidMethodV [Unidbg]: {}", signature);
         AndroidDisplayVoidResult displayVoid = tryAndroidDisplayVoidMethod(vm, dvmObject, signature, vaList);
         if (displayVoid.handled) {
+            return;
+        }
+        if (tryAndroidCameraVoidMethod(vm, dvmObject, signature, vaList)) {
+            return;
+        }
+        if (tryAndroidCamera2VoidMethod(vm, dvmObject, signature, vaList)) {
             return;
         }
         if (tryAndroidLocationRequestUpdates(vm, dvmObject, signature, vaList)) {
@@ -3166,7 +3353,7 @@ public abstract class AbstractJni implements Jni {
                 return;
             }
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     protected static String bytesToHex(byte[] bytes) {
@@ -3188,7 +3375,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public void setStaticBooleanField(BaseVM vm, DvmClass dvmClass, String signature, boolean value) {
         log.info("setStaticBooleanField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -3199,7 +3386,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public void setStaticIntField(BaseVM vm, DvmClass dvmClass, String signature, int value) {
         log.info("setStaticIntField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     public void setStaticObjectField(BaseVM vm, DvmClass dvmClass, DvmField dvmField, DvmObject<?> value) {
@@ -3208,7 +3395,7 @@ public abstract class AbstractJni implements Jni {
 
     public void setStaticObjectField(BaseVM vm, DvmClass dvmClass, String signature, DvmObject<?> value) {
         log.info("setStaticObjectField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -3219,7 +3406,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public void setStaticLongField(BaseVM vm, DvmClass dvmClass, String signature, long value) {
         log.info("setStaticLongField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -3230,7 +3417,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public void setStaticFloatField(BaseVM vm, DvmClass dvmClass, String signature, float value) {
         log.info("setStaticFloatField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -3241,7 +3428,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public void setStaticDoubleField(BaseVM vm, DvmClass dvmClass, String signature, double value) {
         log.info("setStaticDoubleField [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -3256,7 +3443,7 @@ public abstract class AbstractJni implements Jni {
         if (buildTime != null) {
             return buildTime.longValue();
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     private static final class AndroidSettingsGetStringResult {
@@ -3359,6 +3546,504 @@ public abstract class AbstractJni implements Jni {
             this.namespace = namespace;
             this.hasDefault = hasDefault;
         }
+    }
+
+    private static final String RINGTONE_SETTINGS_KEY = "ringtone";
+    private static final String NOTIFICATION_SETTINGS_KEY = "notification_sound";
+    private static final String ALARM_SETTINGS_KEY = "alarm_alert";
+    private static final String RINGTONE_PROP_KEY = "ro.config.ringtone";
+    private static final String NOTIFICATION_PROP_KEY = "ro.config.notification_sound";
+    private static final String ALARM_PROP_KEY = "ro.config.alarm_alert";
+    private static final int RINGTONE_TYPE_RINGTONE = 1;
+    private static final int RINGTONE_TYPE_NOTIFICATION = 2;
+    private static final int RINGTONE_TYPE_ALARM = 4;
+
+    private static final class ConfiguredRingtone {
+        final BaseVM owner;
+        final String title;
+
+        private ConfiguredRingtone(BaseVM owner, String title) {
+            this.owner = owner;
+            this.title = title;
+        }
+    }
+
+    private static String ringtoneSettingsKeyForType(int type) {
+        if (type == RINGTONE_TYPE_NOTIFICATION) {
+            return NOTIFICATION_SETTINGS_KEY;
+        }
+        if (type == RINGTONE_TYPE_ALARM) {
+            return ALARM_SETTINGS_KEY;
+        }
+        if (type == RINGTONE_TYPE_RINGTONE || type == 7) {
+            return RINGTONE_SETTINGS_KEY;
+        }
+        return null;
+    }
+
+    private static String ringtonePropertyForSettingsKey(String settingsKey) {
+        if (RINGTONE_SETTINGS_KEY.equals(settingsKey)) {
+            return RINGTONE_PROP_KEY;
+        }
+        if (NOTIFICATION_SETTINGS_KEY.equals(settingsKey)) {
+            return NOTIFICATION_PROP_KEY;
+        }
+        if (ALARM_SETTINGS_KEY.equals(settingsKey)) {
+            return ALARM_PROP_KEY;
+        }
+        return null;
+    }
+
+    /**
+     * Settings.System ringtone / notification / alarm first, then {@code ro.config.*}.
+     * Returns null when neither source has the key.
+     */
+    private static String resolveRingtoneConfiguredValue(TraceEnvironmentConfig config, String settingsKey) {
+        if (config == null || settingsKey == null) {
+            return null;
+        }
+        if (config.isAndroidSettingConfigured("system", settingsKey)) {
+            return config.getAndroidSettingString("system", settingsKey);
+        }
+        String propKey = ringtonePropertyForSettingsKey(settingsKey);
+        if (propKey == null) {
+            return null;
+        }
+        return config.getAndroidProperty(propKey);
+    }
+
+    private static AndroidDisplayObjectResult tryAndroidRingtoneStaticObject(BaseVM vm, String signature,
+                                                                             VarArg args) {
+        if ("android/media/RingtoneManager->getActualDefaultRingtoneUri(Landroid/content/Context;I)Landroid/net/Uri;"
+                .equals(signature)) {
+            TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+            String settingsKey = ringtoneSettingsKeyForType(args.getIntArg(1));
+            String value = resolveRingtoneConfiguredValue(config, settingsKey);
+            if (value == null) {
+                return AndroidDisplayObjectResult.notHandled();
+            }
+            DvmObject<?> uri = vm.resolveClass("android/net/Uri").newObject(value);
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_setting",
+                    "RingtoneManager.getActualDefaultRingtoneUri",
+                    "key=" + settingsKey + ",result=" + value,
+                    "json-config", "读取配置的默认铃声 URI");
+            return AndroidDisplayObjectResult.of(uri);
+        }
+        if ("android/media/RingtoneManager->getRingtone(Landroid/content/Context;Landroid/net/Uri;)Landroid/media/Ringtone;"
+                .equals(signature)) {
+            TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+            DvmObject<?> uriArg = args.getObjectArg(1);
+            String title = null;
+            if (uriArg != null && uriArg.getValue() instanceof String) {
+                title = (String) uriArg.getValue();
+            }
+            if (title == null) {
+                title = resolveRingtoneConfiguredValue(config, RINGTONE_SETTINGS_KEY);
+            }
+            if (title == null) {
+                return AndroidDisplayObjectResult.notHandled();
+            }
+            DvmObject<?> ringtone = vm.resolveClass("android/media/Ringtone")
+                    .newObject(new ConfiguredRingtone(vm, title));
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_setting",
+                    "RingtoneManager.getRingtone",
+                    "title=" + title, "json-config", "读取配置的 Ringtone");
+            return AndroidDisplayObjectResult.of(ringtone);
+        }
+        return AndroidDisplayObjectResult.notHandled();
+    }
+
+    private static AndroidDisplayObjectResult tryAndroidRingtoneObject(BaseVM vm, DvmObject<?> dvmObject,
+                                                                       String signature) {
+        if (!"android/media/Ringtone->getTitle(Landroid/content/Context;)Ljava/lang/String;"
+                .equals(signature)
+                && !"android/net/Uri->toString()Ljava/lang/String;".equals(signature)) {
+            return AndroidDisplayObjectResult.notHandled();
+        }
+        if ("android/media/Ringtone->getTitle(Landroid/content/Context;)Ljava/lang/String;"
+                .equals(signature)) {
+            if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredRingtone)) {
+                return AndroidDisplayObjectResult.notHandled();
+            }
+            ConfiguredRingtone marker = (ConfiguredRingtone) dvmObject.getValue();
+            if (marker.owner != vm) {
+                return AndroidDisplayObjectResult.notHandled();
+            }
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_setting",
+                    "Ringtone.getTitle", "result=" + marker.title,
+                    "json-config", "读取配置的铃声标题");
+            return AndroidDisplayObjectResult.of(new StringObject(vm, marker.title));
+        }
+        if (dvmObject != null && dvmObject.getValue() instanceof String
+                && "android/net/Uri".equals(dvmObject.getObjectType() == null
+                ? "" : dvmObject.getObjectType().getClassName())) {
+            String value = (String) dvmObject.getValue();
+            return AndroidDisplayObjectResult.of(new StringObject(vm, value));
+        }
+        return AndroidDisplayObjectResult.notHandled();
+    }
+
+    private static final class ConfiguredCellInfo {
+        final BaseVM owner;
+        final TraceEnvironmentConfig.CellInfoConfig row;
+
+        private ConfiguredCellInfo(BaseVM owner, TraceEnvironmentConfig.CellInfoConfig row) {
+            this.owner = owner;
+            this.row = row;
+        }
+    }
+
+    private static final class ConfiguredCellIdentity {
+        final BaseVM owner;
+        final TraceEnvironmentConfig.CellInfoConfig row;
+
+        private ConfiguredCellIdentity(BaseVM owner, TraceEnvironmentConfig.CellInfoConfig row) {
+            this.owner = owner;
+            this.row = row;
+        }
+    }
+
+    private static final class ConfiguredGsmCellLocation {
+        final BaseVM owner;
+        final TraceEnvironmentConfig.CellInfoConfig row;
+
+        private ConfiguredGsmCellLocation(BaseVM owner, TraceEnvironmentConfig.CellInfoConfig row) {
+            this.owner = owner;
+            this.row = row;
+        }
+    }
+
+    private static final class ConfiguredScanResult {
+        final BaseVM owner;
+        final TraceEnvironmentConfig.WifiScanResultConfig row;
+
+        private ConfiguredScanResult(BaseVM owner, TraceEnvironmentConfig.WifiScanResultConfig row) {
+            this.owner = owner;
+            this.row = row;
+        }
+    }
+
+    private static String cellInfoClassName(String type) {
+        if ("gsm".equals(type)) {
+            return "android/telephony/CellInfoGsm";
+        }
+        if ("cdma".equals(type)) {
+            return "android/telephony/CellInfoCdma";
+        }
+        if ("wcdma".equals(type)) {
+            return "android/telephony/CellInfoWcdma";
+        }
+        if ("nr".equals(type)) {
+            return "android/telephony/CellInfoNr";
+        }
+        return "android/telephony/CellInfoLte";
+    }
+
+    private static String cellIdentityClassName(String type) {
+        if ("gsm".equals(type)) {
+            return "android/telephony/CellIdentityGsm";
+        }
+        if ("cdma".equals(type)) {
+            return "android/telephony/CellIdentityCdma";
+        }
+        if ("wcdma".equals(type)) {
+            return "android/telephony/CellIdentityWcdma";
+        }
+        if ("nr".equals(type)) {
+            return "android/telephony/CellIdentityNr";
+        }
+        return "android/telephony/CellIdentityLte";
+    }
+
+    private static AndroidDisplayObjectResult tryAndroidCellInfoObject(BaseVM vm, DvmObject<?> dvmObject,
+                                                                       String signature) {
+        if ("android/telephony/TelephonyManager->getAllCellInfo()Ljava/util/List;".equals(signature)) {
+            TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+            if (config == null || !config.isAndroidCellInfoConfigured()) {
+                return AndroidDisplayObjectResult.notHandled();
+            }
+            List<TraceEnvironmentConfig.CellInfoConfig> rows = config.getAndroidCellInfo();
+            List<DvmObject<?>> elements = new ArrayList<DvmObject<?>>(rows.size());
+            for (int i = 0; i < rows.size(); i++) {
+                TraceEnvironmentConfig.CellInfoConfig row = rows.get(i);
+                elements.add(vm.resolveClass(cellInfoClassName(row.getType()))
+                        .newObject(new ConfiguredCellInfo(vm, row)));
+            }
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "telephony",
+                    "TelephonyManager.getAllCellInfo",
+                    "count=" + rows.size(),
+                    "json-config", "读取配置的小区信息列表");
+            return AndroidDisplayObjectResult.of(new ArrayListObject(vm, elements));
+        }
+        if ("android/telephony/TelephonyManager->getCellLocation()Landroid/telephony/CellLocation;"
+                .equals(signature)) {
+            TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+            if (config == null || !config.isAndroidCellInfoConfigured()) {
+                return AndroidDisplayObjectResult.notHandled();
+            }
+            TraceEnvironmentConfig.CellInfoConfig chosen = null;
+            List<TraceEnvironmentConfig.CellInfoConfig> rows = config.getAndroidCellInfo();
+            for (int i = 0; i < rows.size(); i++) {
+                if (rows.get(i).isRegistered()) {
+                    chosen = rows.get(i);
+                    break;
+                }
+            }
+            if (chosen == null && !rows.isEmpty()) {
+                chosen = rows.get(0);
+            }
+            if (chosen == null) {
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "telephony",
+                        "TelephonyManager.getCellLocation",
+                        "result=null", "json-config", "空小区列表返回 null CellLocation");
+                return AndroidDisplayObjectResult.of(null);
+            }
+            DvmObject<?> location = vm.resolveClass("android/telephony/gsm/GsmCellLocation")
+                    .newObject(new ConfiguredGsmCellLocation(vm, chosen));
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "telephony",
+                    "TelephonyManager.getCellLocation",
+                    "type=" + chosen.getType() + ",ci=" + chosen.getCi() + ",tac=" + chosen.getTac(),
+                    "json-config", "读取配置的 CellLocation");
+            return AndroidDisplayObjectResult.of(location);
+        }
+        if (dvmObject != null && dvmObject.getValue() instanceof ConfiguredCellInfo) {
+            ConfiguredCellInfo marker = (ConfiguredCellInfo) dvmObject.getValue();
+            if (marker.owner != vm) {
+                return AndroidDisplayObjectResult.notHandled();
+            }
+            if (signature != null && signature.contains("->getCellIdentity()")) {
+                DvmObject<?> identity = vm.resolveClass(cellIdentityClassName(marker.row.getType()))
+                        .newObject(new ConfiguredCellIdentity(vm, marker.row));
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "telephony",
+                        "CellInfo.getCellIdentity",
+                        "type=" + marker.row.getType(),
+                        "json-config", "读取配置的 CellIdentity");
+                return AndroidDisplayObjectResult.of(identity);
+            }
+            throw jniUnimplemented(vm, signature);
+        }
+        if (dvmObject != null && dvmObject.getValue() instanceof ConfiguredCellIdentity) {
+            ConfiguredCellIdentity marker = (ConfiguredCellIdentity) dvmObject.getValue();
+            if (marker.owner != vm) {
+                return AndroidDisplayObjectResult.notHandled();
+            }
+            String value = null;
+            String field = null;
+            if (signature != null && signature.contains("->getMccString()")) {
+                if (!marker.row.isMccConfigured()) {
+                    return AndroidDisplayObjectResult.of(null);
+                }
+                value = marker.row.getMcc();
+                field = "mcc";
+            } else if (signature != null && signature.contains("->getMncString()")) {
+                if (!marker.row.isMncConfigured()) {
+                    return AndroidDisplayObjectResult.of(null);
+                }
+                value = marker.row.getMnc();
+                field = "mnc";
+            } else if (signature != null && signature.contains("->getOperatorAlphaLong()")) {
+                if (!marker.row.isAlphaLongConfigured()) {
+                    return AndroidDisplayObjectResult.of(null);
+                }
+                value = marker.row.getAlphaLong();
+                field = "alphaLong";
+            } else if (signature != null && signature.contains("->getOperatorAlphaShort()")) {
+                if (!marker.row.isAlphaShortConfigured()) {
+                    return AndroidDisplayObjectResult.of(null);
+                }
+                value = marker.row.getAlphaShort();
+                field = "alphaShort";
+            } else {
+                throw jniUnimplemented(vm, signature);
+            }
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "telephony",
+                    "CellIdentity." + field,
+                    "result=" + String.valueOf(value),
+                    "json-config", "读取配置的 CellIdentity 字符串");
+            if (value == null) {
+                return AndroidDisplayObjectResult.of(null);
+            }
+            return AndroidDisplayObjectResult.of(new StringObject(vm, value));
+        }
+        return AndroidDisplayObjectResult.notHandled();
+    }
+
+    private static AndroidDisplayBooleanResult tryAndroidCellInfoBoolean(BaseVM vm, DvmObject<?> dvmObject,
+                                                                         String signature) {
+        if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCellInfo)) {
+            return AndroidDisplayBooleanResult.notHandled();
+        }
+        ConfiguredCellInfo marker = (ConfiguredCellInfo) dvmObject.getValue();
+        if (marker.owner != vm) {
+            return AndroidDisplayBooleanResult.notHandled();
+        }
+        if (signature != null && signature.contains("->isRegistered()Z")) {
+            boolean value = marker.row.isRegistered();
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "telephony",
+                    "CellInfo.isRegistered", "result=" + value,
+                    "json-config", "读取配置的小区注册状态");
+            return AndroidDisplayBooleanResult.of(value);
+        }
+        throw jniUnimplemented(vm, signature);
+    }
+
+    private static AndroidDisplayIntFieldResult tryAndroidCellInfoInt(BaseVM vm, DvmObject<?> dvmObject,
+                                                                      String signature) {
+        if (dvmObject != null && dvmObject.getValue() instanceof ConfiguredCellIdentity) {
+            ConfiguredCellIdentity marker = (ConfiguredCellIdentity) dvmObject.getValue();
+            if (marker.owner != vm) {
+                return AndroidDisplayIntFieldResult.notHandled();
+            }
+            if (signature != null && (signature.contains("->getCi()I")
+                    || signature.contains("->getCid()I"))) {
+                if (!marker.row.isCiConfigured()) {
+                    return AndroidDisplayIntFieldResult.of(Integer.MAX_VALUE);
+                }
+                return emitCellInt(vm, "CellIdentity.getCi", marker.row.getCi());
+            }
+            if (signature != null && signature.contains("->getPci()I")) {
+                if (!marker.row.isPciConfigured()) {
+                    return AndroidDisplayIntFieldResult.of(Integer.MAX_VALUE);
+                }
+                return emitCellInt(vm, "CellIdentity.getPci", marker.row.getPci());
+            }
+            if (signature != null && (signature.contains("->getTac()I")
+                    || signature.contains("->getLac()I"))) {
+                if (!marker.row.isTacConfigured()) {
+                    return AndroidDisplayIntFieldResult.of(Integer.MAX_VALUE);
+                }
+                return emitCellInt(vm, "CellIdentity.getTac", marker.row.getTac());
+            }
+            if (signature != null && signature.contains("->getEarfcn()I")) {
+                if (!marker.row.isEarfcnConfigured()) {
+                    return AndroidDisplayIntFieldResult.of(Integer.MAX_VALUE);
+                }
+                return emitCellInt(vm, "CellIdentity.getEarfcn", marker.row.getEarfcn());
+            }
+            throw jniUnimplemented(vm, signature);
+        }
+        if (dvmObject != null && dvmObject.getValue() instanceof ConfiguredGsmCellLocation) {
+            ConfiguredGsmCellLocation marker = (ConfiguredGsmCellLocation) dvmObject.getValue();
+            if (marker.owner != vm) {
+                return AndroidDisplayIntFieldResult.notHandled();
+            }
+            if (signature != null && signature.contains("->getCid()I")) {
+                return emitCellInt(vm, "GsmCellLocation.getCid",
+                        marker.row.isCiConfigured() ? marker.row.getCi() : -1);
+            }
+            if (signature != null && signature.contains("->getLac()I")) {
+                return emitCellInt(vm, "GsmCellLocation.getLac",
+                        marker.row.isTacConfigured() ? marker.row.getTac() : -1);
+            }
+            throw jniUnimplemented(vm, signature);
+        }
+        return AndroidDisplayIntFieldResult.notHandled();
+    }
+
+    private static AndroidDisplayIntFieldResult emitCellInt(BaseVM vm, String api, int value) {
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "telephony", api,
+                "result=" + value, "json-config", "读取配置的小区整型字段");
+        return AndroidDisplayIntFieldResult.of(value);
+    }
+
+    private static AndroidDisplayObjectResult tryAndroidWifiScanResultsObject(BaseVM vm, String signature) {
+        if (!"android/net/wifi/WifiManager->getScanResults()Ljava/util/List;".equals(signature)) {
+            return AndroidDisplayObjectResult.notHandled();
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isNetworkWifiScanResultsConfigured()) {
+            return AndroidDisplayObjectResult.notHandled();
+        }
+        List<TraceEnvironmentConfig.WifiScanResultConfig> rows = config.getNetworkWifiScanResults();
+        List<DvmObject<?>> elements = new ArrayList<DvmObject<?>>(rows.size());
+        for (int i = 0; i < rows.size(); i++) {
+            elements.add(vm.resolveClass("android/net/wifi/ScanResult")
+                    .newObject(new ConfiguredScanResult(vm, rows.get(i))));
+        }
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "network_wifi",
+                "WifiManager.getScanResults",
+                "count=" + rows.size(),
+                "json-config", "读取配置的 Wi-Fi 扫描结果");
+        return AndroidDisplayObjectResult.of(new ArrayListObject(vm, elements));
+    }
+
+    private static AndroidDisplayObjectResult tryAndroidWifiScanResultField(BaseVM vm, DvmObject<?> dvmObject,
+                                                                            String signature) {
+        if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredScanResult)) {
+            return AndroidDisplayObjectResult.notHandled();
+        }
+        ConfiguredScanResult marker = (ConfiguredScanResult) dvmObject.getValue();
+        if (marker.owner != vm) {
+            return AndroidDisplayObjectResult.notHandled();
+        }
+        if ("android/net/wifi/ScanResult->SSID:Ljava/lang/String;".equals(signature)
+                || (signature != null && signature.contains("ScanResult->getSSID()"))) {
+            if (!marker.row.isSsidConfigured()) {
+                return AndroidDisplayObjectResult.of(null);
+            }
+            String ssid = marker.row.getSsid();
+            return AndroidDisplayObjectResult.of(ssid == null ? null : new StringObject(vm, ssid));
+        }
+        if ("android/net/wifi/ScanResult->BSSID:Ljava/lang/String;".equals(signature)
+                || (signature != null && signature.contains("ScanResult->getBSSID()"))) {
+            if (!marker.row.isBssidConfigured()) {
+                return AndroidDisplayObjectResult.of(null);
+            }
+            String bssid = marker.row.getBssid();
+            return AndroidDisplayObjectResult.of(bssid == null ? null : new StringObject(vm, bssid));
+        }
+        return AndroidDisplayObjectResult.notHandled();
+    }
+
+    private static AndroidDisplayIntFieldResult tryAndroidWifiScanResultInt(BaseVM vm, DvmObject<?> dvmObject,
+                                                                            String signature) {
+        if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredScanResult)) {
+            return AndroidDisplayIntFieldResult.notHandled();
+        }
+        ConfiguredScanResult marker = (ConfiguredScanResult) dvmObject.getValue();
+        if (marker.owner != vm) {
+            return AndroidDisplayIntFieldResult.notHandled();
+        }
+        if ("android/net/wifi/ScanResult->level:I".equals(signature)) {
+            if (!marker.row.isRssiConfigured()) {
+                return AndroidDisplayIntFieldResult.notHandled();
+            }
+            return AndroidDisplayIntFieldResult.of(marker.row.getRssi());
+        }
+        if ("android/net/wifi/ScanResult->frequency:I".equals(signature)) {
+            if (!marker.row.isFrequencyMhzConfigured()) {
+                return AndroidDisplayIntFieldResult.notHandled();
+            }
+            return AndroidDisplayIntFieldResult.of(marker.row.getFrequencyMhz());
+        }
+        return AndroidDisplayIntFieldResult.notHandled();
+    }
+
+    private static double tryAndroidPowerProfileAveragePower(BaseVM vm, String signature, VarArg args) {
+        if (!"com/android/internal/os/PowerProfile->getAveragePower(Ljava/lang/String;)D"
+                .equals(signature)) {
+            return Double.NaN;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidPowerProfileConfigured()
+                || config.getAndroidPowerProfileConfig() == null
+                || !config.getAndroidPowerProfileConfig().isAveragePowerConfigured()) {
+            return Double.NaN;
+        }
+        DvmObject<?> nameArg = args.getObjectArg(0);
+        if (!(nameArg instanceof StringObject)) {
+            return Double.NaN;
+        }
+        String name = ((StringObject) nameArg).getValue();
+        Double value = config.getAndroidPowerProfileConfig().getAveragePower(name);
+        if (value == null) {
+            return Double.NaN;
+        }
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_power",
+                "PowerProfile.getAveragePower",
+                "name=" + name + ",result=" + value,
+                "json-config", "读取配置的 PowerProfile 平均功率");
+        return value.doubleValue();
     }
 
     private static String androidSettingsNamespaceForGetString(String signature) {
@@ -3528,6 +4213,16 @@ public abstract class AbstractJni implements Jni {
                         "key=enabled_accessibility_services,derived=true,length=" + derived.length(),
                         "json-config", "由无障碍服务列表派生设置串");
                 return AndroidSettingsGetStringResult.of(new StringObject(vm, derived));
+            }
+        }
+        if (config != null && "system".equals(namespace)) {
+            String ringtone = resolveRingtoneConfiguredValue(config, key);
+            if (ringtone != null && !config.isAndroidSettingConfigured(namespace, key)) {
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_setting",
+                        "Settings.system.getString",
+                        key + "=" + ringtone + ",source=ro.config",
+                        "json-config", "由 ro.config.* 读取铃声设置");
+                return AndroidSettingsGetStringResult.of(new StringObject(vm, ringtone));
             }
         }
         if (config == null || !config.isAndroidSettingConfigured(namespace, key)) {
@@ -4354,7 +5049,7 @@ public abstract class AbstractJni implements Jni {
     private static DvmObject<?> resolveLimitedTypedSystemService(BaseVM vm, String signature,
                                                                  DvmObject<?> classArg) {
         if (!(classArg instanceof DvmClass)) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         DvmClass requested = (DvmClass) classArg;
         String className = requested.getClassName();
@@ -4409,7 +5104,10 @@ public abstract class AbstractJni implements Jni {
         if ("android/telephony/TelephonyManager".equals(className)) {
             return new SystemService(vm, SystemService.TELEPHONY_SERVICE);
         }
-        throw new UnsupportedOperationException(signature);
+        if ("android/hardware/camera2/CameraManager".equals(className)) {
+            return new SystemService(vm, SystemService.CAMERA_SERVICE);
+        }
+        throw jniUnimplemented(vm, signature);
     }
 
     /**
@@ -4505,7 +5203,7 @@ public abstract class AbstractJni implements Jni {
             return NetworkBluetoothObjectResult.of(new StringObject(vm, value));
         }
         // Marker objects only support the wired getters; unknown methods throw.
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     /**
@@ -5247,7 +5945,7 @@ public abstract class AbstractJni implements Jni {
             field = "orientation";
             note = "读取配置的摄像头传感器方向";
         } else {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
                 "CameraInfo." + field,
@@ -5299,6 +5997,1394 @@ public abstract class AbstractJni implements Jni {
                 "field=canDisableShutterSound,result=" + result,
                 "json-config", "读取配置的摄像头快门音关闭能力");
         return AndroidCameraInfoBooleanFieldResult.of(result);
+    }
+
+    private static final class AndroidCamerasObjectResult {
+        final boolean handled;
+        final DvmObject<?> value;
+
+        private AndroidCamerasObjectResult(boolean handled, DvmObject<?> value) {
+            this.handled = handled;
+            this.value = value;
+        }
+
+        static AndroidCamerasObjectResult notHandled() {
+            return new AndroidCamerasObjectResult(false, null);
+        }
+
+        static AndroidCamerasObjectResult of(DvmObject<?> value) {
+            return new AndroidCamerasObjectResult(true, value);
+        }
+    }
+
+    /**
+     * Live Camera instance opened from {@code android.cameras}. Callbacks are stored on the
+     * marker so {@code startPreview}/{@code takePicture} can deliver configured frames.
+     */
+    private static final class ConfiguredCameraDevice {
+        final BaseVM owner;
+        final int cameraId;
+        DvmObject<?> previewCallback;
+        boolean oneShotPreview;
+
+        private ConfiguredCameraDevice(BaseVM owner, int cameraId) {
+            this.owner = owner;
+            this.cameraId = cameraId;
+        }
+    }
+
+    private static final class ConfiguredCameraParameters {
+        final BaseVM owner;
+        final int cameraId;
+
+        private ConfiguredCameraParameters(BaseVM owner, int cameraId) {
+            this.owner = owner;
+            this.cameraId = cameraId;
+        }
+    }
+
+    private static final class ConfiguredCameraSize {
+        final BaseVM owner;
+        final int width;
+        final int height;
+
+        private ConfiguredCameraSize(BaseVM owner, int width, int height) {
+            this.owner = owner;
+            this.width = width;
+            this.height = height;
+        }
+    }
+
+    private static final String CAMERA_OPEN_NO_ARG =
+            "android/hardware/Camera->open()Landroid/hardware/Camera;";
+    private static final String CAMERA_OPEN_INT =
+            "android/hardware/Camera->open(I)Landroid/hardware/Camera;";
+    private static final String CAMERA_RELEASE = "android/hardware/Camera->release()V";
+    private static final String CAMERA_START_PREVIEW = "android/hardware/Camera->startPreview()V";
+    private static final String CAMERA_STOP_PREVIEW = "android/hardware/Camera->stopPreview()V";
+    private static final String CAMERA_SET_PREVIEW_CALLBACK =
+            "android/hardware/Camera->setPreviewCallback(Landroid/hardware/Camera$PreviewCallback;)V";
+    private static final String CAMERA_SET_ONE_SHOT_PREVIEW =
+            "android/hardware/Camera->setOneShotPreviewCallback(Landroid/hardware/Camera$PreviewCallback;)V";
+    private static final String CAMERA_SET_PREVIEW_CALLBACK_WITH_BUFFER =
+            "android/hardware/Camera->setPreviewCallbackWithBuffer(Landroid/hardware/Camera$PreviewCallback;)V";
+    private static final String CAMERA_TAKE_PICTURE_3 =
+            "android/hardware/Camera->takePicture(Landroid/hardware/Camera$ShutterCallback;"
+                    + "Landroid/hardware/Camera$PictureCallback;Landroid/hardware/Camera$PictureCallback;)V";
+    private static final String CAMERA_TAKE_PICTURE_4 =
+            "android/hardware/Camera->takePicture(Landroid/hardware/Camera$ShutterCallback;"
+                    + "Landroid/hardware/Camera$PictureCallback;Landroid/hardware/Camera$PictureCallback;"
+                    + "Landroid/hardware/Camera$PictureCallback;)V";
+    private static final String CAMERA_GET_PARAMETERS =
+            "android/hardware/Camera->getParameters()Landroid/hardware/Camera$Parameters;";
+    private static final String CAMERA_SET_PARAMETERS =
+            "android/hardware/Camera->setParameters(Landroid/hardware/Camera$Parameters;)V";
+    private static final String CAMERA_SET_PREVIEW_DISPLAY =
+            "android/hardware/Camera->setPreviewDisplay(Landroid/view/SurfaceHolder;)V";
+    private static final String CAMERA_SET_PREVIEW_TEXTURE =
+            "android/hardware/Camera->setPreviewTexture(Landroid/graphics/SurfaceTexture;)V";
+    private static final String CAMERA_SET_DISPLAY_ORIENTATION =
+            "android/hardware/Camera->setDisplayOrientation(I)V";
+    private static final String CAMERA_PARAMETERS_GET_PREVIEW_SIZE =
+            "android/hardware/Camera$Parameters->getPreviewSize()Landroid/hardware/Camera$Size;";
+    private static final String CAMERA_PARAMETERS_GET_PICTURE_SIZE =
+            "android/hardware/Camera$Parameters->getPictureSize()Landroid/hardware/Camera$Size;";
+    private static final String CAMERA_PARAMETERS_GET_SUPPORTED_PREVIEW_SIZES =
+            "android/hardware/Camera$Parameters->getSupportedPreviewSizes()Ljava/util/List;";
+    private static final String CAMERA_PARAMETERS_GET_SUPPORTED_PICTURE_SIZES =
+            "android/hardware/Camera$Parameters->getSupportedPictureSizes()Ljava/util/List;";
+    private static final String CAMERA_PARAMETERS_GET_PREVIEW_FORMAT =
+            "android/hardware/Camera$Parameters->getPreviewFormat()I";
+    private static final String CAMERA_SIZE_WIDTH = "android/hardware/Camera$Size->width:I";
+    private static final String CAMERA_SIZE_HEIGHT = "android/hardware/Camera$Size->height:I";
+    private static final String PREVIEW_CALLBACK_ON_FRAME =
+            "android/hardware/Camera$PreviewCallback->onPreviewFrame([BLandroid/hardware/Camera;)V";
+    private static final String PICTURE_CALLBACK_ON_TAKEN =
+            "android/hardware/Camera$PictureCallback->onPictureTaken([BLandroid/hardware/Camera;)V";
+    private static final int IMAGE_FORMAT_NV21 = 17;
+
+    private static ConfiguredCameraDevice liveConfiguredCamera(BaseVM vm, DvmObject<?> dvmObject) {
+        if (vm == null || dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCameraDevice)) {
+            return null;
+        }
+        ConfiguredCameraDevice marker = (ConfiguredCameraDevice) dvmObject.getValue();
+        if (marker.owner != vm) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidCamerasConfigured()) {
+            return null;
+        }
+        if (marker.cameraId < 0 || marker.cameraId >= config.getAndroidCamerasConfig().getCount()) {
+            return null;
+        }
+        return marker;
+    }
+
+    private static ConfiguredCameraParameters liveConfiguredCameraParameters(BaseVM vm,
+                                                                              DvmObject<?> dvmObject) {
+        if (vm == null || dvmObject == null
+                || !(dvmObject.getValue() instanceof ConfiguredCameraParameters)) {
+            return null;
+        }
+        ConfiguredCameraParameters marker = (ConfiguredCameraParameters) dvmObject.getValue();
+        if (marker.owner != vm) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidCamerasConfigured()) {
+            return null;
+        }
+        return marker;
+    }
+
+    private static TraceEnvironmentConfig.AndroidCameraStreamConfig liveCameraStream(BaseVM vm,
+                                                                                     int cameraId) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidCamerasConfigured()) {
+            return null;
+        }
+        TraceEnvironmentConfig.AndroidCamerasConfig cameras = config.getAndroidCamerasConfig();
+        if (!cameras.isStreamsConfigured()) {
+            return null;
+        }
+        return cameras.findStream(cameraId);
+    }
+
+    /**
+     * {@code Camera.open()} / {@code Camera.open(int)} when {@code android.cameras} is present
+     * and {@code 0 <= cameraId < count}. Missing node or out-of-range id does not take over.
+     */
+    private static AndroidCamerasObjectResult tryAndroidCameraOpen(BaseVM vm, String signature,
+                                                                   VarArg args) {
+        int cameraId;
+        if (CAMERA_OPEN_NO_ARG.equals(signature)) {
+            cameraId = 0;
+        } else if (CAMERA_OPEN_INT.equals(signature)) {
+            cameraId = args.getIntArg(0);
+        } else {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidCamerasConfigured()) {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        int count = config.getAndroidCamerasConfig().getCount();
+        if (cameraId < 0 || cameraId >= count) {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        DvmObject<?> camera = vm.resolveClass("android/hardware/Camera")
+                .newObject(new ConfiguredCameraDevice(vm, cameraId));
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                "Camera.open",
+                "cameraId=" + cameraId,
+                "json-config", "打开配置的摄像头");
+        return AndroidCamerasObjectResult.of(camera);
+    }
+
+    private static AndroidCamerasObjectResult tryAndroidCameraObjectMethod(BaseVM vm,
+                                                                           DvmObject<?> dvmObject,
+                                                                           String signature) {
+        if (CAMERA_GET_PARAMETERS.equals(signature)) {
+            ConfiguredCameraDevice camera = liveConfiguredCamera(vm, dvmObject);
+            if (camera == null) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            DvmObject<?> parameters = vm.resolveClass("android/hardware/Camera$Parameters")
+                    .newObject(new ConfiguredCameraParameters(vm, camera.cameraId));
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "Camera.getParameters",
+                    "cameraId=" + camera.cameraId,
+                    "json-config", "读取配置的摄像头参数");
+            return AndroidCamerasObjectResult.of(parameters);
+        }
+        ConfiguredCameraParameters parameters = liveConfiguredCameraParameters(vm, dvmObject);
+        if (parameters == null) {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        TraceEnvironmentConfig.AndroidCameraStreamConfig stream =
+                liveCameraStream(vm, parameters.cameraId);
+        if (stream == null) {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        if (CAMERA_PARAMETERS_GET_PREVIEW_SIZE.equals(signature)
+                || CAMERA_PARAMETERS_GET_PICTURE_SIZE.equals(signature)) {
+            DvmObject<?> size = newConfiguredCameraSize(vm, stream);
+            String api = CAMERA_PARAMETERS_GET_PREVIEW_SIZE.equals(signature)
+                    ? "Camera.Parameters.getPreviewSize" : "Camera.Parameters.getPictureSize";
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    api,
+                    "cameraId=" + parameters.cameraId + ",width=" + stream.getWidth()
+                            + ",height=" + stream.getHeight(),
+                    "json-config", "读取配置的摄像头尺寸");
+            return AndroidCamerasObjectResult.of(size);
+        }
+        if (CAMERA_PARAMETERS_GET_SUPPORTED_PREVIEW_SIZES.equals(signature)
+                || CAMERA_PARAMETERS_GET_SUPPORTED_PICTURE_SIZES.equals(signature)) {
+            List<DvmObject<?>> rows = new ArrayList<DvmObject<?>>(1);
+            rows.add(newConfiguredCameraSize(vm, stream));
+            String api = CAMERA_PARAMETERS_GET_SUPPORTED_PREVIEW_SIZES.equals(signature)
+                    ? "Camera.Parameters.getSupportedPreviewSizes"
+                    : "Camera.Parameters.getSupportedPictureSizes";
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    api,
+                    "cameraId=" + parameters.cameraId + ",count=1",
+                    "json-config", "读取配置的摄像头尺寸列表");
+            return AndroidCamerasObjectResult.of(new ArrayListObject(vm, rows));
+        }
+        return AndroidCamerasObjectResult.notHandled();
+    }
+
+    private static DvmObject<?> newConfiguredCameraSize(BaseVM vm,
+            TraceEnvironmentConfig.AndroidCameraStreamConfig stream) {
+        return vm.resolveClass("android/hardware/Camera$Size")
+                .newObject(new ConfiguredCameraSize(vm, stream.getWidth(), stream.getHeight()));
+    }
+
+    private static AndroidCamerasIntResult tryAndroidCameraIntMethod(BaseVM vm, DvmObject<?> dvmObject,
+                                                                     String signature) {
+        if (!CAMERA_PARAMETERS_GET_PREVIEW_FORMAT.equals(signature)) {
+            return AndroidCamerasIntResult.notHandled();
+        }
+        ConfiguredCameraParameters parameters = liveConfiguredCameraParameters(vm, dvmObject);
+        if (parameters == null) {
+            return AndroidCamerasIntResult.notHandled();
+        }
+        TraceEnvironmentConfig.AndroidCameraStreamConfig stream =
+                liveCameraStream(vm, parameters.cameraId);
+        if (stream == null || !stream.isPreviewConfigured()) {
+            return AndroidCamerasIntResult.notHandled();
+        }
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                "Camera.Parameters.getPreviewFormat",
+                "cameraId=" + parameters.cameraId + ",result=" + IMAGE_FORMAT_NV21,
+                "json-config", "读取配置的预览格式");
+        return AndroidCamerasIntResult.of(IMAGE_FORMAT_NV21);
+    }
+
+    private static AndroidCamerasIntResult tryAndroidCameraSizeIntField(BaseVM vm, DvmObject<?> dvmObject,
+                                                                        String signature) {
+        if (vm == null || dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCameraSize)) {
+            return AndroidCamerasIntResult.notHandled();
+        }
+        ConfiguredCameraSize size = (ConfiguredCameraSize) dvmObject.getValue();
+        if (size.owner != vm) {
+            return AndroidCamerasIntResult.notHandled();
+        }
+        if (CAMERA_SIZE_WIDTH.equals(signature)) {
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "Camera.Size.width",
+                    "field=width,result=" + size.width,
+                    "json-config", "读取配置的摄像头宽度");
+            return AndroidCamerasIntResult.of(size.width);
+        }
+        if (CAMERA_SIZE_HEIGHT.equals(signature)) {
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "Camera.Size.height",
+                    "field=height,result=" + size.height,
+                    "json-config", "读取配置的摄像头高度");
+            return AndroidCamerasIntResult.of(size.height);
+        }
+        return AndroidCamerasIntResult.notHandled();
+    }
+
+    /**
+     * Camera1 instance voids: release, preview callbacks, start/stop preview, takePicture,
+     * setParameters, and no-op display hooks. Missing node / non-marker does not take over.
+     */
+    private static boolean tryAndroidCameraVoidMethod(BaseVM vm, DvmObject<?> dvmObject,
+                                                      String signature, VarArg args) {
+        ConfiguredCameraDevice camera = liveConfiguredCamera(vm, dvmObject);
+        if (camera == null) {
+            return false;
+        }
+        if (CAMERA_RELEASE.equals(signature) || CAMERA_STOP_PREVIEW.equals(signature)
+                || CAMERA_SET_PREVIEW_DISPLAY.equals(signature)
+                || CAMERA_SET_PREVIEW_TEXTURE.equals(signature)
+                || CAMERA_SET_DISPLAY_ORIENTATION.equals(signature)
+                || CAMERA_SET_PARAMETERS.equals(signature)) {
+            String api = signature.substring(signature.indexOf("->") + 2, signature.indexOf('('));
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "Camera." + api,
+                    "cameraId=" + camera.cameraId,
+                    "json-config", "配置摄像头实例调用");
+            return true;
+        }
+        if (CAMERA_SET_PREVIEW_CALLBACK.equals(signature)
+                || CAMERA_SET_ONE_SHOT_PREVIEW.equals(signature)
+                || CAMERA_SET_PREVIEW_CALLBACK_WITH_BUFFER.equals(signature)) {
+            camera.previewCallback = safeObjectArg(args, 0);
+            camera.oneShotPreview = CAMERA_SET_ONE_SHOT_PREVIEW.equals(signature);
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "Camera.setPreviewCallback",
+                    "cameraId=" + camera.cameraId + ",hasCallback="
+                            + (camera.previewCallback != null) + ",oneShot=" + camera.oneShotPreview,
+                    "json-config", "设置配置的预览回调");
+            return true;
+        }
+        if (CAMERA_START_PREVIEW.equals(signature)) {
+            TraceEnvironmentConfig.AndroidCameraStreamConfig stream =
+                    liveCameraStream(vm, camera.cameraId);
+            byte[] preview = resolvedCameraPreview(vm, stream);
+            if (preview == null) {
+                return false;
+            }
+            deliverCameraPreview(vm, dvmObject, camera, preview);
+            return true;
+        }
+        if (CAMERA_TAKE_PICTURE_3.equals(signature) || CAMERA_TAKE_PICTURE_4.equals(signature)) {
+            TraceEnvironmentConfig.AndroidCameraStreamConfig stream =
+                    liveCameraStream(vm, camera.cameraId);
+            byte[] jpeg = resolvedCameraJpeg(vm, stream);
+            if (jpeg == null) {
+                return false;
+            }
+            DvmObject<?> jpegCallback = CAMERA_TAKE_PICTURE_4.equals(signature)
+                    ? safeObjectArg(args, 3) : safeObjectArg(args, 2);
+            deliverCameraJpeg(vm, dvmObject, camera, jpeg, jpegCallback);
+            return true;
+        }
+        return false;
+    }
+
+    private static byte[] resolvedCameraPreview(BaseVM vm,
+                                                TraceEnvironmentConfig.AndroidCameraStreamConfig stream) {
+        if (vm == null || stream == null || !stream.isPreviewConfigured()) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        return config == null ? null : config.resolveCameraPreview(stream);
+    }
+
+    private static byte[] resolvedCameraJpeg(BaseVM vm,
+                                             TraceEnvironmentConfig.AndroidCameraStreamConfig stream) {
+        if (vm == null || stream == null || !stream.isJpegConfigured()) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        return config == null ? null : config.resolveCameraJpeg(stream);
+    }
+
+    private static void deliverCameraPreview(BaseVM vm, DvmObject<?> cameraObject,
+                                             ConfiguredCameraDevice camera,
+                                             byte[] source) {
+        byte[] copy = Arrays.copyOf(source, source.length);
+        DvmObject<?> listener = camera.previewCallback;
+        if (listener != null) {
+            ByteArray frame = new ByteArray(vm, copy);
+            invokeListenerTwoObjects(vm, listener,
+                    "android/hardware/Camera$PreviewCallback",
+                    "onPreviewFrame",
+                    "([BLandroid/hardware/Camera;)V",
+                    frame, cameraObject);
+            if (camera.oneShotPreview) {
+                camera.previewCallback = null;
+                camera.oneShotPreview = false;
+            }
+        }
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                "Camera.startPreview",
+                "cameraId=" + camera.cameraId + ",format=nv21,bytes=" + copy.length
+                        + ",delivered=" + (listener != null),
+                "json-config", "投递配置的预览帧");
+    }
+
+    private static void deliverCameraJpeg(BaseVM vm, DvmObject<?> cameraObject,
+                                          ConfiguredCameraDevice camera,
+                                          byte[] source,
+                                          DvmObject<?> jpegCallback) {
+        byte[] copy = Arrays.copyOf(source, source.length);
+        if (jpegCallback != null) {
+            ByteArray frame = new ByteArray(vm, copy);
+            invokeListenerTwoObjects(vm, jpegCallback,
+                    "android/hardware/Camera$PictureCallback",
+                    "onPictureTaken",
+                    "([BLandroid/hardware/Camera;)V",
+                    frame, cameraObject);
+        }
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                "Camera.takePicture",
+                "cameraId=" + camera.cameraId + ",format=jpeg,bytes=" + copy.length
+                        + ",delivered=" + (jpegCallback != null),
+                "json-config", "投递配置的 JPEG 帧");
+    }
+
+    private static void invokeListenerTwoObjects(BaseVM vm, DvmObject<?> listener, String className,
+                                                 String methodName, String argsDesc,
+                                                 DvmObject<?> first, DvmObject<?> second) {
+        if (vm == null || listener == null || first == null || vm.jni == null) {
+            return;
+        }
+        DvmClass cls = vm.resolveClass(className);
+        DvmMethod method = new DvmMethod(cls, methodName, argsDesc, false);
+        vm.jni.callVoidMethod(vm, listener, method.getSignature(),
+                new TwoObjectVarArg(vm, method, first, second));
+    }
+
+    private static final String CAMERA_MANAGER_GET_ID_LIST =
+            "android/hardware/camera2/CameraManager->getCameraIdList()[Ljava/lang/String;";
+    private static final String CAMERA_MANAGER_GET_CHARACTERISTICS =
+            "android/hardware/camera2/CameraManager->getCameraCharacteristics(Ljava/lang/String;)"
+                    + "Landroid/hardware/camera2/CameraCharacteristics;";
+    private static final String CAMERA_MANAGER_OPEN_CAMERA =
+            "android/hardware/camera2/CameraManager->openCamera(Ljava/lang/String;"
+                    + "Landroid/hardware/camera2/CameraDevice$StateCallback;Landroid/os/Handler;)V";
+    private static final String CAMERA2_DEVICE_GET_ID =
+            "android/hardware/camera2/CameraDevice->getId()Ljava/lang/String;";
+    private static final String CAMERA2_DEVICE_CLOSE =
+            "android/hardware/camera2/CameraDevice->close()V";
+    private static final String CAMERA2_CREATE_SESSION =
+            "android/hardware/camera2/CameraDevice->createCaptureSession(Ljava/util/List;"
+                    + "Landroid/hardware/camera2/CameraCaptureSession$StateCallback;"
+                    + "Landroid/os/Handler;)V";
+    private static final String CAMERA2_CREATE_REQUEST =
+            "android/hardware/camera2/CameraDevice->createCaptureRequest(I)"
+                    + "Landroid/hardware/camera2/CaptureRequest$Builder;";
+    private static final String CAMERA2_BUILDER_ADD_TARGET =
+            "android/hardware/camera2/CaptureRequest$Builder->addTarget(Landroid/view/Surface;)"
+                    + "Landroid/hardware/camera2/CaptureRequest$Builder;";
+    private static final String CAMERA2_BUILDER_SET =
+            "android/hardware/camera2/CaptureRequest$Builder->set"
+                    + "(Landroid/hardware/camera2/CaptureRequest$Key;Ljava/lang/Object;)"
+                    + "Landroid/hardware/camera2/CaptureRequest$Builder;";
+    private static final String CAMERA2_BUILDER_BUILD =
+            "android/hardware/camera2/CaptureRequest$Builder->build()"
+                    + "Landroid/hardware/camera2/CaptureRequest;";
+    private static final String CAMERA2_SESSION_CAPTURE =
+            "android/hardware/camera2/CameraCaptureSession->capture"
+                    + "(Landroid/hardware/camera2/CaptureRequest;"
+                    + "Landroid/hardware/camera2/CameraCaptureSession$CaptureCallback;"
+                    + "Landroid/os/Handler;)I";
+    private static final String CAMERA2_SESSION_REPEATING =
+            "android/hardware/camera2/CameraCaptureSession->setRepeatingRequest"
+                    + "(Landroid/hardware/camera2/CaptureRequest;"
+                    + "Landroid/hardware/camera2/CameraCaptureSession$CaptureCallback;"
+                    + "Landroid/os/Handler;)I";
+    private static final String CAMERA2_SESSION_CLOSE =
+            "android/hardware/camera2/CameraCaptureSession->close()V";
+    private static final String CAMERA2_SESSION_STOP_REPEATING =
+            "android/hardware/camera2/CameraCaptureSession->stopRepeating()V";
+    private static final String CAMERA2_SESSION_ABORT =
+            "android/hardware/camera2/CameraCaptureSession->abortCaptures()V";
+    private static final String CAMERA2_SESSION_ON_CONFIGURED =
+            "android/hardware/camera2/CameraCaptureSession$StateCallback->onConfigured"
+                    + "(Landroid/hardware/camera2/CameraCaptureSession;)V";
+    private static final String CAMERA2_CAPTURE_COMPLETED =
+            "android/hardware/camera2/CameraCaptureSession$CaptureCallback->onCaptureCompleted"
+                    + "(Landroid/hardware/camera2/CameraCaptureSession;"
+                    + "Landroid/hardware/camera2/CaptureRequest;"
+                    + "Landroid/hardware/camera2/TotalCaptureResult;)V";
+    private static final String CAMERA2_STATE_ON_OPENED =
+            "android/hardware/camera2/CameraDevice$StateCallback->onOpened"
+                    + "(Landroid/hardware/camera2/CameraDevice;)V";
+    private static final String CAMERA_CHARACTERISTICS_GET =
+            "android/hardware/camera2/CameraCharacteristics->get"
+                    + "(Landroid/hardware/camera2/CameraCharacteristics$Key;)Ljava/lang/Object;";
+    private static final String CAMERA_CHARACTERISTICS_KEY_CLASS =
+            "android/hardware/camera2/CameraCharacteristics$Key";
+    private static final String IMAGE_READER_NEW_INSTANCE =
+            "android/media/ImageReader->newInstance(IIII)Landroid/media/ImageReader;";
+    private static final String IMAGE_READER_SET_LISTENER =
+            "android/media/ImageReader->setOnImageAvailableListener"
+                    + "(Landroid/media/ImageReader$OnImageAvailableListener;Landroid/os/Handler;)V";
+    private static final String IMAGE_READER_ACQUIRE_LATEST =
+            "android/media/ImageReader->acquireLatestImage()Landroid/media/Image;";
+    private static final String IMAGE_READER_ACQUIRE_NEXT =
+            "android/media/ImageReader->acquireNextImage()Landroid/media/Image;";
+    private static final String IMAGE_READER_GET_SURFACE =
+            "android/media/ImageReader->getSurface()Landroid/view/Surface;";
+    private static final String IMAGE_READER_CLOSE = "android/media/ImageReader->close()V";
+    private static final String IMAGE_READER_ON_AVAILABLE =
+            "android/media/ImageReader$OnImageAvailableListener->onImageAvailable"
+                    + "(Landroid/media/ImageReader;)V";
+    private static final String IMAGE_GET_FORMAT = "android/media/Image->getFormat()I";
+    private static final String IMAGE_GET_WIDTH = "android/media/Image->getWidth()I";
+    private static final String IMAGE_GET_HEIGHT = "android/media/Image->getHeight()I";
+    private static final String IMAGE_GET_PLANES = "android/media/Image->getPlanes()[Landroid/media/Image$Plane;";
+    private static final String IMAGE_CLOSE = "android/media/Image->close()V";
+    private static final String IMAGE_PLANE_GET_BUFFER =
+            "android/media/Image$Plane->getBuffer()Ljava/nio/ByteBuffer;";
+    private static final String IMAGE_PLANE_GET_ROW_STRIDE = "android/media/Image$Plane->getRowStride()I";
+    private static final String IMAGE_PLANE_GET_PIXEL_STRIDE = "android/media/Image$Plane->getPixelStride()I";
+    private static final String BYTE_BUFFER_REMAINING = "java/nio/ByteBuffer->remaining()I";
+    private static final String BYTE_BUFFER_CAPACITY = "java/nio/ByteBuffer->capacity()I";
+    private static final String BYTE_BUFFER_LIMIT = "java/nio/ByteBuffer->limit()I";
+    private static final String BYTE_BUFFER_POSITION = "java/nio/ByteBuffer->position()I";
+    private static final String BYTE_BUFFER_HAS_ARRAY = "java/nio/ByteBuffer->hasArray()Z";
+    private static final String BYTE_BUFFER_IS_DIRECT = "java/nio/ByteBuffer->isDirect()Z";
+    private static final String BYTE_BUFFER_ARRAY = "java/nio/ByteBuffer->array()[B";
+    private static final String BYTE_BUFFER_GET_ARRAY =
+            "java/nio/ByteBuffer->get([B)Ljava/nio/ByteBuffer;";
+    private static final String UTIL_SIZE_GET_WIDTH = "android/util/Size->getWidth()I";
+    private static final String UTIL_SIZE_GET_HEIGHT = "android/util/Size->getHeight()I";
+    private static final int IMAGE_FORMAT_JPEG = 256;
+    private static final int IMAGE_FORMAT_YUV_420_888 = 35;
+
+    private static final class ConfiguredCamera2Device {
+        final BaseVM owner;
+        final int cameraId;
+
+        private ConfiguredCamera2Device(BaseVM owner, int cameraId) {
+            this.owner = owner;
+            this.cameraId = cameraId;
+        }
+    }
+
+    private static final class ConfiguredCameraCharacteristics {
+        final BaseVM owner;
+        final int cameraId;
+
+        private ConfiguredCameraCharacteristics(BaseVM owner, int cameraId) {
+            this.owner = owner;
+            this.cameraId = cameraId;
+        }
+    }
+
+    private static final class ConfiguredCameraCharacteristicsKey {
+        final String name;
+
+        private ConfiguredCameraCharacteristicsKey(String name) {
+            this.name = name;
+        }
+    }
+
+    private static final class ConfiguredImageReader {
+        final BaseVM owner;
+        final int cameraId;
+        final int width;
+        final int height;
+        final int format;
+        final byte[] frame;
+        DvmObject<?> listener;
+
+        private ConfiguredImageReader(BaseVM owner, int cameraId, int width, int height,
+                                      int format, byte[] frame) {
+            this.owner = owner;
+            this.cameraId = cameraId;
+            this.width = width;
+            this.height = height;
+            this.format = format;
+            this.frame = frame;
+        }
+    }
+
+    private static final class ConfiguredCameraImage {
+        final BaseVM owner;
+        final ConfiguredImageReader reader;
+
+        private ConfiguredCameraImage(BaseVM owner, ConfiguredImageReader reader) {
+            this.owner = owner;
+            this.reader = reader;
+        }
+    }
+
+    private static final class ConfiguredCameraPlane {
+        final BaseVM owner;
+        final ConfiguredImageReader reader;
+        final byte[] data;
+        final int rowStride;
+        final int pixelStride;
+
+        private ConfiguredCameraPlane(BaseVM owner, ConfiguredImageReader reader,
+                                      byte[] data, int rowStride, int pixelStride) {
+            this.owner = owner;
+            this.reader = reader;
+            this.data = data;
+            this.rowStride = rowStride;
+            this.pixelStride = pixelStride;
+        }
+    }
+
+    private static final class ConfiguredCameraByteBuffer {
+        final BaseVM owner;
+        final byte[] data;
+
+        private ConfiguredCameraByteBuffer(BaseVM owner, byte[] data) {
+            this.owner = owner;
+            this.data = data;
+        }
+    }
+
+    private static final class ConfiguredUtilSize {
+        final BaseVM owner;
+        final int width;
+        final int height;
+
+        private ConfiguredUtilSize(BaseVM owner, int width, int height) {
+            this.owner = owner;
+            this.width = width;
+            this.height = height;
+        }
+    }
+
+    private static final class ConfiguredCaptureSession {
+        final BaseVM owner;
+        final int cameraId;
+        final List<ConfiguredImageReader> readers;
+
+        private ConfiguredCaptureSession(BaseVM owner, int cameraId,
+                                         List<ConfiguredImageReader> readers) {
+            this.owner = owner;
+            this.cameraId = cameraId;
+            this.readers = readers;
+        }
+    }
+
+    private static final class ConfiguredCaptureRequestBuilder {
+        final BaseVM owner;
+        final int cameraId;
+        final List<ConfiguredImageReader> readers = new ArrayList<ConfiguredImageReader>();
+
+        private ConfiguredCaptureRequestBuilder(BaseVM owner, int cameraId) {
+            this.owner = owner;
+            this.cameraId = cameraId;
+        }
+    }
+
+    private static final class ConfiguredCaptureRequest {
+        final BaseVM owner;
+        final int cameraId;
+        final List<ConfiguredImageReader> readers;
+
+        private ConfiguredCaptureRequest(BaseVM owner, int cameraId,
+                                         List<ConfiguredImageReader> readers) {
+            this.owner = owner;
+            this.cameraId = cameraId;
+            this.readers = readers;
+        }
+    }
+
+    private static final class ConfiguredTotalCaptureResult {
+        final BaseVM owner;
+
+        private ConfiguredTotalCaptureResult(BaseVM owner) {
+            this.owner = owner;
+        }
+    }
+
+    private static final class ConfiguredCaptureRequestKey {
+        final String name;
+
+        private ConfiguredCaptureRequestKey(String name) {
+            this.name = name;
+        }
+    }
+
+    private static boolean isSystemServiceCameraManager(DvmObject<?> dvmObject) {
+        return dvmObject instanceof SystemService
+                && SystemService.CAMERA_SERVICE.equals(dvmObject.getValue());
+    }
+
+    private static Integer parseConfiguredCameraId(DvmObject<?> idObj) {
+        if (!(idObj instanceof StringObject)) {
+            return null;
+        }
+        String text = ((StringObject) idObj).getValue();
+        if (text == null) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(Integer.parseInt(text));
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private static boolean isLiveCameraId(BaseVM vm, int cameraId) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidCamerasConfigured()) {
+            return false;
+        }
+        return cameraId >= 0 && cameraId < config.getAndroidCamerasConfig().getCount();
+    }
+
+    private static AndroidCamerasObjectResult tryAndroidCameraCharacteristicsKey(BaseVM vm,
+                                                                                 String signature) {
+        if (signature == null
+                || !signature.startsWith("android/hardware/camera2/CameraCharacteristics->")
+                || !signature.endsWith(":Landroid/hardware/camera2/CameraCharacteristics$Key;")) {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        String name;
+        if (signature.contains("->LENS_FACING:")) {
+            name = "LENS_FACING";
+        } else if (signature.contains("->SENSOR_ORIENTATION:")) {
+            name = "SENSOR_ORIENTATION";
+        } else if (signature.contains("->SENSOR_INFO_PIXEL_ARRAY_SIZE:")) {
+            name = "SENSOR_INFO_PIXEL_ARRAY_SIZE";
+        } else {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        return AndroidCamerasObjectResult.of(vm.resolveClass(CAMERA_CHARACTERISTICS_KEY_CLASS)
+                .newObject(new ConfiguredCameraCharacteristicsKey(name)));
+    }
+
+    /**
+     * Dummy {@code CaptureRequest.Key} constants when {@code android.cameras} is present so
+     * {@code Builder.set} can be called. Values are ignored; not a fingerprint source.
+     */
+    private static AndroidCamerasObjectResult tryAndroidCaptureRequestKey(BaseVM vm, String signature) {
+        if (signature == null
+                || !signature.startsWith("android/hardware/camera2/CaptureRequest->")
+                || !signature.endsWith(":Landroid/hardware/camera2/CaptureRequest$Key;")) {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidCamerasConfigured()) {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        int start = signature.indexOf("->") + 2;
+        int end = signature.indexOf(':');
+        String name = start > 1 && end > start ? signature.substring(start, end) : "Key";
+        return AndroidCamerasObjectResult.of(
+                vm.resolveClass("android/hardware/camera2/CaptureRequest$Key")
+                        .newObject(new ConfiguredCaptureRequestKey(name)));
+    }
+
+    private static Integer tryAndroidCameraStaticInt(BaseVM vm, String signature) {
+        if (signature == null) {
+            return null;
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidCamerasConfigured()) {
+            return null;
+        }
+        if (signature.startsWith("android/hardware/camera2/CameraDevice->TEMPLATE_")
+                && signature.endsWith(":I")) {
+            return Integer.valueOf(1);
+        }
+        if ((signature.startsWith("android/hardware/camera2/CaptureRequest->")
+                || signature.startsWith("android/hardware/camera2/CameraMetadata->")
+                || signature.startsWith("android/hardware/camera2/CameraCharacteristics->"))
+                && signature.endsWith(":I")) {
+            return Integer.valueOf(0);
+        }
+        return null;
+    }
+
+    private static AndroidCamerasObjectResult tryAndroidCamera2StaticObject(BaseVM vm, String signature,
+                                                                            VarArg args) {
+        if (!IMAGE_READER_NEW_INSTANCE.equals(signature)) {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidCamerasConfigured()
+                || !config.getAndroidCamerasConfig().isStreamsConfigured()) {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        int width = args.getIntArg(0);
+        int height = args.getIntArg(1);
+        int format = args.getIntArg(2);
+        TraceEnvironmentConfig.AndroidCameraStreamConfig stream =
+                findStreamForImageReader(config.getAndroidCamerasConfig(), width, height, format);
+        if (stream == null) {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        byte[] frame = format == IMAGE_FORMAT_JPEG
+                ? resolvedCameraJpeg(vm, stream) : resolvedCameraPreview(vm, stream);
+        if (frame == null) {
+            return AndroidCamerasObjectResult.notHandled();
+        }
+        byte[] copy = Arrays.copyOf(frame, frame.length);
+        DvmObject<?> reader = vm.resolveClass("android/media/ImageReader")
+                .newObject(new ConfiguredImageReader(vm, stream.getCameraId(), width, height,
+                        format, copy));
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                "ImageReader.newInstance",
+                "cameraId=" + stream.getCameraId() + ",width=" + width + ",height=" + height
+                        + ",format=" + format + ",bytes=" + copy.length,
+                "json-config", "创建配置的 ImageReader");
+        return AndroidCamerasObjectResult.of(reader);
+    }
+
+    /**
+     * JPEG / NV21: one plane with the configured bytes. {@code YUV_420_888}: three packed
+     * planes (Y, U, V, pixelStride=1) split from the NV21 preview. Missing or short NV21
+     * falls back to a single plane so delivery still succeeds.
+     */
+    private static DvmObject<?>[] buildCameraPlanes(BaseVM vm, ConfiguredImageReader reader) {
+        if (reader.format == IMAGE_FORMAT_YUV_420_888) {
+            DvmObject<?>[] yuv = splitNv21ToYuv420888Planes(vm, reader);
+            if (yuv != null) {
+                return yuv;
+            }
+        }
+        byte[] copy = Arrays.copyOf(reader.frame, reader.frame.length);
+        int rowStride = reader.format == IMAGE_FORMAT_JPEG ? copy.length : reader.width;
+        DvmObject<?> plane = vm.resolveClass("android/media/Image$Plane")
+                .newObject(new ConfiguredCameraPlane(vm, reader, copy, rowStride, 1));
+        return new DvmObject<?>[] { plane };
+    }
+
+    /**
+     * NV21 (Y plane + VU interleaved) → packed I420-style Y/U/V for {@code YUV_420_888}.
+     * U and V each have {@code width*height/4} bytes, {@code pixelStride=1},
+     * {@code rowStride=width/2}.
+     */
+    private static DvmObject<?>[] splitNv21ToYuv420888Planes(BaseVM vm, ConfiguredImageReader reader) {
+        int width = reader.width;
+        int height = reader.height;
+        if (width < 2 || height < 2 || (width & 1) != 0 || (height & 1) != 0) {
+            return null;
+        }
+        int ySize = width * height;
+        int chromaCount = ySize / 4;
+        byte[] nv21 = reader.frame;
+        if (nv21 == null || nv21.length < ySize + chromaCount * 2) {
+            return null;
+        }
+        byte[] y = Arrays.copyOfRange(nv21, 0, ySize);
+        byte[] u = new byte[chromaCount];
+        byte[] v = new byte[chromaCount];
+        int chroma = ySize;
+        for (int i = 0; i < chromaCount; i++) {
+            v[i] = nv21[chroma + i * 2];
+            u[i] = nv21[chroma + i * 2 + 1];
+        }
+        int uvRowStride = width / 2;
+        DvmClass planeClass = vm.resolveClass("android/media/Image$Plane");
+        return new DvmObject<?>[] {
+                planeClass.newObject(new ConfiguredCameraPlane(vm, reader, y, width, 1)),
+                planeClass.newObject(new ConfiguredCameraPlane(vm, reader, u, uvRowStride, 1)),
+                planeClass.newObject(new ConfiguredCameraPlane(vm, reader, v, uvRowStride, 1))
+        };
+    }
+
+    private static TraceEnvironmentConfig.AndroidCameraStreamConfig findStreamForImageReader(
+            TraceEnvironmentConfig.AndroidCamerasConfig cameras, int width, int height, int format) {
+        List<TraceEnvironmentConfig.AndroidCameraStreamConfig> streams = cameras.getStreams();
+        for (int i = 0; i < streams.size(); i++) {
+            TraceEnvironmentConfig.AndroidCameraStreamConfig stream = streams.get(i);
+            if (stream.getWidth() != width || stream.getHeight() != height) {
+                continue;
+            }
+            if (format == IMAGE_FORMAT_JPEG && stream.isJpegConfigured()) {
+                return stream;
+            }
+            if ((format == IMAGE_FORMAT_NV21 || format == IMAGE_FORMAT_YUV_420_888)
+                    && stream.isPreviewConfigured()) {
+                return stream;
+            }
+        }
+        return null;
+    }
+
+    private static AndroidCamerasObjectResult tryAndroidCamera2ObjectMethod(BaseVM vm,
+                                                                            DvmObject<?> dvmObject,
+                                                                            String signature,
+                                                                            VarArg args) {
+        if (CAMERA_MANAGER_GET_ID_LIST.equals(signature)) {
+            if (!isSystemServiceCameraManager(dvmObject)) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+            if (config == null || !config.isAndroidCamerasConfigured()) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            int count = config.getAndroidCamerasConfig().getCount();
+            String[] ids = new String[count];
+            for (int i = 0; i < count; i++) {
+                ids[i] = Integer.toString(i);
+            }
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "CameraManager.getCameraIdList",
+                    "count=" + count,
+                    "json-config", "读取配置的摄像头 id 列表");
+            return AndroidCamerasObjectResult.of(ArrayObject.newStringArray(vm, ids));
+        }
+        if (CAMERA_MANAGER_GET_CHARACTERISTICS.equals(signature)) {
+            if (!isSystemServiceCameraManager(dvmObject)) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            Integer cameraId = parseConfiguredCameraId(safeObjectArg(args, 0));
+            if (cameraId == null || !isLiveCameraId(vm, cameraId.intValue())) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            DvmObject<?> characteristics = vm.resolveClass(
+                    "android/hardware/camera2/CameraCharacteristics")
+                    .newObject(new ConfiguredCameraCharacteristics(vm, cameraId.intValue()));
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "CameraManager.getCameraCharacteristics",
+                    "cameraId=" + cameraId,
+                    "json-config", "读取配置的 CameraCharacteristics");
+            return AndroidCamerasObjectResult.of(characteristics);
+        }
+        if (CAMERA2_CREATE_REQUEST.equals(signature)) {
+            ConfiguredCamera2Device device = liveConfiguredCamera2Device(vm, dvmObject);
+            if (device == null) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            DvmObject<?> builder = vm.resolveClass("android/hardware/camera2/CaptureRequest$Builder")
+                    .newObject(new ConfiguredCaptureRequestBuilder(vm, device.cameraId));
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "CameraDevice.createCaptureRequest",
+                    "cameraId=" + device.cameraId,
+                    "json-config", "创建配置的 CaptureRequest.Builder");
+            return AndroidCamerasObjectResult.of(builder);
+        }
+        if (CAMERA2_BUILDER_ADD_TARGET.equals(signature) || CAMERA2_BUILDER_SET.equals(signature)) {
+            if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCaptureRequestBuilder)) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            ConfiguredCaptureRequestBuilder builder =
+                    (ConfiguredCaptureRequestBuilder) dvmObject.getValue();
+            if (builder.owner != vm) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            if (CAMERA2_BUILDER_ADD_TARGET.equals(signature)) {
+                ConfiguredImageReader reader = imageReaderFromSurface(safeObjectArg(args, 0));
+                if (reader != null && !builder.readers.contains(reader)) {
+                    builder.readers.add(reader);
+                }
+            }
+            return AndroidCamerasObjectResult.of(dvmObject);
+        }
+        if (CAMERA2_BUILDER_BUILD.equals(signature)) {
+            if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCaptureRequestBuilder)) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            ConfiguredCaptureRequestBuilder builder =
+                    (ConfiguredCaptureRequestBuilder) dvmObject.getValue();
+            if (builder.owner != vm) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            DvmObject<?> request = vm.resolveClass("android/hardware/camera2/CaptureRequest")
+                    .newObject(new ConfiguredCaptureRequest(vm, builder.cameraId,
+                            new ArrayList<ConfiguredImageReader>(builder.readers)));
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "CaptureRequest.Builder.build",
+                    "cameraId=" + builder.cameraId + ",targets=" + builder.readers.size(),
+                    "json-config", "构建配置的 CaptureRequest");
+            return AndroidCamerasObjectResult.of(request);
+        }
+        if (CAMERA2_DEVICE_GET_ID.equals(signature)) {
+            if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCamera2Device)) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            ConfiguredCamera2Device device = (ConfiguredCamera2Device) dvmObject.getValue();
+            if (device.owner != vm) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "CameraDevice.getId",
+                    "cameraId=" + device.cameraId,
+                    "json-config", "读取配置的 CameraDevice id");
+            return AndroidCamerasObjectResult.of(new StringObject(vm, Integer.toString(device.cameraId)));
+        }
+        if (CAMERA_CHARACTERISTICS_GET.equals(signature)) {
+            if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCameraCharacteristics)) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            ConfiguredCameraCharacteristics marker =
+                    (ConfiguredCameraCharacteristics) dvmObject.getValue();
+            if (marker.owner != vm) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            DvmObject<?> keyObj = safeObjectArg(args, 0);
+            if (keyObj == null || !(keyObj.getValue() instanceof ConfiguredCameraCharacteristicsKey)) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            String keyName = ((ConfiguredCameraCharacteristicsKey) keyObj.getValue()).name;
+            DvmObject<?> value = cameraCharacteristicsValue(vm, marker.cameraId, keyName);
+            if (value == null) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "CameraCharacteristics.get",
+                    "cameraId=" + marker.cameraId + ",key=" + keyName,
+                    "json-config", "读取配置的 CameraCharacteristics 键");
+            return AndroidCamerasObjectResult.of(value);
+        }
+        if (IMAGE_READER_ACQUIRE_LATEST.equals(signature) || IMAGE_READER_ACQUIRE_NEXT.equals(signature)) {
+            ConfiguredImageReader reader = liveConfiguredImageReader(vm, dvmObject);
+            if (reader == null) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            DvmObject<?> image = vm.resolveClass("android/media/Image")
+                    .newObject(new ConfiguredCameraImage(vm, reader));
+            String api = IMAGE_READER_ACQUIRE_LATEST.equals(signature)
+                    ? "ImageReader.acquireLatestImage" : "ImageReader.acquireNextImage";
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    api,
+                    "cameraId=" + reader.cameraId + ",bytes=" + reader.frame.length,
+                    "json-config", "读取配置的 ImageReader 帧");
+            return AndroidCamerasObjectResult.of(image);
+        }
+        if (IMAGE_READER_GET_SURFACE.equals(signature)) {
+            ConfiguredImageReader reader = liveConfiguredImageReader(vm, dvmObject);
+            if (reader == null) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            DvmObject<?> surface = vm.resolveClass("android/view/Surface")
+                    .newObject(reader);
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "ImageReader.getSurface",
+                    "cameraId=" + reader.cameraId,
+                    "json-config", "返回配置 ImageReader 的 Surface 标记");
+            return AndroidCamerasObjectResult.of(surface);
+        }
+        if (IMAGE_GET_PLANES.equals(signature)) {
+            if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCameraImage)) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            ConfiguredCameraImage image = (ConfiguredCameraImage) dvmObject.getValue();
+            if (image.owner != vm) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            return AndroidCamerasObjectResult.of(new ArrayObject(buildCameraPlanes(vm, image.reader)));
+        }
+        if (IMAGE_PLANE_GET_BUFFER.equals(signature)) {
+            if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCameraPlane)) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            ConfiguredCameraPlane plane = (ConfiguredCameraPlane) dvmObject.getValue();
+            if (plane.owner != vm) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            byte[] copy = Arrays.copyOf(plane.data, plane.data.length);
+            return AndroidCamerasObjectResult.of(vm.resolveClass("java/nio/ByteBuffer")
+                    .newObject(new ConfiguredCameraByteBuffer(vm, copy)));
+        }
+        if (BYTE_BUFFER_ARRAY.equals(signature) || BYTE_BUFFER_GET_ARRAY.equals(signature)) {
+            ConfiguredCameraByteBuffer buffer = liveConfiguredCameraByteBuffer(vm, dvmObject);
+            if (buffer == null) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            if (BYTE_BUFFER_ARRAY.equals(signature)) {
+                return AndroidCamerasObjectResult.of(new ByteArray(vm,
+                        Arrays.copyOf(buffer.data, buffer.data.length)));
+            }
+            DvmObject<?> dest = safeObjectArg(args, 0);
+            if (!(dest instanceof ByteArray)) {
+                return AndroidCamerasObjectResult.notHandled();
+            }
+            byte[] target = ((ByteArray) dest).getValue();
+            int n = Math.min(target.length, buffer.data.length);
+            System.arraycopy(buffer.data, 0, target, 0, n);
+            return AndroidCamerasObjectResult.of(dvmObject);
+        }
+        return AndroidCamerasObjectResult.notHandled();
+    }
+
+    private static DvmObject<?> cameraCharacteristicsValue(BaseVM vm, int cameraId, String keyName) {
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidCamerasConfigured()) {
+            return null;
+        }
+        TraceEnvironmentConfig.AndroidCamerasConfig cameras = config.getAndroidCamerasConfig();
+        if ("LENS_FACING".equals(keyName) || "SENSOR_ORIENTATION".equals(keyName)) {
+            if (!cameras.isInfosConfigured() || cameraId >= cameras.getInfos().size()) {
+                return null;
+            }
+            TraceEnvironmentConfig.AndroidCameraInfoConfig info = cameras.getInfos().get(cameraId);
+            int value = "LENS_FACING".equals(keyName) ? info.getFacing() : info.getOrientation();
+            return DvmInteger.valueOf(vm, value);
+        }
+        if ("SENSOR_INFO_PIXEL_ARRAY_SIZE".equals(keyName)) {
+            TraceEnvironmentConfig.AndroidCameraStreamConfig stream = cameras.findStream(cameraId);
+            if (stream == null) {
+                return null;
+            }
+            return vm.resolveClass("android/util/Size")
+                    .newObject(new ConfiguredUtilSize(vm, stream.getWidth(), stream.getHeight()));
+        }
+        return null;
+    }
+
+    private static ConfiguredCamera2Device liveConfiguredCamera2Device(BaseVM vm, DvmObject<?> dvmObject) {
+        if (vm == null || dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCamera2Device)) {
+            return null;
+        }
+        ConfiguredCamera2Device device = (ConfiguredCamera2Device) dvmObject.getValue();
+        return device.owner == vm ? device : null;
+    }
+
+    private static ConfiguredCaptureSession liveConfiguredCaptureSession(BaseVM vm,
+                                                                         DvmObject<?> dvmObject) {
+        if (vm == null || dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCaptureSession)) {
+            return null;
+        }
+        ConfiguredCaptureSession session = (ConfiguredCaptureSession) dvmObject.getValue();
+        return session.owner == vm ? session : null;
+    }
+
+    private static ConfiguredImageReader imageReaderFromSurface(DvmObject<?> surface) {
+        if (surface == null || !(surface.getValue() instanceof ConfiguredImageReader)) {
+            return null;
+        }
+        return (ConfiguredImageReader) surface.getValue();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<ConfiguredImageReader> extractImageReaders(DvmObject<?> listObj) {
+        List<ConfiguredImageReader> readers = new ArrayList<ConfiguredImageReader>();
+        if (listObj == null) {
+            return readers;
+        }
+        List<?> raw;
+        if (listObj instanceof ArrayListObject) {
+            raw = ((ArrayListObject) listObj).getValue();
+        } else if (listObj.getValue() instanceof List) {
+            raw = (List<?>) listObj.getValue();
+        } else if (listObj instanceof ArrayObject) {
+            raw = Arrays.asList(((ArrayObject) listObj).getValue());
+        } else {
+            return readers;
+        }
+        if (raw == null) {
+            return readers;
+        }
+        for (int i = 0; i < raw.size(); i++) {
+            Object item = raw.get(i);
+            DvmObject<?> surface = item instanceof DvmObject ? (DvmObject<?>) item : null;
+            ConfiguredImageReader reader = imageReaderFromSurface(surface);
+            if (reader != null && !readers.contains(reader)) {
+                readers.add(reader);
+            }
+        }
+        return readers;
+    }
+
+    private static boolean deliverConfiguredImageAvailable(BaseVM vm, ConfiguredImageReader reader) {
+        if (vm == null || reader == null || reader.listener == null || reader.owner != vm) {
+            return false;
+        }
+        DvmObject<?> readerObject = vm.resolveClass("android/media/ImageReader").newObject(reader);
+        invokeListenerVoid(vm, reader.listener,
+                "android/media/ImageReader$OnImageAvailableListener",
+                "onImageAvailable",
+                "(Landroid/media/ImageReader;)V",
+                readerObject);
+        return true;
+    }
+
+    private static void invokeListenerThreeObjects(BaseVM vm, DvmObject<?> listener, String className,
+                                                   String methodName, String argsDesc,
+                                                   DvmObject<?> first, DvmObject<?> second,
+                                                   DvmObject<?> third) {
+        if (vm == null || listener == null || vm.jni == null) {
+            return;
+        }
+        DvmClass cls = vm.resolveClass(className);
+        DvmMethod method = new DvmMethod(cls, methodName, argsDesc, false);
+        vm.jni.callVoidMethod(vm, listener, method.getSignature(),
+                new ThreeObjectVarArg(vm, method, first, second, third));
+    }
+
+    private static ConfiguredImageReader liveConfiguredImageReader(BaseVM vm, DvmObject<?> dvmObject) {
+        if (vm == null || dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredImageReader)) {
+            return null;
+        }
+        ConfiguredImageReader reader = (ConfiguredImageReader) dvmObject.getValue();
+        return reader.owner == vm ? reader : null;
+    }
+
+    private static ConfiguredCameraByteBuffer liveConfiguredCameraByteBuffer(BaseVM vm,
+                                                                             DvmObject<?> dvmObject) {
+        if (vm == null || dvmObject == null
+                || !(dvmObject.getValue() instanceof ConfiguredCameraByteBuffer)) {
+            return null;
+        }
+        ConfiguredCameraByteBuffer buffer = (ConfiguredCameraByteBuffer) dvmObject.getValue();
+        return buffer.owner == vm ? buffer : null;
+    }
+
+    private static boolean tryAndroidCamera2VoidMethod(BaseVM vm, DvmObject<?> dvmObject,
+                                                       String signature, VarArg args) {
+        if (CAMERA_MANAGER_OPEN_CAMERA.equals(signature)) {
+            if (!isSystemServiceCameraManager(dvmObject)) {
+                return false;
+            }
+            Integer cameraId = parseConfiguredCameraId(safeObjectArg(args, 0));
+            if (cameraId == null || !isLiveCameraId(vm, cameraId.intValue())) {
+                return false;
+            }
+            DvmObject<?> callback = safeObjectArg(args, 1);
+            DvmObject<?> device = vm.resolveClass("android/hardware/camera2/CameraDevice")
+                    .newObject(new ConfiguredCamera2Device(vm, cameraId.intValue()));
+            if (callback != null) {
+                invokeListenerVoid(vm, callback,
+                        "android/hardware/camera2/CameraDevice$StateCallback",
+                        "onOpened",
+                        "(Landroid/hardware/camera2/CameraDevice;)V",
+                        device);
+            }
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "CameraManager.openCamera",
+                    "cameraId=" + cameraId + ",delivered=" + (callback != null),
+                    "json-config", "打开配置的 CameraDevice");
+            return true;
+        }
+        if (CAMERA2_CREATE_SESSION.equals(signature)) {
+            ConfiguredCamera2Device device = liveConfiguredCamera2Device(vm, dvmObject);
+            if (device == null) {
+                return false;
+            }
+            List<ConfiguredImageReader> readers = extractImageReaders(safeObjectArg(args, 0));
+            DvmObject<?> callback = safeObjectArg(args, 1);
+            DvmObject<?> session = vm.resolveClass("android/hardware/camera2/CameraCaptureSession")
+                    .newObject(new ConfiguredCaptureSession(vm, device.cameraId, readers));
+            if (callback != null) {
+                invokeListenerVoid(vm, callback,
+                        "android/hardware/camera2/CameraCaptureSession$StateCallback",
+                        "onConfigured",
+                        "(Landroid/hardware/camera2/CameraCaptureSession;)V",
+                        session);
+            }
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "CameraDevice.createCaptureSession",
+                    "cameraId=" + device.cameraId + ",outputs=" + readers.size()
+                            + ",delivered=" + (callback != null),
+                    "json-config", "配置摄像头捕获会话");
+            return true;
+        }
+        if (CAMERA2_SESSION_CLOSE.equals(signature) || CAMERA2_SESSION_STOP_REPEATING.equals(signature)
+                || CAMERA2_SESSION_ABORT.equals(signature)) {
+            return liveConfiguredCaptureSession(vm, dvmObject) != null;
+        }
+        if (CAMERA2_DEVICE_CLOSE.equals(signature)) {
+            if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCamera2Device)) {
+                return false;
+            }
+            ConfiguredCamera2Device device = (ConfiguredCamera2Device) dvmObject.getValue();
+            if (device.owner != vm) {
+                return false;
+            }
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "CameraDevice.close",
+                    "cameraId=" + device.cameraId,
+                    "json-config", "关闭配置的 CameraDevice");
+            return true;
+        }
+        if (IMAGE_READER_SET_LISTENER.equals(signature)) {
+            ConfiguredImageReader reader = liveConfiguredImageReader(vm, dvmObject);
+            if (reader == null) {
+                return false;
+            }
+            reader.listener = safeObjectArg(args, 0);
+            if (reader.listener != null) {
+                invokeListenerVoid(vm, reader.listener,
+                        "android/media/ImageReader$OnImageAvailableListener",
+                        "onImageAvailable",
+                        "(Landroid/media/ImageReader;)V",
+                        dvmObject);
+            }
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    "ImageReader.setOnImageAvailableListener",
+                    "cameraId=" + reader.cameraId + ",delivered=" + (reader.listener != null),
+                    "json-config", "投递配置的 ImageReader 帧通知");
+            return true;
+        }
+        if (IMAGE_READER_CLOSE.equals(signature)) {
+            return liveConfiguredImageReader(vm, dvmObject) != null;
+        }
+        if (IMAGE_CLOSE.equals(signature)) {
+            return dvmObject != null && dvmObject.getValue() instanceof ConfiguredCameraImage
+                    && ((ConfiguredCameraImage) dvmObject.getValue()).owner == vm;
+        }
+        return false;
+    }
+
+    private static AndroidCamerasIntResult tryAndroidCamera2IntMethod(BaseVM vm, DvmObject<?> dvmObject,
+                                                                      String signature, VarArg args) {
+        if (CAMERA2_SESSION_CAPTURE.equals(signature) || CAMERA2_SESSION_REPEATING.equals(signature)) {
+            ConfiguredCaptureSession session = liveConfiguredCaptureSession(vm, dvmObject);
+            if (session == null) {
+                return AndroidCamerasIntResult.notHandled();
+            }
+            DvmObject<?> requestObj = safeObjectArg(args, 0);
+            ConfiguredCaptureRequest request = requestObj != null
+                    && requestObj.getValue() instanceof ConfiguredCaptureRequest
+                    ? (ConfiguredCaptureRequest) requestObj.getValue() : null;
+            if (request != null && request.owner != vm) {
+                return AndroidCamerasIntResult.notHandled();
+            }
+            List<ConfiguredImageReader> readers = request != null && !request.readers.isEmpty()
+                    ? request.readers : session.readers;
+            int delivered = 0;
+            for (int i = 0; i < readers.size(); i++) {
+                if (deliverConfiguredImageAvailable(vm, readers.get(i))) {
+                    delivered++;
+                }
+            }
+            DvmObject<?> captureCallback = safeObjectArg(args, 1);
+            if (captureCallback != null) {
+                DvmObject<?> result = vm.resolveClass(
+                        "android/hardware/camera2/TotalCaptureResult")
+                        .newObject(new ConfiguredTotalCaptureResult(vm));
+                invokeListenerThreeObjects(vm, captureCallback,
+                        "android/hardware/camera2/CameraCaptureSession$CaptureCallback",
+                        "onCaptureCompleted",
+                        "(Landroid/hardware/camera2/CameraCaptureSession;"
+                                + "Landroid/hardware/camera2/CaptureRequest;"
+                                + "Landroid/hardware/camera2/TotalCaptureResult;)V",
+                        dvmObject, requestObj, result);
+            }
+            String api = CAMERA2_SESSION_CAPTURE.equals(signature)
+                    ? "CameraCaptureSession.capture"
+                    : "CameraCaptureSession.setRepeatingRequest";
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_camera",
+                    api,
+                    "cameraId=" + session.cameraId + ",images=" + delivered,
+                    "json-config", "投递配置的捕获帧");
+            return AndroidCamerasIntResult.of(1);
+        }
+        if (IMAGE_GET_FORMAT.equals(signature) || IMAGE_GET_WIDTH.equals(signature)
+                || IMAGE_GET_HEIGHT.equals(signature)) {
+            if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCameraImage)) {
+                return AndroidCamerasIntResult.notHandled();
+            }
+            ConfiguredCameraImage image = (ConfiguredCameraImage) dvmObject.getValue();
+            if (image.owner != vm) {
+                return AndroidCamerasIntResult.notHandled();
+            }
+            int value = IMAGE_GET_FORMAT.equals(signature) ? image.reader.format
+                    : IMAGE_GET_WIDTH.equals(signature) ? image.reader.width : image.reader.height;
+            return AndroidCamerasIntResult.of(value);
+        }
+        if (IMAGE_PLANE_GET_ROW_STRIDE.equals(signature) || IMAGE_PLANE_GET_PIXEL_STRIDE.equals(signature)) {
+            if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredCameraPlane)) {
+                return AndroidCamerasIntResult.notHandled();
+            }
+            ConfiguredCameraPlane plane = (ConfiguredCameraPlane) dvmObject.getValue();
+            if (plane.owner != vm) {
+                return AndroidCamerasIntResult.notHandled();
+            }
+            int value = IMAGE_PLANE_GET_PIXEL_STRIDE.equals(signature)
+                    ? plane.pixelStride : plane.rowStride;
+            return AndroidCamerasIntResult.of(value);
+        }
+        if (UTIL_SIZE_GET_WIDTH.equals(signature) || UTIL_SIZE_GET_HEIGHT.equals(signature)) {
+            if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredUtilSize)) {
+                return AndroidCamerasIntResult.notHandled();
+            }
+            ConfiguredUtilSize size = (ConfiguredUtilSize) dvmObject.getValue();
+            if (size.owner != vm) {
+                return AndroidCamerasIntResult.notHandled();
+            }
+            return AndroidCamerasIntResult.of(UTIL_SIZE_GET_WIDTH.equals(signature) ? size.width : size.height);
+        }
+        if (BYTE_BUFFER_REMAINING.equals(signature) || BYTE_BUFFER_CAPACITY.equals(signature)
+                || BYTE_BUFFER_LIMIT.equals(signature) || BYTE_BUFFER_POSITION.equals(signature)) {
+            ConfiguredCameraByteBuffer buffer = liveConfiguredCameraByteBuffer(vm, dvmObject);
+            if (buffer == null) {
+                return AndroidCamerasIntResult.notHandled();
+            }
+            int value = BYTE_BUFFER_POSITION.equals(signature) ? 0 : buffer.data.length;
+            return AndroidCamerasIntResult.of(value);
+        }
+        return AndroidCamerasIntResult.notHandled();
+    }
+
+    private static Boolean tryAndroidCamera2BooleanMethod(BaseVM vm, DvmObject<?> dvmObject,
+                                                          String signature) {
+        if (!BYTE_BUFFER_HAS_ARRAY.equals(signature) && !BYTE_BUFFER_IS_DIRECT.equals(signature)) {
+            return null;
+        }
+        if (liveConfiguredCameraByteBuffer(vm, dvmObject) == null) {
+            return null;
+        }
+        return Boolean.valueOf(BYTE_BUFFER_HAS_ARRAY.equals(signature));
     }
 
     /**
@@ -10203,7 +12289,7 @@ public abstract class AbstractJni implements Jni {
             return AndroidUserHandleIntResult.notHandled();
         }
         if (!USER_HANDLE_GET_IDENTIFIER_SIGNATURE.equals(signature)) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         int userId = marker.config.getUserId();
         TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_user",
@@ -10605,7 +12691,7 @@ public abstract class AbstractJni implements Jni {
                     "json-config", "返回配置的指定类型账户列表");
             return AndroidAccountObjectResult.of(array);
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     /**
@@ -10647,7 +12733,7 @@ public abstract class AbstractJni implements Jni {
             return AndroidAccountObjectResult.of(
                     new StringObject(vm, marker.accountConfig.getType()));
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     /**
@@ -10765,7 +12851,7 @@ public abstract class AbstractJni implements Jni {
         }
         ConfiguredAdvertisingIdInfo marker = (ConfiguredAdvertisingIdInfo) dvmObject.getValue();
         if (!ADVERTISING_ID_INFO_GET_ID_SIGNATURE.equals(signature)) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         String advertisingId = marker.config.getAdvertisingId();
         TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_identifier",
@@ -10788,7 +12874,7 @@ public abstract class AbstractJni implements Jni {
         }
         ConfiguredAdvertisingIdInfo marker = (ConfiguredAdvertisingIdInfo) dvmObject.getValue();
         if (!ADVERTISING_ID_INFO_IS_LIMIT_SIGNATURE.equals(signature)) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         boolean limit = marker.config.isLimitAdTracking();
         TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_identifier",
@@ -11186,7 +13272,7 @@ public abstract class AbstractJni implements Jni {
                 result = locale.getISO3Country();
                 api = "Locale.getISO3Country";
             } else {
-                throw new UnsupportedOperationException(signature);
+                throw jniUnimplemented(vm, signature);
             }
             TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_locale", api,
                     "languageTag=" + localeConfig.getLanguageTag() + ",result=" + result,
@@ -11194,7 +13280,7 @@ public abstract class AbstractJni implements Jni {
             return AndroidLocaleObjectResult.of(new StringObject(vm, result));
         }
         if (dvmObject != null && dvmObject.getValue() instanceof ConfiguredLocale) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         if (isConfiguredTimeZone(vm, dvmObject)) {
             ConfiguredTimeZone marker = (ConfiguredTimeZone) dvmObject.getValue();
@@ -11206,7 +13292,7 @@ public abstract class AbstractJni implements Jni {
                         "json-config", "读取配置的 TimeZone ID");
                 return AndroidLocaleObjectResult.of(new StringObject(vm, result));
             }
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         return AndroidLocaleObjectResult.notHandled();
     }
@@ -11298,6 +13384,42 @@ public abstract class AbstractJni implements Jni {
             this.config = config;
         }
     }
+
+    /**
+     * Point out-parameter written by Display/IWindowManager size APIs from {@code android.display}.
+     */
+    private static final class ConfiguredPoint {
+        final BaseVM owner;
+        final int x;
+        final int y;
+
+        private ConfiguredPoint(BaseVM owner, int x, int y) {
+            this.owner = owner;
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    /**
+     * Generic Binder stub marker for IWindowManager / IDisplayManager that rereads
+     * {@code android.display}. Not a vendor-specific service.
+     */
+    private static final class ConfiguredDisplayBinder {
+        final BaseVM owner;
+        final TraceEnvironmentConfig.AndroidDisplayConfig config;
+
+        private ConfiguredDisplayBinder(BaseVM owner,
+                                        TraceEnvironmentConfig.AndroidDisplayConfig config) {
+            this.owner = owner;
+            this.config = config;
+        }
+    }
+
+    private static final int ANDROID_DISPLAY_TYPE_INTERNAL = 1;
+    private static final int ANDROID_DISPLAY_STATE_ON = 2;
+    private static final int ANDROID_DISPLAY_FLAG_SECURE = 2;
+    private static final String ANDROID_DISPLAY_DEFAULT_NAME = "Built-in Screen";
+    private static final String ANDROID_DISPLAY_DEFAULT_UNIQUE_ID = "local:0";
 
     private static final class AndroidDisplayObjectResult {
         final boolean handled;
@@ -11411,6 +13533,76 @@ public abstract class AbstractJni implements Jni {
         return marker.owner == vm;
     }
 
+    private static boolean isConfiguredPoint(BaseVM vm, DvmObject<?> dvmObject) {
+        if (vm == null || dvmObject == null
+                || !(dvmObject.getValue() instanceof ConfiguredPoint)) {
+            return false;
+        }
+        return ((ConfiguredPoint) dvmObject.getValue()).owner == vm;
+    }
+
+    private static boolean isConfiguredDisplayBinder(BaseVM vm, DvmObject<?> dvmObject) {
+        if (vm == null || dvmObject == null
+                || !(dvmObject.getValue() instanceof ConfiguredDisplayBinder)) {
+            return false;
+        }
+        return ((ConfiguredDisplayBinder) dvmObject.getValue()).owner == vm;
+    }
+
+    private static boolean isDisplaySizeVoidSignature(String signature) {
+        if (signature == null || !signature.contains("Landroid/graphics/Point;")) {
+            return false;
+        }
+        return signature.contains("getSize")
+                || signature.contains("getRealSize")
+                || signature.contains("getInitialDisplaySize")
+                || signature.contains("getBaseDisplaySize")
+                || signature.contains("getRealDisplaySize");
+    }
+
+    private static DvmObject<?> findPointArg(VarArg args) {
+        if (args == null) {
+            return null;
+        }
+        for (int i = 0; i < 3; i++) {
+            try {
+                DvmObject<?> obj = args.getObjectArg(i);
+                if (obj != null && obj.getObjectType() != null
+                        && "android/graphics/Point".equals(obj.getObjectType().getClassName())) {
+                    return obj;
+                }
+            } catch (RuntimeException ignored) {
+                // not an object argument at this index
+            }
+        }
+        return null;
+    }
+
+    private static boolean writeConfiguredPoint(BaseVM vm, DvmObject<?> point,
+                                                TraceEnvironmentConfig.AndroidDisplayConfig displayConfig) {
+        if (point == null || displayConfig == null) {
+            return false;
+        }
+        if (point.getObjectType() == null
+                || !"android/graphics/Point".equals(point.getObjectType().getClassName())) {
+            return false;
+        }
+        point.setValue(new ConfiguredPoint(vm, displayConfig.getWidthPixels(), displayConfig.getHeightPixels()));
+        return true;
+    }
+
+    private static String configuredDisplayName() {
+        return ANDROID_DISPLAY_DEFAULT_NAME;
+    }
+
+    private static String configuredDisplayUniqueId(TraceEnvironmentConfig.AndroidDisplayConfig displayConfig) {
+        if (displayConfig != null && displayConfig.isUniqueIdConfigured()
+                && displayConfig.getUniqueId() != null) {
+            return displayConfig.getUniqueId();
+        }
+        return ANDROID_DISPLAY_DEFAULT_UNIQUE_ID;
+    }
+
     private static final String DISPLAY_GET_METRICS_SIGNATURE =
             "android/view/Display->getMetrics(Landroid/util/DisplayMetrics;)V";
     private static final String DISPLAY_GET_REAL_METRICS_SIGNATURE =
@@ -11424,6 +13616,30 @@ public abstract class AbstractJni implements Jni {
      */
     private static AndroidDisplayVoidResult tryAndroidDisplayVoidMethod(BaseVM vm, DvmObject<?> dvmObject,
                                                                         String signature, VarArg args) {
+        if (isDisplaySizeVoidSignature(signature)) {
+            TraceEnvironmentConfig.AndroidDisplayConfig displayConfig = null;
+            if (isConfiguredDisplay(vm, dvmObject)) {
+                displayConfig = ((ConfiguredDisplay) dvmObject.getValue()).config;
+            } else if (isConfiguredDisplayBinder(vm, dvmObject)) {
+                displayConfig = ((ConfiguredDisplayBinder) dvmObject.getValue()).config;
+            }
+            if (displayConfig == null) {
+                return AndroidDisplayVoidResult.notHandled();
+            }
+            DvmObject<?> point = findPointArg(args);
+            if (!writeConfiguredPoint(vm, point, displayConfig)) {
+                return AndroidDisplayVoidResult.notHandled();
+            }
+            String api = signature.contains("getRealSize") ? "Display.getRealSize"
+                    : signature.contains("getInitialDisplaySize") ? "IWindowManager.getInitialDisplaySize"
+                    : signature.contains("getBaseDisplaySize") ? "IWindowManager.getBaseDisplaySize"
+                    : "Display.getSize";
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", api,
+                    "width=" + displayConfig.getWidthPixels()
+                            + ",height=" + displayConfig.getHeightPixels(),
+                    "json-config", "将配置的显示尺寸写入 Point");
+            return AndroidDisplayVoidResult.handled();
+        }
         final boolean getMetrics = DISPLAY_GET_METRICS_SIGNATURE.equals(signature);
         final boolean getRealMetrics = DISPLAY_GET_REAL_METRICS_SIGNATURE.equals(signature);
         if (!getMetrics && !getRealMetrics) {
@@ -11468,9 +13684,9 @@ public abstract class AbstractJni implements Jni {
     private static AndroidDisplayObjectResult tryAndroidDisplayObjectMethod(BaseVM vm, DvmObject<?> dvmObject,
                                                                             String signature, VarArg args) {
         if (isConfiguredDisplay(vm, dvmObject)) {
+            ConfiguredDisplay marker = (ConfiguredDisplay) dvmObject.getValue();
+            TraceEnvironmentConfig.AndroidDisplayConfig displayConfig = marker.config;
             if ("android/view/Display->getMode()Landroid/view/Display$Mode;".equals(signature)) {
-                ConfiguredDisplay marker = (ConfiguredDisplay) dvmObject.getValue();
-                TraceEnvironmentConfig.AndroidDisplayConfig displayConfig = marker.config;
                 DvmObject<?> mode = vm.resolveClass("android/view/Display$Mode")
                         .newObject(new ConfiguredDisplayMode(vm, displayConfig));
                 TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Display.getMode",
@@ -11481,10 +13697,22 @@ public abstract class AbstractJni implements Jni {
                         "json-config", "读取配置的 Display.Mode");
                 return AndroidDisplayObjectResult.of(mode);
             }
-            throw new UnsupportedOperationException(signature);
+            if ("android/view/Display->getName()Ljava/lang/String;".equals(signature)) {
+                String name = configuredDisplayName();
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Display.getName",
+                        "result=" + name, "json-config", "读取配置 Display 的名称");
+                return AndroidDisplayObjectResult.of(new StringObject(vm, name));
+            }
+            if ("android/view/Display->getUniqueId()Ljava/lang/String;".equals(signature)) {
+                String uniqueId = configuredDisplayUniqueId(displayConfig);
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Display.getUniqueId",
+                        "result=" + uniqueId, "json-config", "读取配置 Display 的 uniqueId");
+                return AndroidDisplayObjectResult.of(new StringObject(vm, uniqueId));
+            }
+            throw jniUnimplemented(vm, signature);
         }
         if (isConfiguredDisplayMode(vm, dvmObject)) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         if ("android/view/WindowManager->getDefaultDisplay()Landroid/view/Display;".equals(signature)) {
             TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
@@ -11567,6 +13795,19 @@ public abstract class AbstractJni implements Jni {
      */
     private static AndroidDisplayIntFieldResult tryAndroidDisplayIntMethod(BaseVM vm, DvmObject<?> dvmObject,
                                                                            String signature) {
+        if (isConfiguredDisplayBinder(vm, dvmObject)) {
+            ConfiguredDisplayBinder binder = (ConfiguredDisplayBinder) dvmObject.getValue();
+            if (signature != null && (signature.contains("->getRotation()I")
+                    || signature.contains("->getDefaultDisplayRotation()I"))) {
+                int result = binder.config.getRotation();
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display",
+                        "IWindowManager.getRotation",
+                        "field=rotation,result=" + result,
+                        "json-config", "读取配置 Display 的旋转（Binder stub）");
+                return AndroidDisplayIntFieldResult.of(result);
+            }
+            throw jniUnimplemented(vm, signature);
+        }
         if (isConfiguredDisplay(vm, dvmObject)) {
             ConfiguredDisplay marker = (ConfiguredDisplay) dvmObject.getValue();
             TraceEnvironmentConfig.AndroidDisplayConfig displayConfig = marker.config;
@@ -11576,7 +13817,9 @@ public abstract class AbstractJni implements Jni {
                         "json-config", "读取配置 Display 的固定 displayId");
                 return AndroidDisplayIntFieldResult.of(0);
             }
-            if ("android/view/Display->getRotation()I".equals(signature)) {
+            if ("android/view/Display->getRotation()I".equals(signature)
+                    || signature.contains("IWindowManager->getRotation()I")
+                    || signature.contains("IWindowManager->getDefaultDisplayRotation()I")) {
                 int result = displayConfig.getRotation();
                 TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Display.getRotation",
                         "field=rotation,result=" + result,
@@ -11597,7 +13840,25 @@ public abstract class AbstractJni implements Jni {
                         "json-config", "读取配置的 Display 高度");
                 return AndroidDisplayIntFieldResult.of(result);
             }
-            throw new UnsupportedOperationException(signature);
+            if ("android/view/Display->getType()I".equals(signature)) {
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Display.getType",
+                        "field=type,result=" + ANDROID_DISPLAY_TYPE_INTERNAL,
+                        "json-config", "读取配置 Display 的类型（TYPE_INTERNAL）");
+                return AndroidDisplayIntFieldResult.of(ANDROID_DISPLAY_TYPE_INTERNAL);
+            }
+            if ("android/view/Display->getState()I".equals(signature)) {
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Display.getState",
+                        "field=state,result=" + ANDROID_DISPLAY_STATE_ON,
+                        "json-config", "读取配置 Display 的状态（STATE_ON）");
+                return AndroidDisplayIntFieldResult.of(ANDROID_DISPLAY_STATE_ON);
+            }
+            if ("android/view/Display->getFlags()I".equals(signature)) {
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Display.getFlags",
+                        "field=flags,result=" + ANDROID_DISPLAY_FLAG_SECURE,
+                        "json-config", "读取配置 Display 的 flags");
+                return AndroidDisplayIntFieldResult.of(ANDROID_DISPLAY_FLAG_SECURE);
+            }
+            throw jniUnimplemented(vm, signature);
         }
         if (isConfiguredDisplayMode(vm, dvmObject)) {
             ConfiguredDisplayMode marker = (ConfiguredDisplayMode) dvmObject.getValue();
@@ -11618,7 +13879,7 @@ public abstract class AbstractJni implements Jni {
                 api = "Display.Mode.getPhysicalHeight";
                 field = "physicalHeight";
             } else {
-                throw new UnsupportedOperationException(signature);
+                throw jniUnimplemented(vm, signature);
             }
             TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", api,
                     "field=" + field + ",result=" + result,
@@ -11646,7 +13907,7 @@ public abstract class AbstractJni implements Jni {
                         "json-config", "读取配置的 Display 刷新率");
                 return AndroidDisplayFloatFieldResult.of(result);
             }
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         if (isConfiguredDisplayMode(vm, dvmObject)) {
             ConfiguredDisplayMode marker = (ConfiguredDisplayMode) dvmObject.getValue();
@@ -11658,9 +13919,66 @@ public abstract class AbstractJni implements Jni {
                         "json-config", "读取配置的 Display.Mode 刷新率");
                 return AndroidDisplayFloatFieldResult.of(result);
             }
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         return AndroidDisplayFloatFieldResult.notHandled();
+    }
+
+    private static final class AndroidDisplayBooleanResult {
+        final boolean handled;
+        final boolean value;
+
+        private AndroidDisplayBooleanResult(boolean handled, boolean value) {
+            this.handled = handled;
+            this.value = value;
+        }
+
+        static AndroidDisplayBooleanResult notHandled() {
+            return new AndroidDisplayBooleanResult(false, false);
+        }
+
+        static AndroidDisplayBooleanResult of(boolean value) {
+            return new AndroidDisplayBooleanResult(true, value);
+        }
+    }
+
+    private static AndroidDisplayBooleanResult tryAndroidDisplayBoolean(BaseVM vm, DvmObject<?> dvmObject,
+                                                                        String signature) {
+        if (!isConfiguredDisplay(vm, dvmObject)) {
+            return AndroidDisplayBooleanResult.notHandled();
+        }
+        if ("android/view/Display->isValid()Z".equals(signature)
+                || "android/view/Display->hasAccess(I)Z".equals(signature)) {
+            String api = signature.contains("hasAccess") ? "Display.hasAccess" : "Display.isValid";
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", api,
+                    "result=true", "json-config", "读取配置 Display 的有效性");
+            return AndroidDisplayBooleanResult.of(true);
+        }
+        throw jniUnimplemented(vm, signature);
+    }
+
+    private static AndroidDisplayObjectResult tryAndroidDisplayStaticObject(BaseVM vm, String signature) {
+        if (signature == null || !signature.contains("$Stub->asInterface(")) {
+            return AndroidDisplayObjectResult.notHandled();
+        }
+        boolean window = signature.startsWith("android/view/IWindowManager$Stub->asInterface(");
+        boolean display = signature.startsWith(
+                "android/hardware/display/IDisplayManager$Stub->asInterface(");
+        if (!window && !display) {
+            return AndroidDisplayObjectResult.notHandled();
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config == null || !config.isAndroidDisplayConfigured()) {
+            return AndroidDisplayObjectResult.notHandled();
+        }
+        TraceEnvironmentConfig.AndroidDisplayConfig displayConfig = config.getAndroidDisplayConfig();
+        String className = window ? "android/view/IWindowManager" : "android/hardware/display/IDisplayManager";
+        DvmObject<?> binder = vm.resolveClass(className)
+                .newObject(new ConfiguredDisplayBinder(vm, displayConfig));
+        TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display",
+                window ? "IWindowManager.Stub.asInterface" : "IDisplayManager.Stub.asInterface",
+                className, "json-config", "通用显示 Binder stub，回读 android.display");
+        return AndroidDisplayObjectResult.of(binder);
     }
 
     /**
@@ -11670,6 +13988,20 @@ public abstract class AbstractJni implements Jni {
      */
     private static AndroidDisplayIntFieldResult tryAndroidDisplayIntField(BaseVM vm, DvmObject<?> dvmObject,
                                                                           String signature) {
+        if (isConfiguredPoint(vm, dvmObject)) {
+            ConfiguredPoint point = (ConfiguredPoint) dvmObject.getValue();
+            if ("android/graphics/Point->x:I".equals(signature)) {
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Point.x",
+                        "result=" + point.x, "json-config", "读取写入 Point 的宽度");
+                return AndroidDisplayIntFieldResult.of(point.x);
+            }
+            if ("android/graphics/Point->y:I".equals(signature)) {
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Point.y",
+                        "result=" + point.y, "json-config", "读取写入 Point 的高度");
+                return AndroidDisplayIntFieldResult.of(point.y);
+            }
+            throw jniUnimplemented(vm, signature);
+        }
         if (!isConfiguredDisplayMetrics(vm, dvmObject)) {
             return AndroidDisplayIntFieldResult.notHandled();
         }
@@ -11687,7 +14019,7 @@ public abstract class AbstractJni implements Jni {
             result = displayConfig.getDensityDpi();
             field = "densityDpi";
         } else {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "DisplayMetrics." + field,
                 "field=" + field + ",result=" + result,
@@ -11722,7 +14054,7 @@ public abstract class AbstractJni implements Jni {
             result = displayConfig.getYdpi();
             field = "ydpi";
         } else {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "DisplayMetrics." + field,
                 "field=" + field + ",result=" + result,
@@ -11905,7 +14237,7 @@ public abstract class AbstractJni implements Jni {
             result = configurationConfig.getNavigationHidden();
             field = "navigationHidden";
         } else {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_configuration",
                 "Configuration." + field,
@@ -11933,7 +14265,7 @@ public abstract class AbstractJni implements Jni {
                     "json-config", "读取配置的 Configuration 浮点字段 fontScale");
             return AndroidConfigurationFloatFieldResult.of(result);
         }
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     /**
@@ -12928,7 +15260,7 @@ public abstract class AbstractJni implements Jni {
         // Other InstallSourceInfo methods stay UOE.
         if (signature != null
                 && signature.startsWith("android/content/pm/InstallSourceInfo->")) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         return AndroidPackageObjectResult.notHandled();
     }
@@ -12948,7 +15280,7 @@ public abstract class AbstractJni implements Jni {
             if (isConfiguredSigningInfo(dvmObject)
                     && signature != null
                     && signature.startsWith("android/content/pm/SigningInfo->")) {
-                throw new UnsupportedOperationException(signature);
+                throw jniUnimplemented(vm, signature);
             }
             return AndroidPackageObjectResult.notHandled();
         }
@@ -13000,7 +15332,7 @@ public abstract class AbstractJni implements Jni {
                     + " signaturesHex and signingCertificateHistoryHex not configured");
         }
         if (signature != null && signature.startsWith("android/content/pm/SigningInfo->")) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         return AndroidPackageObjectResult.notHandled();
     }
@@ -13018,7 +15350,7 @@ public abstract class AbstractJni implements Jni {
             if (isConfiguredSigningInfo(dvmObject)
                     && signature != null
                     && signature.startsWith("android/content/pm/SigningInfo->")) {
-                throw new UnsupportedOperationException(signature);
+                throw jniUnimplemented(vm, signature);
             }
             return AndroidPackageBooleanFieldResult.notHandled();
         }
@@ -13299,12 +15631,12 @@ public abstract class AbstractJni implements Jni {
         if (!"android/security/keystore/KeyInfo->getKeystoreAlias()Ljava/lang/String;"
                 .equals(signature)) {
             if (signature != null && signature.startsWith("android/security/keystore/KeyInfo->")) {
-                throw new UnsupportedOperationException(signature);
+                throw jniUnimplemented(vm, signature);
             }
             return AndroidPackageObjectResult.notHandled();
         }
         if (!isLiveConfiguredTeeKeyInfo(vm, dvmObject)) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
         if (config == null || !config.isTeeMarkerConfigured()) {
@@ -13333,7 +15665,7 @@ public abstract class AbstractJni implements Jni {
             return AndroidPackageIntFieldResult.notHandled();
         }
         if (!isLiveConfiguredTeeKeyInfo(vm, dvmObject)) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
         if (config == null || !config.isTeeSecurityLevelConfigured()) {
@@ -13372,7 +15704,7 @@ public abstract class AbstractJni implements Jni {
             return AndroidPackageBooleanFieldResult.notHandled();
         }
         if (!isLiveConfiguredTeeKeyInfo(vm, dvmObject)) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
         if (config == null || !config.isTeeSecurityLevelConfigured()) {
@@ -13435,7 +15767,7 @@ public abstract class AbstractJni implements Jni {
             return AndroidPackageObjectResult.notHandled();
         }
         if (!isLiveConfiguredTeeKey(vm, dvmObject)) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
         if (config == null || !config.isTeeKeyBlobConfigured()) {
@@ -14689,7 +17021,7 @@ public abstract class AbstractJni implements Jni {
     @Override
     public DvmObject<?> toReflectedMethod(BaseVM vm, DvmClass dvmClass, String signature) {
         log.info("toReflectedMethod [Unidbg]: {}", signature);
-        throw new UnsupportedOperationException(signature);
+        throw jniUnimplemented(vm, signature);
     }
 
     @Override
@@ -14831,7 +17163,7 @@ public abstract class AbstractJni implements Jni {
             DvmObject<?> nameArg = args.getObjectArg(0);
             if (!(nameArg instanceof StringObject)
                     || !"deviceUniqueId".equals(((StringObject) nameArg).getValue())) {
-                throw new UnsupportedOperationException(signature);
+                throw jniUnimplemented(vm, signature);
             }
             byte[] bytes = marker.config.resolveMediaDrmDeviceUniqueId();
             TraceEnvironmentEventSink.emit(vm.getEmulator(), "drm",
@@ -14844,7 +17176,7 @@ public abstract class AbstractJni implements Jni {
             if (!(dvmObject.getValue() instanceof ConfiguredMediaDrm)) {
                 return null;
             }
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         return null;
     }
@@ -14996,7 +17328,12 @@ public abstract class AbstractJni implements Jni {
             return null;
         }
         TraceEnvironmentConfig.AndroidBatteryConfig battery = config.getAndroidBatteryConfig();
-        if (battery == null || !battery.isPluggedConfigured()) {
+        if (battery == null || !(battery.isPluggedConfigured()
+                || battery.isHealthConfigured()
+                || battery.isVoltageMvConfigured()
+                || battery.isTemperatureTenthsCConfigured()
+                || battery.isStatusConfigured()
+                || battery.isCapacityPercentConfigured())) {
             return null;
         }
         DvmObject<?> receiver = args.getObjectArg(0);
@@ -15042,6 +17379,27 @@ public abstract class AbstractJni implements Jni {
         }
         if ("level".equals(key) && marker.battery.isCapacityPercentConfigured()) {
             return Integer.valueOf(marker.battery.getCapacityPercent());
+        }
+        if ("health".equals(key) && marker.battery.isHealthConfigured()) {
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_battery",
+                    "Intent.getIntExtra",
+                    "key=health,result=" + marker.battery.getHealth(),
+                    "json-config", "读取配置的电池 health");
+            return Integer.valueOf(marker.battery.getHealth());
+        }
+        if ("voltage".equals(key) && marker.battery.isVoltageMvConfigured()) {
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_battery",
+                    "Intent.getIntExtra",
+                    "key=voltage,result=" + marker.battery.getVoltageMv(),
+                    "json-config", "读取配置的电池电压（毫伏）");
+            return Integer.valueOf(marker.battery.getVoltageMv());
+        }
+        if ("temperature".equals(key) && marker.battery.isTemperatureTenthsCConfigured()) {
+            TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_battery",
+                    "Intent.getIntExtra",
+                    "key=temperature,result=" + marker.battery.getTemperatureTenthsC(),
+                    "json-config", "读取配置的电池温度（十分之一摄氏度）");
+            return Integer.valueOf(marker.battery.getTemperatureTenthsC());
         }
         return Integer.valueOf(fallback);
     }
@@ -15186,6 +17544,46 @@ public abstract class AbstractJni implements Jni {
             deliverToJavaInbox(dvmObject, event);
             return true;
         }
+        if (PREVIEW_CALLBACK_ON_FRAME.equals(signature) || PICTURE_CALLBACK_ON_TAKEN.equals(signature)) {
+            DvmObject<?> data = safeObjectArg(args, 0);
+            if (!(data instanceof ByteArray)) {
+                return false;
+            }
+            deliverToJavaInbox(dvmObject, data);
+            return true;
+        }
+        if (CAMERA2_STATE_ON_OPENED.equals(signature)) {
+            DvmObject<?> device = safeObjectArg(args, 0);
+            if (device == null || !(device.getValue() instanceof ConfiguredCamera2Device)) {
+                return false;
+            }
+            deliverToJavaInbox(dvmObject, device);
+            return true;
+        }
+        if (IMAGE_READER_ON_AVAILABLE.equals(signature)) {
+            DvmObject<?> reader = safeObjectArg(args, 0);
+            if (reader == null || !(reader.getValue() instanceof ConfiguredImageReader)) {
+                return false;
+            }
+            deliverToJavaInbox(dvmObject, reader);
+            return true;
+        }
+        if (CAMERA2_SESSION_ON_CONFIGURED.equals(signature)) {
+            DvmObject<?> session = safeObjectArg(args, 0);
+            if (session == null || !(session.getValue() instanceof ConfiguredCaptureSession)) {
+                return false;
+            }
+            deliverToJavaInbox(dvmObject, session);
+            return true;
+        }
+        if (CAMERA2_CAPTURE_COMPLETED.equals(signature)) {
+            DvmObject<?> result = safeObjectArg(args, 2);
+            if (result == null || !(result.getValue() instanceof ConfiguredTotalCaptureResult)) {
+                return false;
+            }
+            deliverToJavaInbox(dvmObject, result);
+            return true;
+        }
         return false;
     }
 
@@ -15195,11 +17593,11 @@ public abstract class AbstractJni implements Jni {
             return null;
         }
         if (dvmObject == null || !(dvmObject.getValue() instanceof ConfiguredSensorEvent)) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         ConfiguredSensorEvent event = (ConfiguredSensorEvent) dvmObject.getValue();
         if (event.owner != vm) {
-            throw new UnsupportedOperationException(signature);
+            throw jniUnimplemented(vm, signature);
         }
         return new FloatArray(vm, Arrays.copyOf(event.values, event.values.length));
     }
@@ -15303,6 +17701,39 @@ public abstract class AbstractJni implements Jni {
             args.add(Integer.valueOf(object == null ? 0 : object.hashCode()));
             if (object != null) {
                 vm.addLocalObject(object);
+            }
+        }
+    }
+
+    private static final class TwoObjectVarArg extends VarArg {
+        private TwoObjectVarArg(BaseVM vm, DvmMethod method, DvmObject<?> first, DvmObject<?> second) {
+            super(vm, method);
+            args.add(Integer.valueOf(first == null ? 0 : first.hashCode()));
+            args.add(Integer.valueOf(second == null ? 0 : second.hashCode()));
+            if (first != null) {
+                vm.addLocalObject(first);
+            }
+            if (second != null) {
+                vm.addLocalObject(second);
+            }
+        }
+    }
+
+    private static final class ThreeObjectVarArg extends VarArg {
+        private ThreeObjectVarArg(BaseVM vm, DvmMethod method, DvmObject<?> first,
+                                  DvmObject<?> second, DvmObject<?> third) {
+            super(vm, method);
+            args.add(Integer.valueOf(first == null ? 0 : first.hashCode()));
+            args.add(Integer.valueOf(second == null ? 0 : second.hashCode()));
+            args.add(Integer.valueOf(third == null ? 0 : third.hashCode()));
+            if (first != null) {
+                vm.addLocalObject(first);
+            }
+            if (second != null) {
+                vm.addLocalObject(second);
+            }
+            if (third != null) {
+                vm.addLocalObject(third);
             }
         }
     }

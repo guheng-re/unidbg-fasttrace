@@ -52,7 +52,7 @@ public class DeviceFingerprintProfileTest {
                 + "\"sensors\":{\"types\":[1],\"samples\":{\"1\":[0.0,0.0,9.81]}},"
                 + "\"telephony\":{\"phoneCount\":1,\"slots\":[{\"slotIndex\":0,\"imei\":\"1\","
                 + "\"deviceId\":\"1\",\"subscriberId\":\"1\",\"simSerialNumber\":\"1\",\"simState\":5}],"
-                + "\"cellInfo\":{\"marker\":\"X\"}},"
+                + "\"cellInfo\":[{\"type\":\"lte\",\"mcc\":\"460\",\"mnc\":\"00\",\"ci\":1}]},"
                 + "\"tee\":{\"available\":true,\"securityLevel\":1}"
                 + "},"
                 + "\"network\":{\"capabilities\":{\"internet\":true}},"
@@ -66,9 +66,10 @@ public class DeviceFingerprintProfileTest {
         assertNotNull(config.getAndroidSensorSample(1));
         assertTrue(config.isAndroidTeeConfigured());
         assertEquals("TRUSTED_ENVIRONMENT", config.getTeeSecurityLevel());
-        assertTrue(containsFragment(profile.getReservedWarnings(), "android.telephony.cellInfo"));
+        assertTrue(profile.getEnvironmentConfig().isAndroidCellInfoConfigured());
+        assertEquals(1, profile.getEnvironmentConfig().getAndroidCellInfo().size());
+        assertEquals("lte", profile.getEnvironmentConfig().getAndroidCellInfo().get(0).getType());
         assertTrue(containsFragment(profile.getReservedWarnings(), "network.capabilities"));
-        assertNotNull(profile.getReservedField("android.telephony.cellInfo"));
         assertNotNull(profile.getReservedField("network.capabilities"));
         assertNotNull(profile.getReservedField("backendStatus"));
     }
@@ -91,6 +92,8 @@ public class DeviceFingerprintProfileTest {
         assertEquals("TRACEAI_GPU_VENDOR", config.getGraphicsConfig().getVendor());
         assertTrue(config.isAndroidTeeConfigured());
         assertEquals("TRUSTED_ENVIRONMENT", config.getTeeSecurityLevel());
+        assertTrue(config.isAndroidCellInfoConfigured());
+        assertEquals("lte", config.getAndroidCellInfo().get(0).getType());
         assertTrue(containsFragment(profile.getReservedWarnings(), "backendStatus"));
         byte[] cpuinfo = config.readProfileOverlayFile("/proc/cpuinfo");
         assertNotNull(cpuinfo);
@@ -635,15 +638,15 @@ public class DeviceFingerprintProfileTest {
                 + "\"sensors\":{\"types\":[1],\"samples\":{\"1\":[0.0,0.0,9.81]}},"
                 + "\"telephony\":{\"phoneCount\":1,\"slots\":[{\"slotIndex\":0,\"imei\":\"1\","
                 + "\"deviceId\":\"1\",\"subscriberId\":\"1\",\"simSerialNumber\":\"1\",\"simState\":5}],"
-                + "\"cellInfo\":{\"marker\":\"CELL_MARK\"}}"
+                + "\"cellInfo\":[{\"type\":\"lte\",\"ci\":42}]}"
                 + "},"
                 + "\"network\":{\"capabilities\":{\"internet\":true,\"vpn\":false}},"
                 + "\"backendStatus\":{\"android.sensors.samples\":\"reserved\"}"
                 + "}", null);
         assertTrue(profile.getEnvironmentConfig().isAndroidSensorSamplesConfigured());
         assertEquals(3, profile.getEnvironmentConfig().getAndroidSensorSample(1).length);
-        assertTrue(String.valueOf(profile.getReservedField("android.telephony.cellInfo"))
-                .contains("CELL_MARK"));
+        assertTrue(profile.getEnvironmentConfig().isAndroidCellInfoConfigured());
+        assertEquals(42, profile.getEnvironmentConfig().getAndroidCellInfo().get(0).getCi());
         assertTrue(String.valueOf(profile.getReservedField("network.capabilities")).contains("internet"));
         assertTrue(String.valueOf(profile.getReservedField("backendStatus"))
                 .contains("android.sensors.samples"));
@@ -658,12 +661,12 @@ public class DeviceFingerprintProfileTest {
                 + "\"schemaVersion\":\"traceai-device-fingerprint/v1\","
                 + "\"android\":{\"telephony\":{\"phoneCount\":1,\"slots\":[{"
                 + "\"slotIndex\":0,\"imei\":\"1\",\"deviceId\":\"1\",\"subscriberId\":\"1\","
-                + "\"simSerialNumber\":\"1\",\"simState\":5}],\"cellInfo\":null}},"
+                + "\"simSerialNumber\":\"1\",\"simState\":5}],\"cellInfo\":[]}},"
                 + "\"graphics\":{\"native\":null}"
                 + "}", null);
-        assertTrue(profile.getReservedFields().containsKey("android.telephony.cellInfo"));
+        assertTrue(profile.getEnvironmentConfig().isAndroidCellInfoConfigured());
+        assertTrue(profile.getEnvironmentConfig().getAndroidCellInfo().isEmpty());
         assertTrue(profile.getReservedFields().containsKey("graphics.native"));
-        assertNull(profile.getReservedField("android.telephony.cellInfo"));
         assertNull(profile.getReservedField("graphics.native"));
         assertTrue(profile.getEnvironmentConfig().isGraphicsConfigured());
         assertNull(profile.getEnvironmentConfig().getGraphicsConfig().getVendor());

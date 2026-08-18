@@ -10,6 +10,7 @@ import com.github.unidbg.hook.HookListener;
 import com.github.unidbg.memory.MemoryBlock;
 import com.github.unidbg.memory.SvcMemory;
 import com.github.unidbg.pointer.UnidbgPointer;
+import com.github.unidbg.trace.EnvAccessProbe;
 import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import com.github.unidbg.unix.UnixEmulator;
 import com.sun.jna.Pointer;
@@ -185,7 +186,7 @@ public class GetifaddrsHook implements HookListener {
         if (!LIBRARY.equals(libraryName)) {
             return 0;
         }
-        if (!isNetworkInterfacesConfigured(emulator)) {
+        if (!isNetworkInterfacesConfigured(emulator) && !EnvAccessProbe.isEnabled()) {
             return 0;
         }
         if (GETIFADDRS.equals(symbolName)) {
@@ -232,6 +233,8 @@ public class GetifaddrsHook implements HookListener {
         if (result != null) {
             return HookStatus.LR(emulator, result.intValue() & 0xffffffffL);
         }
+        EnvAccessProbe.miss(emulator, GETIFADDRS, "ifap=" + (ifap == null ? "null" : "set"),
+                "目标读取未配置的网卡列表");
         return HookStatus.RET(emulator, old);
     }
 

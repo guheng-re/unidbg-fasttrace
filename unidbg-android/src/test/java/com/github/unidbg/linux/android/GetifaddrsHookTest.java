@@ -15,6 +15,7 @@ import java.util.List;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -286,8 +287,13 @@ public class GetifaddrsHookTest {
                 assertEquals(UnidbgPointer.nativeValue(before),
                         UnidbgPointer.nativeValue(out.getPointer().getPointer(0)));
                 assertEquals(0, hook.trackedCount());
-                assertEquals(0L, hook.hook(emulator.getSvcMemory(),
-                        GetifaddrsHook.LIBRARY, GetifaddrsHook.GETIFADDRS, 0x4000L));
+                long hooked = hook.hook(emulator.getSvcMemory(),
+                        GetifaddrsHook.LIBRARY, GetifaddrsHook.GETIFADDRS, 0x4000L);
+                if (com.github.unidbg.trace.EnvAccessProbe.isEnabled()) {
+                    assertNotEquals(0L, hooked);
+                } else {
+                    assertEquals(0L, hooked);
+                }
                 for (CapturedEvent e : sink.events) {
                     assertFalse("unexpected getifaddrs event",
                             "network_device".equals(e.kind) && "getifaddrs".equals(e.api));

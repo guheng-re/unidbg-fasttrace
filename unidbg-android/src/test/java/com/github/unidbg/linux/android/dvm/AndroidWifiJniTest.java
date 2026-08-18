@@ -471,7 +471,7 @@ public class AndroidWifiJniTest {
             vm.setJni(jni);
             BaseVM baseVM = (BaseVM) vm;
             DvmObject<?> app = vm.resolveClass("android/app/Application").newObject(null);
-            DvmClass unrelated = vm.resolveClass("android/hardware/SensorManager");
+            DvmClass unrelated = vm.resolveClass("android/app/NotificationManager");
             try {
                 invokeGetSystemServiceClass(jni, baseVM, useVaList, app, unrelated);
                 fail("expected UOE for getSystemService(Class) with unrelated class");

@@ -2689,7 +2689,9 @@ public class DalvikVM64 extends BaseVM implements VM {
                 byte[] data = Arrays.copyOf(bytes, bytes.length + 1);
                 UnidbgPointer pointer = string.allocateMemoryBlock(emulator, data.length);
                 pointer.write(0, data, 0, data.length);
-                return pointer.toIntPeer();
+                // Guest C pointer: ARM64 must keep the full 64-bit peer.
+                // jobject / jmethodID hashes stay on toIntPeer().
+                return UnidbgPointer.nativeValue(pointer);
             }
         });
 
@@ -3065,7 +3067,9 @@ public class DalvikVM64 extends BaseVM implements VM {
                 byte[] data = Arrays.copyOf(bytes, bytes.length + 1);
                 UnidbgPointer pointer = string.allocateMemoryBlock(emulator, data.length);
                 pointer.write(0, data, 0, data.length);
-                return pointer.toIntPeer();
+                // Guest C pointer: ARM64 must keep the full 64-bit peer.
+                // jobject / jmethodID hashes stay on toIntPeer().
+                return UnidbgPointer.nativeValue(pointer);
             }
         });
 

@@ -13,6 +13,7 @@ import com.github.unidbg.linux.file.NullFileIO;
 import com.github.unidbg.linux.file.SimpleFileIO;
 import com.github.unidbg.linux.file.Stdin;
 import com.github.unidbg.linux.file.Stdout;
+import com.github.unidbg.trace.EnvAccessProbe;
 import com.github.unidbg.trace.TraceEnvironmentEventSink;
 import com.github.unidbg.unix.IO;
 import com.github.unidbg.unix.UnixEmulator;
@@ -345,15 +346,28 @@ public class LinuxFileSystem extends BaseFileSystem<AndroidFileIO> implements Fi
                 return processResult;
             }
         }
+        if (config != null && config.isAndroidBatteryConfigured()) {
+            FileResult<AndroidFileIO> powerSupply = openConfiguredPowerSupplyFile(config, pathname, oflags);
+            if (powerSupply != null) {
+                return powerSupply;
+            }
+        }
 
         if ("/dev/tty".equals(pathname)) {
             return FileResult.<AndroidFileIO>success(new NullFileIO(pathname));
         }
         if ("/proc/self/maps".equals(pathname) || ("/proc/" + emulator.getPid() + "/maps").equals(pathname) ||
                 ("/proc/self/task/" + emulator.getPid() + "/maps").equals(pathname)) {
+            EnvAccessProbe.miss(emulator, "open(\"" + pathname + "\")",
+                    "path=" + pathname + ",source=maps",
+                    "目标读取 maps（非模板） " + pathname);
             return FileResult.<AndroidFileIO>success(new MapsFileIO(emulator, oflags, pathname, emulator.getMemory().getLoadedModules()));
         }
 
+        if (EnvAccessProbe.isInterestingPath(pathname)) {
+            EnvAccessProbe.miss(emulator, "open(\"" + pathname + "\")",
+                    "path=" + pathname, "目标读取未配置的文件 " + pathname);
+        }
         return super.open(pathname, oflags);
     }
 
@@ -1406,6 +1420,30 @@ public class LinuxFileSystem extends BaseFileSystem<AndroidFileIO> implements Fi
         TraceEnvironmentEventSink.emit(emulator, "network_device",
                 "read(\"" + pathname + "\")", value, "json-config",
                 "读取配置的 TCP 表 " + pathname);
+        return FileResult.<AndroidFileIO>success(new ByteArrayFileIO(oflags, pathname, data));
+    }
+
+    private FileResult<AndroidFileIO> openConfiguredPowerSupplyFile(TraceEnvironmentConfig config,
+                                                                    String pathname, int oflags) {
+        byte[] data = ConfiguredPowerSupplyFiles.render(config, pathname);
+        if (data == null) {
+            return null;
+        }
+        if ((oflags & 3) != 0 || (oflags & O_DIRECTORY) != 0) {
+            return null;
+        }
+        String format;
+        if (ConfiguredPowerSupplyFiles.HEALTH_PATH.equals(pathname)) {
+            format = "health";
+        } else if (ConfiguredPowerSupplyFiles.VOLTAGE_NOW_PATH.equals(pathname)) {
+            format = "voltage_now";
+        } else {
+            format = "temp";
+        }
+        TraceEnvironmentEventSink.emit(emulator, "android_battery",
+                "read(\"" + pathname + "\")",
+                "path=" + pathname + ",format=" + format + ",bytes=" + data.length,
+                "json-config", "读取配置的 power_supply 文件");
         return FileResult.<AndroidFileIO>success(new ByteArrayFileIO(oflags, pathname, data));
     }
 

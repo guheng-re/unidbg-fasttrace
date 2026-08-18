@@ -80,6 +80,112 @@ public class EnvSlotsConfigTest {
     }
 
     @Test
+    public void testCellInfoScanResultsBatteryExtrasPowerProfileDisplayUniqueId() {
+        assertFalse(TraceEnvironmentConfig.parse("{}").isAndroidCellInfoConfigured());
+        assertFalse(TraceEnvironmentConfig.parse(
+                "{\"android\":{\"telephony\":{\"phoneCount\":1,\"slots\":[{\"slotIndex\":0}]}}}")
+                .isAndroidCellInfoConfigured());
+        TraceEnvironmentConfig emptyCells = TraceEnvironmentConfig.parse("{"
+                + "\"android\":{\"telephony\":{\"phoneCount\":1,\"slots\":[{\"slotIndex\":0}],"
+                + "\"cellInfo\":[]}}}");
+        assertTrue(emptyCells.isAndroidCellInfoConfigured());
+        assertTrue(emptyCells.getAndroidCellInfo().isEmpty());
+        TraceEnvironmentConfig oneCell = TraceEnvironmentConfig.parse("{"
+                + "\"android\":{\"telephony\":{\"phoneCount\":1,\"slots\":[{\"slotIndex\":0}],"
+                + "\"cellInfo\":[{\"type\":\"lte\",\"registered\":true,\"mcc\":\"460\","
+                + "\"mnc\":\"11\",\"ci\":9,\"pci\":2,\"tac\":3,\"earfcn\":1850}]}}}");
+        assertEquals(1, oneCell.getAndroidCellInfo().size());
+        assertEquals("lte", oneCell.getAndroidCellInfo().get(0).getType());
+        assertEquals(9, oneCell.getAndroidCellInfo().get(0).getCi());
+        assertTrue(oneCell.getAndroidCellInfo().get(0).isRegistered());
+        try {
+            TraceEnvironmentConfig.parse("{"
+                    + "\"android\":{\"telephony\":{\"phoneCount\":1,\"slots\":[{\"slotIndex\":0}],"
+                    + "\"cellInfo\":[{\"type\":\"foo\"}]}}}");
+            fail();
+        } catch (IllegalArgumentException expected) {
+            assertTrue(expected.getMessage().contains("type"));
+        }
+
+        assertFalse(TraceEnvironmentConfig.parse("{}").isNetworkWifiScanResultsConfigured());
+        assertFalse(TraceEnvironmentConfig.parse("{\"network\":{\"wifi\":{\"enabled\":true}}}")
+                .isNetworkWifiScanResultsConfigured());
+        TraceEnvironmentConfig emptyScan = TraceEnvironmentConfig.parse(
+                "{\"network\":{\"wifi\":{\"scanResults\":[]}}}");
+        assertTrue(emptyScan.isNetworkWifiScanResultsConfigured());
+        assertTrue(emptyScan.getNetworkWifiScanResults().isEmpty());
+        TraceEnvironmentConfig oneScan = TraceEnvironmentConfig.parse("{"
+                + "\"network\":{\"wifi\":{\"scanResults\":[{\"ssid\":\"Office\","
+                + "\"bssid\":\"02:00:00:00:00:01\",\"rssi\":-50,\"frequencyMhz\":2412}]}}}");
+        assertEquals(1, oneScan.getNetworkWifiScanResults().size());
+        assertEquals("02:00:00:00:00:01", oneScan.getNetworkWifiScanResults().get(0).getBssid());
+        assertEquals("Office", oneScan.getNetworkWifiScanResults().get(0).getSsid());
+        assertEquals(-50, oneScan.getNetworkWifiScanResults().get(0).getRssi());
+
+        TraceEnvironmentConfig battery = TraceEnvironmentConfig.parse("{"
+                + "\"android\":{\"battery\":{\"health\":3,\"voltageMv\":4118,"
+                + "\"temperatureTenthsC\":284}}}");
+        assertTrue(battery.getAndroidBatteryConfig().isHealthConfigured());
+        assertEquals(3, battery.getAndroidBatteryConfig().getHealth());
+        assertEquals(4118, battery.getAndroidBatteryConfig().getVoltageMv());
+        assertEquals(284, battery.getAndroidBatteryConfig().getTemperatureTenthsC());
+        try {
+            TraceEnvironmentConfig.parse("{\"android\":{\"battery\":{\"health\":0}}}");
+            fail();
+        } catch (IllegalArgumentException expected) {
+            assertTrue(expected.getMessage().contains("health"));
+        }
+
+        assertFalse(TraceEnvironmentConfig.parse("{}").isAndroidPowerProfileConfigured());
+        TraceEnvironmentConfig emptyProfile = TraceEnvironmentConfig.parse(
+                "{\"android\":{\"powerProfile\":{}}}");
+        assertTrue(emptyProfile.isAndroidPowerProfileConfigured());
+        assertFalse(emptyProfile.getAndroidPowerProfileConfig().isAveragePowerConfigured());
+        TraceEnvironmentConfig power = TraceEnvironmentConfig.parse("{"
+                + "\"android\":{\"powerProfile\":{\"averagePower\":{\"battery.capacity\":4400.0}}}}");
+        assertEquals(Double.valueOf(4400.0),
+                power.getAndroidPowerProfileConfig().getAveragePower("battery.capacity"));
+        assertNull(power.getAndroidPowerProfileConfig().getAveragePower("missing"));
+
+        TraceEnvironmentConfig display = TraceEnvironmentConfig.parse("{"
+                + "\"android\":{\"display\":{\"uniqueId\":\"local:4619\"}}}");
+        assertTrue(display.getAndroidDisplayConfig().isUniqueIdConfigured());
+        assertEquals("local:4619", display.getAndroidDisplayConfig().getUniqueId());
+    }
+
+    @Test
+    public void testExampleJsonParsesNewSlots() throws Exception {
+        java.io.File example = locateExampleJson();
+        String json = new String(java.nio.file.Files.readAllBytes(example.toPath()),
+                java.nio.charset.StandardCharsets.UTF_8);
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.parse(json);
+        assertTrue(config.isAndroidCellInfoConfigured());
+        assertFalse(config.getAndroidCellInfo().isEmpty());
+        assertTrue(config.isNetworkWifiScanResultsConfigured());
+        assertEquals(1, config.getNetworkWifiScanResults().size());
+        assertTrue(config.getAndroidBatteryConfig().isHealthConfigured());
+        assertEquals(2, config.getAndroidBatteryConfig().getHealth());
+        assertTrue(config.isAndroidPowerProfileConfigured());
+        assertEquals(Double.valueOf(4500.0),
+                config.getAndroidPowerProfileConfig().getAveragePower("battery.capacity"));
+        assertEquals("local:0", config.getAndroidDisplayConfig().getUniqueId());
+        assertEquals("TRACEAI_RINGTONE",
+                config.getAndroidSettingString("system", "ringtone"));
+    }
+
+    private static java.io.File locateExampleJson() {
+        java.io.File dir = new java.io.File("").getAbsoluteFile();
+        for (int i = 0; i < 6 && dir != null; i++) {
+            java.io.File candidate = new java.io.File(dir, "example/trace-env.example.json");
+            if (candidate.isFile()) {
+                return candidate;
+            }
+            dir = dir.getParentFile();
+        }
+        throw new IllegalStateException("example/trace-env.example.json not found");
+    }
+
+    @Test
     public void testCapabilitiesLocalePluggedDisplaysFlagsSamples() {
         assertFalse(TraceEnvironmentConfig.parse("{}").isNetworkCapabilitiesConfigured());
         TraceEnvironmentConfig caps = TraceEnvironmentConfig.parse("{"

@@ -30,6 +30,8 @@ public class SystemService extends DvmObject<String> {
     public static final String BATTERY_SERVICE = "batterymanager";
     /** Context.USER_SERVICE value. */
     public static final String USER_SERVICE = "user";
+    /** Context.CAMERA_SERVICE value. */
+    public static final String CAMERA_SERVICE = "camera";
 
     public SystemService(VM vm, String serviceName) {
         super(getObjectType(vm, serviceName), serviceName);
@@ -73,6 +75,8 @@ public class SystemService extends DvmObject<String> {
                 return vm.resolveClass("android/os/BatteryManager");
             case USER_SERVICE:
                 return vm.resolveClass("android/os/UserManager");
+            case CAMERA_SERVICE:
+                return vm.resolveClass("android/hardware/camera2/CameraManager");
             default:
                 throw new BackendException("service failed: " + serviceName);
         }
