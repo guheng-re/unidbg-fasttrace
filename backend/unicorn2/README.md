@@ -8,6 +8,8 @@ Unicorn1 can raise a spurious `UC_ERR_FETCH_UNMAPPED` on ARM64 taken `B.cond` wh
 
 On Windows, Android64 39-bit maps must not be `uc_close`d: `Unicorn2Backend.destroy()` skips `nativeDestroy` for that case.
 
+Windows `unicorn.dll` must also include the QHT overflow-bucket patch (`src/main/native/patches/`). Without it, TB-hash `AUTO_RESIZE` can `ACCESS_VIOLATION` in `qht_chain_destroy` while walking `bucket->next` into host/Java heap. The bundled `windows_64/unicorn.dll` is that patched build. Rebuild with `src/main/native/build-windows-msvc.ps1` (VS 2022, no Docker) or `build-windows-local.ps1` / `./build.sh windows_64` (Docker MinGW; Dockerfiles apply the same patch).
+
 ## Supported Platforms
 
 | Platform | Architecture | Output |

@@ -1,0 +1,168 @@
+diff --git a/qemu/util/oslib-win32.c b/qemu/util/oslib-win32.c
+index 9421c98..1c2e35b 100644
+--- a/qemu/util/oslib-win32.c
++++ b/qemu/util/oslib-win32.c
+@@ -53,7 +53,11 @@ void *qemu_try_memalign(size_t alignment, size_t size)
+     if (!size) {
+         abort();
+     }
+-    ptr = VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
++    /* MEM_COMMIT without MEM_RESERVE is invalid when lpAddress is NULL on
++     * some Windows versions and can return a pointer into an existing
++     * reservation. That later VirtualFree(MEM_RELEASE)s or walks as a
++     * standalone block and AVs. Always reserve+commit. */
++    ptr = VirtualAlloc(NULL, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+     //trace_qemu_memalign(alignment, size, ptr);
+     return ptr;
+ }
+@@ -75,7 +79,7 @@ void *qemu_anon_ram_alloc(struct uc_struct *uc, size_t size, uint64_t *align)
+ {
+     void *ptr;
+ 
+-    ptr = VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
++    ptr = VirtualAlloc(NULL, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+     // trace_qemu_anon_ram_alloc(size, ptr);
+ 
+     if (ptr && align) {
+diff --git a/qemu/util/qht.c b/qemu/util/qht.c
+index fd436e3..52e571e 100644
+--- a/qemu/util/qht.c
++++ b/qemu/util/qht.c
+@@ -68,6 +68,9 @@
+ #include "qemu/osdep.h"
+ #include "qemu/qht.h"
+ #include "qemu/atomic.h"
++#ifdef _WIN32
++#include <malloc.h>
++#endif
+ //#include "qemu/rcu.h"
+ 
+ //#define QHT_DEBUG
+@@ -203,15 +206,68 @@ static inline bool qht_map_needs_resize(const struct qht_map *map)
+     return map->n_added_buckets > map->n_added_buckets_threshold;
+ }
+ 
++/*
++ * Overflow (non-head) buckets must not use qemu_memalign/VirtualAlloc on
++ * Windows: each VirtualAlloc is 64KiB-granularity, and VirtualFree of a
++ * 64-byte block can unmap an unrelated reservation. The observed crash is
++ * qht_chain_destroy following bucket->next (offset 0x30) into unmapped
++ * host memory during TB-hash auto-resize (unicorn.dll AV in emu_start).
++ */
++static void *qht_alloc_overflow_bucket(void)
++{
++    void *p;
++#ifdef _WIN32
++    p = _aligned_malloc(sizeof(struct qht_bucket), QHT_BUCKET_ALIGN);
++#else
++    p = qemu_memalign(QHT_BUCKET_ALIGN, sizeof(struct qht_bucket));
++#endif
++    if (p) {
++        memset(p, 0, sizeof(struct qht_bucket));
++    }
++    return p;
++}
++
++static void qht_free_overflow_bucket(void *p)
++{
++    if (!p) {
++        return;
++    }
++#ifdef _WIN32
++    _aligned_free(p);
++#else
++    qemu_vfree(p);
++#endif
++}
++
++static inline bool qht_overflow_ptr_ok(const struct qht_bucket *b)
++{
++    uintptr_t p = (uintptr_t)b;
++
++    /* NULL is valid "end of chain". Non-NULL must be 64-byte aligned. */
++    return p != 0 && (p & (QHT_BUCKET_ALIGN - 1)) == 0;
++}
++
+ static inline void qht_chain_destroy(const struct qht_bucket *head)
+ {
+     struct qht_bucket *curr = head->next;
+     struct qht_bucket *prev;
++    size_t n = 0;
+ 
++    if (curr && !qht_overflow_ptr_ok(curr)) {
++        return;
++    }
+     while (curr) {
+         prev = curr;
+         curr = curr->next;
+-        qemu_vfree(prev);
++        if (curr && !qht_overflow_ptr_ok(curr)) {
++            curr = NULL;
++        }
++        /* Cycle / smashed list: stop instead of walking off into the heap. */
++        if (++n > 1000000u) {
++            qht_free_overflow_bucket(prev);
++            break;
++        }
++        qht_free_overflow_bucket(prev);
+     }
+ }
+ 
+@@ -286,6 +342,9 @@ static void qht_bucket_reset__locked(struct qht_bucket *head)
+             b->pointers[i] = NULL;
+         }
+         b = b->next;
++        if (b && !qht_overflow_ptr_ok(b)) {
++            break;
++        }
+     } while (b);
+  done:
+     return;
+@@ -354,6 +413,9 @@ void *qht_do_lookup(struct uc_struct *uc, const struct qht_bucket *head, qht_loo
+             }
+         }
+         b = b->next;
++        if (b && !qht_overflow_ptr_ok(b)) {
++            break;
++        }
+     } while (b);
+ 
+     return NULL;
+@@ -404,10 +466,15 @@ static void *qht_insert__locked(struct uc_struct *uc, const struct qht *ht, stru
+         }
+         prev = b;
+         b = b->next;
++        if (b && !qht_overflow_ptr_ok(b)) {
++            b = NULL;
++        }
+     } while (b);
+ 
+-    b = qemu_memalign(QHT_BUCKET_ALIGN, sizeof(*b));
+-    memset(b, 0, sizeof(*b));
++    b = qht_alloc_overflow_bucket();
++    if (unlikely(b == NULL)) {
++        abort();
++    }
+     new = b;
+     i = 0;
+     map->n_added_buckets++;
+@@ -547,6 +614,9 @@ bool qht_remove__locked(struct qht_bucket *head, const void *p, uint32_t hash)
+             }
+         }
+         b = b->next;
++        if (b && !qht_overflow_ptr_ok(b)) {
++            break;
++        }
+     } while (b);
+     return false;
+ }
+@@ -594,6 +664,9 @@ static inline void qht_bucket_iter(struct uc_struct *uc, struct qht_bucket *head
+             }
+         }
+         b = b->next;
++        if (b && !qht_overflow_ptr_ok(b)) {
++            break;
++        }
+     } while (b);
+ }
+ 

@@ -1,0 +1,3 @@
+# MSVC import artifacts from local JNI link; only unicorn.dll is shipped.
+*.exp
+*.lib

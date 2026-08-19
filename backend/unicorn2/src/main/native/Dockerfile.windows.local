@@ -23,11 +23,13 @@ typedef signed char jbyte;
 #endif
 JNIEOF
 
-ARG UNICORN_COMMIT=unknown
-RUN git clone --depth 1 -b unicorn2 https://github.com/zhkl0228/unicorn /build/unicorn
+COPY unicorn-src /build/unicorn
 COPY patches /tmp/unicorn-patches
+
 WORKDIR /build/unicorn
-RUN git apply --whitespace=fix /tmp/unicorn-patches/*.patch
+# Already-patched trees are a no-op; unpatched upstream trees get the Windows QHT fix.
+RUN git apply --reverse --check /tmp/unicorn-patches/*.patch >/dev/null 2>&1 \
+    || git apply --whitespace=fix /tmp/unicorn-patches/*.patch
 RUN mkdir build && cd build && \
     cmake .. -DCMAKE_BUILD_TYPE=Release \
              -DCMAKE_TOOLCHAIN_FILE=../mingw-w64.cmake \
@@ -36,7 +38,7 @@ RUN mkdir build && cd build && \
     make -j$(nproc)
 
 WORKDIR /build/jni
-COPY *.c *.h ./
+COPY jni/*.c jni/*.h ./
 
 RUN JNI_INC="$(find /usr/lib/jvm -path '*/include/jni.h' -printf '%h\n' | head -1)" && \
     x86_64-w64-mingw32-gcc -shared -O3 -static -DNDEBUG \

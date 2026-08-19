@@ -80,7 +80,7 @@
 
 | 内容 | 当前行为 | 主要问题 |
 | --- | --- | --- |
-| `/proc/self/maps` | 按真实映射动态生成。Android ARM64 固定 39-bit VAS（heap `0x7010000000` / mmap `0x7100000000` / stack `0x7fe0000000`，默认 Unicorn2）；32 位布局不变。`-Dunidbg.backend=unicorn1` 可退回 Unicorn1。 | 设备号 `b3:19`、inode `0`、无 `[vdso]`/`[vvar]`。Windows Unicorn2 的 `uc_close` 不能安全释放 39-bit 映射（Android64 `destroy` 跳过 `nativeDestroy`）。固定文本仍走 `linux.files` / 画像 `files/`。 |
+| `/proc/self/maps` | 按真实映射动态生成。Android ARM64 固定 39-bit VAS（heap `0x7010000000` / mmap `0x7100000000` / stack `0x7fe0000000`，默认 Unicorn2）；32 位布局不变。`-Dunidbg.backend=unicorn1` 可退回 Unicorn1。 | 设备号 `b3:19`、inode `0`、无 `[vdso]`/`[vvar]`。Windows Unicorn2 的 `uc_close` 不能安全释放 39-bit 映射（Android64 `destroy` 跳过 `nativeDestroy`）。Windows QHT overflow bucket 的宿主 AV 已在 bundled `unicorn.dll` 修掉。固定文本仍走 `linux.files` / 画像 `files/`。 |
 | NDK 传感器 | **已落地：** `ASensorManager`/`ASensor` 读 `android.sensors`；配置存在时自动注册 `libandroid.so`。 | |
 | `getifaddrs` IPv6 | **已落地：** 来自 `network.ipv6Addresses` 同名条目。 | 仍无 netlink / ifa_data |
 | Java MediaDrm deviceUniqueId | **已落地：** 与 native 共用 `resolveMediaDrmDeviceUniqueId()` | 不做许可/解密 |
