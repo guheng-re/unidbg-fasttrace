@@ -194,6 +194,9 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
                 case 63:
                     backend.reg_write(Arm64Const.UC_ARM64_REG_X0, read(backend, emulator));
                     return;
+                case 67:
+                    backend.reg_write(Arm64Const.UC_ARM64_REG_X0, pread64(emulator));
+                    return;
                 case 24:
                     backend.reg_write(Arm64Const.UC_ARM64_REG_X0, dup3(emulator));
                     return;
@@ -1161,7 +1164,11 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
                         return fd;
                     case SocketIO.SOCK_RAW:
                     default:
-                        throw new UnsupportedOperationException();
+                        // Netlink enumerators often use SOCK_RAW. Fail the syscall
+                        // so the caller can fall back (e.g. getifaddrs) instead of aborting.
+                        log.info("socket AF_NETLINK type={} protocol={} -> EOPNOTSUPP", type, protocol);
+                        emulator.getMemory().setErrno(UnixEmulator.EOPNOTSUPP);
+                        return -1;
                 }
         }
         log.info("socket domain={}, type={}, protocol={}", domain, type, protocol);
@@ -1820,6 +1827,16 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
         Pointer buffer = UnidbgPointer.register(emulator, Arm64Const.UC_ARM64_REG_X1);
         int count = backend.reg_read(Arm64Const.UC_ARM64_REG_X2).intValue();
         return read(emulator, fd, buffer, count);
+    }
+
+    /** Linux AArch64 {@code __NR_pread64} = 67. */
+    private int pread64(Emulator<?> emulator) {
+        RegisterContext context = emulator.getContext();
+        int fd = context.getIntArg(0);
+        Pointer buffer = context.getPointerArg(1);
+        int count = context.getIntArg(2);
+        long offset = context.getLongArg(3);
+        return pread(emulator, fd, buffer, count, offset);
     }
 
     private int dup3(Emulator<?> emulator) {

@@ -47,6 +47,18 @@ public class PipedWriteFileIO extends BaseAndroidFileIO implements AndroidFileIO
     }
 
     @Override
+    public int fstat(com.github.unidbg.Emulator<?> emulator,
+                     com.github.unidbg.file.linux.StatStructure stat) {
+        AndroidFileOwner.fillAnon(emulator, stat, com.github.unidbg.unix.IO.S_IFIFO | 0600, getPath());
+        return 0;
+    }
+
+    @Override
+    public String getPath() {
+        return "pipe:[" + writefd + "]";
+    }
+
+    @Override
     public String toString() {
         return "PipedWrite: " + writefd;
     }

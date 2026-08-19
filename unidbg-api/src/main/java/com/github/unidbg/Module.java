@@ -126,6 +126,15 @@ public abstract class Module {
         this.entryPoint = entryPoint;
     }
 
+    /**
+     * ELF {@code e_entry} (or Mach-O entry offset) as stored by the loader.
+     * Shared objects with a stripped {@code JNI_OnLoad} export often keep the
+     * real entry here; {@code 0} means the image has no usable entry.
+     */
+    public long getEntryPoint() {
+        return entryPoint;
+    }
+
     public abstract int callEntry(Emulator<?> emulator, String... args);
 
     private UnidbgPointer pathPointer;

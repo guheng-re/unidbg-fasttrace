@@ -95,7 +95,15 @@ public class MapsFileIO extends ByteArrayFileIO implements FileIO {
         @Override
         public String toString() {
             StringBuilder builder = new StringBuilder();
-            builder.append(String.format("%08x-%08x", start, end)).append(' ');
+            // 39-bit ARM64 VAS uses addresses like 0x7100000000. Printing only
+            // 8 hex digits makes packers that scan a fixed 16-digit maps field
+            // skip libc and leave the decrypted image's GOT unbound.
+            if ((start | end) > 0xffffffffL) {
+                builder.append(String.format("%016x-%016x", start, end));
+            } else {
+                builder.append(String.format("%08x-%08x", start, end));
+            }
+            builder.append(' ');
             if ((perms & UnicornConst.UC_PROT_READ) != 0) {
                 builder.append('r');
             } else {

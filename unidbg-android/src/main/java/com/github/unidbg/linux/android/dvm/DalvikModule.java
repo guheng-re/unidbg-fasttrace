@@ -25,21 +25,43 @@ public class DalvikModule {
     public void callJNI_OnLoad(Emulator<?> emulator) {
         Symbol onLoad = module.findSymbolByName("JNI_OnLoad", false);
         if (onLoad != null) {
-            try {
-                long start = System.currentTimeMillis();
-                if (log.isDebugEnabled()) {
-                    log.debug("Call [{}]JNI_OnLoad: 0x{}", module.name, Long.toHexString(onLoad.getAddress()));
-                }
-                Number ret = onLoad.call(emulator, vm.getJavaVM(), null);
-                int version = ret.intValue();
-                if (log.isDebugEnabled()) {
-                    log.debug("Call [{}]JNI_OnLoad finished: version=0x{}, offset={}ms", module.name, Integer.toHexString(version), System.currentTimeMillis() - start);
-                }
+            invokeJNI_OnLoad(emulator, onLoad.getAddress());
+            return;
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("[{}] JNI_OnLoad symbol not found; use callJNI_OnLoad(emulator, offset) for a hidden entry",
+                    module.name);
+        }
+    }
 
-                vm.checkVersion(version);
-            } finally {
-                vm.deleteLocalRefs();
+    /**
+     * Call {@code JNI_OnLoad(JavaVM*, void*)} at a module-relative offset.
+     * Packers often strip the dynsym export; the real function may live at a
+     * decrypted VA. Do not assume ELF {@code e_entry} is JNI_OnLoad — on many
+     * images it is a PLT stub.
+     */
+    public void callJNI_OnLoad(Emulator<?> emulator, long offset) {
+        if (offset <= 0) {
+            throw new IllegalArgumentException("JNI_OnLoad offset must be positive: 0x" + Long.toHexString(offset));
+        }
+        invokeJNI_OnLoad(emulator, module.base + offset);
+    }
+
+    private void invokeJNI_OnLoad(Emulator<?> emulator, long address) {
+        try {
+            long start = System.currentTimeMillis();
+            if (log.isDebugEnabled()) {
+                log.debug("Call [{}]JNI_OnLoad: 0x{}", module.name, Long.toHexString(address));
             }
+            Number ret = Module.emulateFunction(emulator, address, vm.getJavaVM(), null);
+            int version = ret.intValue();
+            if (log.isDebugEnabled()) {
+                log.debug("Call [{}]JNI_OnLoad finished: version=0x{}, offset={}ms",
+                        module.name, Integer.toHexString(version), System.currentTimeMillis() - start);
+            }
+            vm.checkVersion(version);
+        } finally {
+            vm.deleteLocalRefs();
         }
     }
 

@@ -155,17 +155,28 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
             return FileResult.success(failResult.io);
         }
         
-        if (pathname.startsWith("/proc/" + emulator.getPid() + "/fd/") || pathname.startsWith("/proc/self/fd/")) {
-            int fd = Integer.parseInt(pathname.substring(pathname.lastIndexOf("/") + 1));
-            T file = fdMap.get(fd);
-            if (file != null) {
-                return FileResult.success(file);
+        String pidFd = "/proc/" + emulator.getPid() + "/fd";
+        if (pathname.startsWith(pidFd + "/") || pathname.startsWith("/proc/self/fd/")) {
+            String rest = pathname.substring(pathname.lastIndexOf('/') + 1);
+            if (rest.isEmpty()) {
+                return createFdDir(oflags, pathname);
+            }
+            try {
+                int fd = Integer.parseInt(rest);
+                T file = fdMap.get(fd);
+                if (file != null) {
+                    return FileResult.success(file);
+                }
+            } catch (NumberFormatException ignored) {
+                return FileResult.failed(UnixEmulator.ENOENT);
             }
         }
-        if (("/proc/" + emulator.getPid() + "/fd").equals(pathname) || "/proc/self/fd".equals(pathname)) {
+        if (pidFd.equals(pathname) || "/proc/self/fd".equals(pathname)) {
             return createFdDir(oflags, pathname);
         }
-        if (("/proc/" + emulator.getPid() + "/task/").equals(pathname) || "/proc/self/task/".equals(pathname)) {
+        String pidTask = "/proc/" + emulator.getPid() + "/task";
+        if (pidTask.equals(pathname) || "/proc/self/task".equals(pathname)
+                || (pidTask + "/").equals(pathname) || "/proc/self/task/".equals(pathname)) {
             return createTaskDir(emulator, oflags, pathname);
         }
         
@@ -467,10 +478,15 @@ public abstract class UnixSyscallHandler<T extends NewFileIO> implements Syscall
                 int fd = Integer.parseInt(path.substring(path.lastIndexOf("/") + 1));
                 FileIO io = fdMap.get(fd);
                 if (io != null) {
-                    path = io.getPath();
+                    String resolved = io.getPath();
+                    if (resolved != null && resolved.length() > 0) {
+                        path = resolved;
+                    }
                 }
             } catch (NumberFormatException e) {
                 // ignore
+            } catch (Throwable t) {
+                log.debug("readlink {} getPath failed: {}", path, t.toString());
             }
         }
         buf.setString(0, path);

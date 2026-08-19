@@ -114,6 +114,22 @@ public class SimpleFileIO extends BaseAndroidFileIO implements NewFileIO {
     }
 
     @Override
+    public int pread(Backend backend, Pointer pointer, int count, long offset) {
+        RandomAccessFile randomAccessFile = checkOpenFile();
+        try {
+            long saved = randomAccessFile.getFilePointer();
+            try {
+                randomAccessFile.seek(offset);
+                return Utils.readFile(randomAccessFile, pointer, count);
+            } finally {
+                randomAccessFile.seek(saved);
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
     public int fstat(Emulator<?> emulator, StatStructure stat) {
         int st_mode;
         if (IO.STDOUT.equals(file.getName())) {
@@ -124,9 +140,12 @@ public class SimpleFileIO extends BaseAndroidFileIO implements NewFileIO {
             st_mode = IO.S_IFREG;
         }
         stat.st_dev = 1;
+        if (st_mode == IO.S_IFREG) {
+            st_mode |= 0644;
+        }
         stat.st_mode = st_mode;
-        stat.st_uid = 0;
-        stat.st_gid = 0;
+        stat.st_uid = AndroidFileOwner.uid(emulator, path);
+        stat.st_gid = AndroidFileOwner.gid(emulator, path);
         stat.st_size = file.length();
         stat.st_blksize = emulator.getPageAlign();
         stat.st_ino = 1;

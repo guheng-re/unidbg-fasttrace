@@ -86,6 +86,27 @@ public abstract class EmulatorBuilder<T extends ARMEmulator<?>> {
         return this;
     }
 
+    /**
+     * Prefer in-tree Unicorn2 when the caller did not pick a backend.
+     * Unicorn1 (Maven {@code unicorn_java.dll}) mishandles some ARM64
+     * taken {@code B.cond} paths under {@code UC_HOOK_CODE}, which is
+     * exactly what full-module {@code traceCode}/{@code traceCodeText} installs.
+     */
+    protected void addDefaultBackendIfNeeded() {
+        if (!backendFactories.isEmpty()) {
+            return;
+        }
+        if ("unicorn1".equalsIgnoreCase(System.getProperty("unidbg.backend"))) {
+            return;
+        }
+        try {
+            Class<?> clazz = Class.forName("com.github.unidbg.arm.backend.Unicorn2Factory");
+            backendFactories.add((BackendFactory) clazz.getConstructor(boolean.class).newInstance(Boolean.TRUE));
+        } catch (Throwable ignored) {
+            // unidbg-unicorn2 not on the classpath; BackendFactory falls back to Unicorn1.
+        }
+    }
+
     public abstract T build();
 
 }

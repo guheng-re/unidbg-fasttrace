@@ -15,7 +15,7 @@ Use it at your own risk !
 - Inline hook, thanks to [Dobby](https://github.com/jmpews/Dobby).
 - Android import hook, thanks to [xHook](https://github.com/iqiyi/xHook).
 - iOS [fishhook](https://github.com/facebook/fishhook) and substrate and [whale](https://github.com/asLody/whale) hook.
-- [unicorn](https://github.com/zhkl0228/unicorn) backend support simple console debugger, gdb stub, instruction trace, memory read/write trace.
+- [unicorn](https://github.com/zhkl0228/unicorn) backend (Unicorn2 by default; `-Dunidbg.backend=unicorn1` falls back to Unicorn1) support simple console debugger, gdb stub, instruction trace, memory read/write trace.
 - Support iOS objc and swift runtime.
 - Support [dynarmic](https://github.com/MerryMage/dynarmic) fast backend.
 - Support Apple M1 hypervisor, the fastest ARM64 backend.

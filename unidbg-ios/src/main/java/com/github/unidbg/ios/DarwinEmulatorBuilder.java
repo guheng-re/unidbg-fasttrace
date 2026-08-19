@@ -33,6 +33,7 @@ public class DarwinEmulatorBuilder extends EmulatorBuilder<ARMEmulator<DarwinFil
 
     @Override
     public ARMEmulator<DarwinFileIO> build() {
+        addDefaultBackendIfNeeded();
         return is64Bit ?
                 new DarwinARM64Emulator(processName, rootDir, backendFactories, envList.toArray(new String[0])) :
                 new DarwinARMEmulator(processName, rootDir, backendFactories, envList.toArray(new String[0]));

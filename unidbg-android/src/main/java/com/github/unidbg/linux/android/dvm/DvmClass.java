@@ -89,6 +89,9 @@ public class DvmClass extends DvmObject<Class<?>> {
                 }
             }
         }
+        if (method == null) {
+            method = vm.findStaticMethod(hash);
+        }
         return method;
     }
 
@@ -100,7 +103,9 @@ public class DvmClass extends DvmObject<Class<?>> {
         }
         if (checkJni(vm, this).acceptMethod(this, signature, true)) {
             if (!staticMethodMap.containsKey(hash)) {
-                staticMethodMap.put(hash, new DvmMethod(this, methodName, args, true));
+                DvmMethod method = new DvmMethod(this, methodName, args, true);
+                staticMethodMap.put(hash, method);
+                vm.registerStaticMethod(hash, method);
             }
             return hash;
         } else {
@@ -115,13 +120,16 @@ public class DvmClass extends DvmObject<Class<?>> {
         if (method == null && superClass != null) {
             method = superClass.getMethod(hash);
         }
-        if (method == null) {
+        if (method == null && interfaceClasses != null) {
             for (DvmClass interfaceClass : interfaceClasses) {
                 method = interfaceClass.getMethod(hash);
                 if (method != null) {
                     break;
                 }
             }
+        }
+        if (method == null) {
+            method = vm.findInstanceMethod(hash);
         }
         return method;
     }
@@ -134,7 +142,9 @@ public class DvmClass extends DvmObject<Class<?>> {
         }
         if (vm.jni == null || vm.jni.acceptMethod(this, signature, false)) {
             if (!methodMap.containsKey(hash)) {
-                methodMap.put(hash, new DvmMethod(this, methodName, args, false));
+                DvmMethod method = new DvmMethod(this, methodName, args, false);
+                methodMap.put(hash, method);
+                vm.registerInstanceMethod(hash, method);
             }
             return hash;
         } else {
@@ -157,6 +167,9 @@ public class DvmClass extends DvmObject<Class<?>> {
                 }
             }
         }
+        if (field == null) {
+            field = vm.findInstanceField(hash);
+        }
         return field;
     }
 
@@ -168,7 +181,9 @@ public class DvmClass extends DvmObject<Class<?>> {
         }
         if (vm.jni == null || vm.jni.acceptField(this, signature, false)) {
             if (!fieldMap.containsKey(hash)) {
-                fieldMap.put(hash, new DvmField(this, fieldName, fieldType, false));
+                DvmField field = new DvmField(this, fieldName, fieldType, false);
+                fieldMap.put(hash, field);
+                vm.registerInstanceField(hash, field);
             }
             return hash;
         } else {
@@ -191,6 +206,9 @@ public class DvmClass extends DvmObject<Class<?>> {
                 }
             }
         }
+        if (field == null) {
+            field = vm.findStaticField(hash);
+        }
         return field;
     }
 
@@ -202,7 +220,9 @@ public class DvmClass extends DvmObject<Class<?>> {
         }
         if (vm.jni == null || vm.jni.acceptField(this, signature, true)) {
             if (!staticFieldMap.containsKey(hash)) {
-                staticFieldMap.put(hash, new DvmField(this, fieldName, fieldType, true));
+                DvmField field = new DvmField(this, fieldName, fieldType, true);
+                staticFieldMap.put(hash, field);
+                vm.registerStaticField(hash, field);
             }
             return hash;
         } else {

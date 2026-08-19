@@ -114,6 +114,15 @@ public class AndroidResolver implements LibraryResolver, IOResolver<AndroidFileI
 
         String androidResource = FilenameUtils.normalize("/android/sdk" + sdk + "/" + path, true);
         URL url = getClass().getResource(androidResource);
+        if (url == null) {
+            // Guest /system/lib{,64}/name.so is the same blob as the SDK lib folder.
+            String slash = path.replace('\\', '/');
+            if (slash.startsWith("/system/lib64/")) {
+                url = getClass().getResource("/android/sdk" + sdk + "/lib64/" + slash.substring("/system/lib64/".length()));
+            } else if (slash.startsWith("/system/lib/")) {
+                url = getClass().getResource("/android/sdk" + sdk + "/lib/" + slash.substring("/system/lib/".length()));
+            }
+        }
         if (url != null) {
             return FileResult.fallback(createFileIO(url, path, oflags));
         }
@@ -180,6 +189,15 @@ public class AndroidResolver implements LibraryResolver, IOResolver<AndroidFileI
         AndroidEmulator androidEmulator = (AndroidEmulator) emulator;
         SyscallHandler<AndroidFileIO> syscallHandler = androidEmulator.getSyscallHandler();
         syscallHandler.addIOResolver(this);
+        // Presence-gated: only if the SDK tree has the stub. Maps + dlopen then
+        // see /system/lib64/libart.so like a real process (DexFile::OpenMemory,
+        // Runtime::instance_). Not a per-packer hook.
+        if (emulator.is64Bit()) {
+            LibraryFile art = resolveLibrary(emulator, "libart.so", sdk);
+            if (art != null) {
+                emulator.getMemory().load(art, false);
+            }
+        }
     }
 
 }

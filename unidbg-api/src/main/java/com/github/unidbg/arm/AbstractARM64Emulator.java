@@ -71,6 +71,9 @@ public abstract class AbstractARM64Emulator<T extends NewFileIO> extends Abstrac
         backend.hook_add_new(new EventMemHook() {
             @Override
             public boolean hook(Backend backend, long address, int size, long value, Object user, UnmappedType unmappedType) {
+                if (unmappedType == UnmappedType.Fetch && tryRepairTruncatedFetch(backend, address)) {
+                    return true;
+                }
                 log.warn("{} memory failed: address=0x{}, size={}, value=0x{}", unmappedType, Long.toHexString(address), size, Long.toHexString(value));
                 if (LoggerFactory.getLogger(AbstractEmulator.class).isDebugEnabled()) {
                     attach().debug(unmappedType + " memory failed: address=0x" + Long.toHexString(address) + ", size=" + size);
@@ -115,6 +118,86 @@ public abstract class AbstractARM64Emulator<T extends NewFileIO> extends Abstrac
             this.arm64DisassemblerCache.setDetail(true);
         }
         return arm64DisassemblerCache;
+    }
+
+    /**
+     * Packers sometimes {@code br} a 32-bit tail of a 39-bit VAS code address
+     * ({@code 0x71000011dc} stored as {@code 0x11dc}). Map a trampoline page
+     * in the low 4G so the fetch can continue at the reconstructed RX VA.
+     * Never maps the NULL page.
+     */
+    private boolean tryRepairTruncatedFetch(Backend backend, long address) {
+        if (getFamily() != Family.Android64 || memory == null) {
+            return false;
+        }
+        if (address == 0L || address > 0xffffffffL || (address & 3L) != 0L) {
+            return false;
+        }
+        long page = address & ~0xfffL;
+        if (page == 0L) {
+            return false;
+        }
+        long reconstructed = reconstructTruncatedCodeAddress(address);
+        if (reconstructed == 0L || reconstructed == address) {
+            return false;
+        }
+        try {
+            byte[] insn = backend.mem_read(reconstructed, 4);
+            if (insn == null || insn.length < 4
+                    || (insn[0] | insn[1] | insn[2] | insn[3]) == 0) {
+                return false;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        try {
+            try {
+                backend.mem_map(page, 0x1000, UnicornConst.UC_PROT_READ | UnicornConst.UC_PROT_EXEC);
+            } catch (Exception ignored) {
+                // page already mapped by a previous trampoline
+            }
+            backend.mem_write(address, encodeAbsBranchX16(reconstructed));
+            log.info("Repaired truncated FETCH 0x{} -> 0x{}",
+                    Long.toHexString(address), Long.toHexString(reconstructed));
+            return true;
+        } catch (Exception e) {
+            log.warn("Failed to repair truncated FETCH 0x{}: {}", Long.toHexString(address), e.toString());
+            return false;
+        }
+    }
+
+    private long reconstructTruncatedCodeAddress(long address32) {
+        long found = 0L;
+        for (com.github.unidbg.memory.MemoryMap map : memory.getMemoryMap()) {
+            if ((map.prot & UnicornConst.UC_PROT_EXEC) == 0) {
+                continue;
+            }
+            long candidate = (map.base & ~0xffffffffL) | (address32 & 0xffffffffL);
+            if (candidate >= map.base && candidate < map.base + map.size) {
+                if (found != 0L && found != candidate) {
+                    return 0L;
+                }
+                found = candidate;
+            }
+        }
+        return found;
+    }
+
+    private static byte[] encodeAbsBranchX16(long target) {
+        ByteBuffer buf = ByteBuffer.allocate(20).order(ByteOrder.LITTLE_ENDIAN);
+        buf.putInt(movWide(true, false, 0, (int) (target & 0xffffL), 16));
+        buf.putInt(movWide(false, true, 1, (int) ((target >>> 16) & 0xffffL), 16));
+        buf.putInt(movWide(false, true, 2, (int) ((target >>> 32) & 0xffffL), 16));
+        buf.putInt(movWide(false, true, 3, (int) ((target >>> 48) & 0xffffL), 16));
+        buf.putInt(0xd61f0200); // br x16
+        return buf.array();
+    }
+
+    /** A64 MOVZ/MOVK Xd, #imm16, LSL #(hw*16). */
+    private static int movWide(boolean movz, boolean movk, int hw, int imm16, int rd) {
+        int opc = movz ? 0b10 : 0b11;
+        return (1 << 31) | (opc << 29) | (0b100101 << 23) | ((hw & 3) << 21)
+                | ((imm16 & 0xffff) << 5) | (rd & 0x1f);
     }
 
     protected void setupTraps() {

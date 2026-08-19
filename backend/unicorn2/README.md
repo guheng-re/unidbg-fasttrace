@@ -2,6 +2,12 @@
 
 ARM emulator backend based on [Unicorn Engine 2](https://github.com/zhkl0228/unicorn). Supports emulating ARM32/ARM64 native libraries on macOS, Linux and Windows.
 
+Android and iOS builders use this backend **by default** when the caller does not `addBackendFactory(...)`. The fallback is Maven Unicorn1 (`unicorn_java.dll`). Set `-Dunidbg.backend=unicorn1` to force that fallback.
+
+Unicorn1 can raise a spurious `UC_ERR_FETCH_UNMAPPED` on ARM64 taken `B.cond` when a `UC_HOOK_CODE` covers the branch (full-module `traceCode` / `traceCodeText`). Unicorn2 does not.
+
+On Windows, Android64 39-bit maps must not be `uc_close`d: `Unicorn2Backend.destroy()` skips `nativeDestroy` for that case.
+
 ## Supported Platforms
 
 | Platform | Architecture | Output |

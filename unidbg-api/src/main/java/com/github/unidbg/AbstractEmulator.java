@@ -96,10 +96,10 @@ public abstract class AbstractEmulator<T extends NewFileIO> implements Emulator<
         if (!rootDir.exists() && !rootDir.mkdirs()) {
             throw new IllegalStateException("mkdirs failed: " + rootDir);
         }
-        this.fileSystem = createFileSystem(rootDir);
-        this.backend = BackendFactory.createBackend(this, is64Bit, backendFactories);
         String configuredProcessName = environmentConfig == null ? null : environmentConfig.getProcessName(null);
         this.processName = configuredProcessName == null ? (processName == null ? "unidbg" : processName) : configuredProcessName;
+        this.fileSystem = createFileSystem(rootDir);
+        this.backend = BackendFactory.createBackend(this, is64Bit, backendFactories);
         this.registerContext = createRegisterContext(backend);
 
         String name = ManagementFactory.getRuntimeMXBean().getName();

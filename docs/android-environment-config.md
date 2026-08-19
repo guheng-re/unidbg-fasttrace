@@ -3860,6 +3860,22 @@ parse 拒绝：浮点、数字字符串、布尔当数字、`null`、溢出、�
 - `/proc/net/dev_mcast`（见 `network.linkLayerMulticastEntries`；本节点**不**推导链路层多播）
 - 由 interfaces / ipv4Routes / interfaceStats / ipv6Addresses / arpEntries / igmpMemberships / igmp6Memberships / linkLayerMulticastEntries / wifi / links **自动推导**任何无线统计
 
+## rootfs `open(O_CREAT)`
+
+`BaseFileSystem` 对 `O_CREAT` / `mkdir` **只创建最后一级**。父目录不存在时返回 `ENOENT`，**不再** `mkdir -p`。否则对 `/data/data/<其它包>/...` 的探测会成功，像装了脱壳器。
+
+初始化只预建当前进程的 `/data/data/<processName>/{files,cache}`，以及 `/data`、`/data/data`、`/data/local/tmp`、`/system`、`/tmp`。其它包目录保持不存在。
+
+`fstat` 默认属主：`/data/app/`、`/system/`、`/vendor/`、`/product/` 为 `AID_SYSTEM`（1000）；`/data/data/`、`/data/user/` 为 `process.uid`（未配置则为 0）。`filesystem.stat` 仍可覆盖。普通文件 `st_mode` 带 `0644`。
+
+## ART `DexFile.mCookie`
+
+有 APK 时，`dalvik.system.DexFile.mCookie` 是长度为 2 的 `long[]`，**两个槽都是同一份**假 ART `DexFile*`（`vptr` / `begin_` / `size_` 指向 mmap 出来的 `classes.dex`）。ART O+ 从 `[1]` 取 `DexFile*`；更老的 native 把 `[0]` 当 `DexFile*` 并读 `+8` 的 `begin_`。`[0]=0` 会变成对地址 `0x8` 的 READ。`Class.dexCache.dexFile:J` 返回同一指针；`:I` 只在指针能放进 `jint` 时返回，64 位 39-bit VAS 上为 0。无 `classes.dex` 时指针为 0，不编造。这不是按壳定制，也不是 JSON 键。
+
+64 位且 SDK 资源里有 `android/sdk<N>/lib64/libart.so` 时，`AndroidResolver` 会在 `setLibraryResolver` 时装上这份 stub。maps 路径是 `/system/lib64/libart.so`；`dlopen("libart.so")` 能找到它；dynsym 含 `art::Runtime::instance_`（指向一块全 0 的假 Runtime）以及常见的 `DexFile::OpenMemory` / `OpenCommon` / `Open`。`OpenMemory` 用 `x0`/`x1` 填 `{vptr, begin_, size_}`。`open("/system/lib64/*.so")` 回落到同一套 SDK `lib64`。`dlsym(handle)` 除了精确 load-bias，也接受模块内部地址（maps 里后面的 PT_LOAD）。没有该文件就不装，不编造。不是 JSON 键，也不是按壳定制。
+
+sdk23 自带的 `libdl.so` 里 `dlopen`/`dlsym` 是 8 字节桩（`mov x0,#0; ret`），按 dynsym `st_value` 直调永远得到 0，绕开 relocation 的 HookListener。`ArmLD64` 在 `libdl.so` 加载后只把 `dlsym` / `__loader_dlsym` / `dl_dlsym` 改成同样 8 字节的 `svc+ret`，走 Java `Memory.dlsym`（`handle==0` 会搜已加载模块）。**不**改 `dlopen`：Java 实现返回 load-bias，有的调用方会把它当 soinfo 读 `+0x28`。导出间距不足 8 字节则跳过，避免和下一个符号重叠。
+
 ## filesystem.stat
 
 按路径覆盖 Linux `struct stat` 元数据（文件属性）。路径为根级 **`filesystem.stat`**（可选 **JSON 对象**，路径键 → 字段对象）。实现类：`TraceEnvironmentConfig.FileStatConfig` + `ConfiguredFileStat`；路径 `stat`/`lstat`/`fstatat64`/`stat64` 与 FD `fstat` 在 `ARM32SyscallHandler` / `ARM64SyscallHandler` 中接线。
@@ -4482,7 +4498,7 @@ Android 系统目录四路径子集（**可选** `rootDirectory` / `dataDirector
 
 ## 通用环境槽（模板，无个案内容）
 
-动态 `/proc/self/maps` 不是 JSON 模板：它按**真实已映射**区间生成。Android ARM64 使用固定 39-bit 用户态（无 ASLR）：heap `0x7010000000`、mmap/`.so` `0x7100000000`、stack 顶 `0x7fe0000000`、SVC `0x7fffe00000`、LR `0x7ffff00000`。格式与内核 `%08lx` 相同（`7100000000-…`）。默认 **Unicorn1** 可映射并关闭该布局。Windows 上 Unicorn2 的 `uc_close` 在 39-bit 映射后会崩溃，因此 Android64 的 Unicorn2 `destroy` 不调用 `nativeDestroy`。Dynarmic / KVM / Hypervisor 仍是 36-bit 页表，无法映射。32 位仍为 `0x8048000` / `0x12000000` / `0xe5000000`。`linux.files` 或画像 overlay 的精确 `/proc/self/maps` 仍优先于动态生成。
+动态 `/proc/self/maps` 不是 JSON 模板：它按**真实已映射**区间生成。Android ARM64 使用固定 39-bit 用户态（无 ASLR）：heap `0x7010000000`、mmap/`.so` `0x7100000000`、stack 顶 `0x7fe0000000`、SVC `0x7fffe00000`、LR `0x7ffff00000`。格式与内核 `%08lx` 相同（`7100000000-…`）。未指定 backend 时，Android/iOS builder **默认 Unicorn2**（`unidbg-unicorn2` 的 `unicorn.dll` / `libunicorn.so`），可映射该 39-bit 布局。Windows 上 Unicorn2 的 `uc_close` 在 39-bit 映射后会崩溃，因此 Android64 的 Unicorn2 `destroy` **不**调用 `nativeDestroy`（反复 `new`/`close` 模拟器时原生内存可能滞留到进程退出）。`-Dunidbg.backend=unicorn1` 退回 Maven Unicorn1：同样能映射 39-bit 且可正常 close，但 ARM64 在 `UC_HOOK_CODE` 覆盖 taken `B.cond` 时可能假报 `UC_ERR_FETCH_UNMAPPED`（全模块 `traceCode` / `traceCodeText` 会踩到）。已 `addBackendFactory(...)` 的路径不改默认。Dynarmic / KVM / Hypervisor 仍是 36-bit 页表，无法映射。32 位仍为 `0x8048000` / `0x12000000` / `0xe5000000`。`linux.files` 或画像 overlay 的精确 `/proc/self/maps` 仍优先于动态生成。
 
 下列节点均为**可填充模板**：缺键不接管，显式 `[]`/`{}` 是权威空快照。引擎不内置端口、厂商或采集器逻辑。
 

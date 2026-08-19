@@ -169,7 +169,9 @@ public abstract class AbstractFileIO implements NewFileIO {
 
     @Override
     public String getPath() {
-        throw new AbstractMethodError(getClass().getName());
+        // Packers walk /proc/self/fd and readlink every descriptor.
+        // Throwing here aborted JNI_OnLoad; return a stable path instead.
+        return "";
     }
 
     @Override

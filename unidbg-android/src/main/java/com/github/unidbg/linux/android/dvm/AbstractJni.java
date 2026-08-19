@@ -40,6 +40,188 @@ public abstract class AbstractJni implements Jni {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractJni.class);
 
+    /**
+     * Dispatch JDK collection JNI by method suffix so {@code Map.entrySet} works
+     * whether GetMethodID was issued on {@code java/util/Map} or {@code HashMap}.
+     */
+    private static DvmObject<?> wrapJdkValue(BaseVM vm, Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof DvmObject) {
+            return (DvmObject<?>) value;
+        }
+        if (value instanceof Map.Entry) {
+            return vm.resolveClass("java/util/Map$Entry").newObject(value);
+        }
+        if (value instanceof String) {
+            return new StringObject(vm, (String) value);
+        }
+        return ProxyDvmObject.createObject(vm, value);
+    }
+
+    private static final class JdkCollectionObject {
+        final boolean handled;
+        final DvmObject<?> value;
+        private JdkCollectionObject(boolean handled, DvmObject<?> value) {
+            this.handled = handled;
+            this.value = value;
+        }
+        static final JdkCollectionObject MISS = new JdkCollectionObject(false, null);
+        static JdkCollectionObject of(DvmObject<?> value) {
+            return new JdkCollectionObject(true, value);
+        }
+    }
+
+    private static JdkCollectionObject tryJdkCollectionObject(BaseVM vm, DvmObject<?> dvmObject,
+                                                             String signature, VarArg varArg) {
+        if (signature == null || !signature.startsWith("java/util/") || dvmObject == null) {
+            return JdkCollectionObject.MISS;
+        }
+        int arrow = signature.indexOf("->");
+        if (arrow < 0) {
+            return JdkCollectionObject.MISS;
+        }
+        String method = signature.substring(arrow + 2);
+        Object host = dvmObject.getValue();
+        try {
+            switch (method) {
+                case "entrySet()Ljava/util/Set;":
+                    if (host instanceof Map) {
+                        return JdkCollectionObject.of(vm.resolveClass("java/util/Set").newObject(((Map<?, ?>) host).entrySet()));
+                    }
+                    return JdkCollectionObject.MISS;
+                case "keySet()Ljava/util/Set;":
+                    if (host instanceof Map) {
+                        return JdkCollectionObject.of(vm.resolveClass("java/util/Set").newObject(((Map<?, ?>) host).keySet()));
+                    }
+                    return JdkCollectionObject.MISS;
+                case "values()Ljava/util/Collection;":
+                    if (host instanceof Map) {
+                        return JdkCollectionObject.of(vm.resolveClass("java/util/Collection").newObject(((Map<?, ?>) host).values()));
+                    }
+                    return JdkCollectionObject.MISS;
+                case "get(Ljava/lang/Object;)Ljava/lang/Object;":
+                    if (host instanceof Map && varArg != null) {
+                        DvmObject<?> keyObj = varArg.getObjectArg(0);
+                        Object key = keyObj == null ? null : keyObj.getValue();
+                        return JdkCollectionObject.of(wrapJdkValue(vm, ((Map<?, ?>) host).get(key)));
+                    }
+                    return JdkCollectionObject.MISS;
+                case "put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;":
+                    if (host instanceof Map && varArg != null) {
+                        DvmObject<?> keyObj = varArg.getObjectArg(0);
+                        DvmObject<?> valObj = varArg.getObjectArg(1);
+                        Object key = keyObj == null ? null : keyObj.getValue();
+                        @SuppressWarnings("unchecked")
+                        Map<Object, Object> map = (Map<Object, Object>) host;
+                        return JdkCollectionObject.of(wrapJdkValue(vm, map.put(key, valObj)));
+                    }
+                    return JdkCollectionObject.MISS;
+                case "iterator()Ljava/util/Iterator;":
+                    if (host instanceof Iterable) {
+                        return JdkCollectionObject.of(vm.resolveClass("java/util/Iterator").newObject(((Iterable<?>) host).iterator()));
+                    }
+                    return JdkCollectionObject.MISS;
+                case "next()Ljava/lang/Object;":
+                    if (host instanceof Iterator) {
+                        return JdkCollectionObject.of(wrapJdkValue(vm, ((Iterator<?>) host).next()));
+                    }
+                    return JdkCollectionObject.MISS;
+                case "getKey()Ljava/lang/Object;":
+                    if (host instanceof Map.Entry) {
+                        return JdkCollectionObject.of(wrapJdkValue(vm, ((Map.Entry<?, ?>) host).getKey()));
+                    }
+                    return JdkCollectionObject.MISS;
+                case "getValue()Ljava/lang/Object;":
+                    if (host instanceof Map.Entry) {
+                        return JdkCollectionObject.of(wrapJdkValue(vm, ((Map.Entry<?, ?>) host).getValue()));
+                    }
+                    return JdkCollectionObject.MISS;
+                case "toArray()[Ljava/lang/Object;":
+                    if (host instanceof Collection) {
+                        Object[] arr = ((Collection<?>) host).toArray();
+                        DvmObject<?>[] objs = new DvmObject<?>[arr.length];
+                        for (int i = 0; i < arr.length; i++) {
+                            objs[i] = wrapJdkValue(vm, arr[i]);
+                        }
+                        return JdkCollectionObject.of(new ArrayObject(objs));
+                    }
+                    return JdkCollectionObject.MISS;
+                case "get(I)Ljava/lang/Object;":
+                    if (host instanceof List && varArg != null) {
+                        return JdkCollectionObject.of(wrapJdkValue(vm, ((List<?>) host).get(varArg.getIntArg(0))));
+                    }
+                    return JdkCollectionObject.MISS;
+                default:
+                    return JdkCollectionObject.MISS;
+            }
+        } catch (RuntimeException e) {
+            log.debug("tryJdkCollectionObject {} failed: {}", signature, e.toString());
+            return JdkCollectionObject.MISS;
+        }
+    }
+
+    private static Optional<Boolean> tryJdkCollectionBoolean(DvmObject<?> dvmObject, String signature, VarArg varArg) {
+        if (signature == null || !signature.startsWith("java/util/") || dvmObject == null) {
+            return Optional.empty();
+        }
+        int arrow = signature.indexOf("->");
+        if (arrow < 0) {
+            return Optional.empty();
+        }
+        String method = signature.substring(arrow + 2);
+        Object host = dvmObject.getValue();
+        if ("hasNext()Z".equals(method) && host instanceof Iterator) {
+            return Optional.of(Boolean.valueOf(((Iterator<?>) host).hasNext()));
+        }
+        if ("isEmpty()Z".equals(method) && host instanceof Collection) {
+            return Optional.of(Boolean.valueOf(((Collection<?>) host).isEmpty()));
+        }
+        if ("isEmpty()Z".equals(method) && host instanceof Map) {
+            return Optional.of(Boolean.valueOf(((Map<?, ?>) host).isEmpty()));
+        }
+        if ("add(Ljava/lang/Object;)Z".equals(method) && host instanceof Collection) {
+            @SuppressWarnings("unchecked")
+            Collection<Object> collection = (Collection<Object>) host;
+            Object item = varArg == null ? null : varArg.getObjectArg(0);
+            return Optional.of(Boolean.valueOf(collection.add(item)));
+        }
+        if ("remove(Ljava/lang/Object;)Z".equals(method) && host instanceof Collection) {
+            Object item = varArg == null ? null : varArg.getObjectArg(0);
+            return Optional.of(Boolean.valueOf(((Collection<?>) host).remove(item)));
+        }
+        if ("contains(Ljava/lang/Object;)Z".equals(method) && host instanceof Collection) {
+            Object item = varArg == null ? null : varArg.getObjectArg(0);
+            return Optional.of(Boolean.valueOf(((Collection<?>) host).contains(item)));
+        }
+        if ("containsKey(Ljava/lang/Object;)Z".equals(method) && host instanceof Map && varArg != null) {
+            DvmObject<?> keyObj = varArg.getObjectArg(0);
+            Object key = keyObj == null ? null : keyObj.getValue();
+            return Optional.of(Boolean.valueOf(((Map<?, ?>) host).containsKey(key)));
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<Integer> tryJdkCollectionInt(DvmObject<?> dvmObject, String signature) {
+        if (signature == null || !signature.startsWith("java/util/") || dvmObject == null) {
+            return Optional.empty();
+        }
+        int arrow = signature.indexOf("->");
+        if (arrow < 0) {
+            return Optional.empty();
+        }
+        String method = signature.substring(arrow + 2);
+        Object host = dvmObject.getValue();
+        if ("size()I".equals(method) && host instanceof Map) {
+            return Optional.of(Integer.valueOf(((Map<?, ?>) host).size()));
+        }
+        if ("size()I".equals(method) && host instanceof Collection) {
+            return Optional.of(Integer.valueOf(((Collection<?>) host).size()));
+        }
+        return Optional.empty();
+    }
+
     private static UnsupportedOperationException jniUnimplemented(BaseVM vm, String signature) {
         if (EnvAccessProbe.isInterestingJniSignature(signature)) {
             EnvAccessProbe.miss(vm == null ? null : vm.getEmulator(), signature,
@@ -182,6 +364,9 @@ public abstract class AbstractJni implements Jni {
             // 其他常用值: GET_ACTIVITIES=0x1, GET_SERVICES=0x4, GET_META_DATA=0x80, GET_SIGNING_CERTIFICATES=0x8000000(API28+)
             case "android/content/pm/PackageManager->GET_SIGNATURES:I":
                 return 0x40;
+            // Context.BIND_AUTO_CREATE=1: bindService 时自动创建目标 Service
+            case "android/content/Context->BIND_AUTO_CREATE:I":
+                return 1;
         }
         throw jniUnimplemented(vm, signature);
     }
@@ -316,6 +501,47 @@ public abstract class AbstractJni implements Jni {
                         return new StringObject(vm, versionName);
                     }
                 }
+                break;
+
+            // ART: Class.dexCache. Packers walk this to find the loaded DexFile.
+            case "java/lang/Class->dexCache:Ljava/lang/DexCache;":
+                return vm.getOrCreateDexCache();
+
+            case "java/lang/DexCache->location:Ljava/lang/String;": {
+                TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+                String fallback = "/data/app/" + vm.getPackageName() + "-1/base.apk";
+                String apkPath = config == null ? fallback : config.getApkPath(fallback);
+                return new StringObject(vm, apkPath);
+            }
+
+            case "dalvik/system/DexPathList$Element->path:Ljava/io/File;":
+            case "dalvik/system/DexPathList$Element->file:Ljava/io/File;":
+            case "dalvik/system/DexPathList$Element->zip:Ljava/io/File;":
+            case "dalvik/system/DexPathList$Element->dir:Ljava/io/File;": {
+                TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+                String fallback = "/data/app/" + vm.getPackageName() + "-1/base.apk";
+                String apkPath = config == null ? fallback : config.getApkPath(fallback);
+                return vm.resolveClass("java/io/File").newObject(apkPath);
+            }
+
+            case "dalvik/system/DexPathList$Element->dexFile:Ldalvik/system/DexFile;": {
+                TraceEnvironmentConfig config = TraceEnvironmentConfig.get(vm.getEmulator());
+                String fallback = "/data/app/" + vm.getPackageName() + "-1/base.apk";
+                String apkPath = config == null ? fallback : config.getApkPath(fallback);
+                return vm.resolveClass("dalvik/system/DexFile").newObject(apkPath);
+            }
+
+            case "java/io/File->path:Ljava/lang/String;": {
+                return new StringObject(vm, guestAbsolutePath(dvmObject.getValue()));
+            }
+
+            case "dalvik/system/DexFile->mFileName:Ljava/lang/String;": {
+                Object value = dvmObject.getValue();
+                return new StringObject(vm, value == null ? "" : String.valueOf(value));
+            }
+
+            case "dalvik/system/DexFile->mCookie:Ljava/lang/Object;":
+                return vm.getOrCreateDexFileCookie();
         }
 
         throw jniUnimplemented(vm, signature);
@@ -799,6 +1025,10 @@ public abstract class AbstractJni implements Jni {
     @Override
     public DvmObject<?> callObjectMethodV(BaseVM vm, DvmObject<?> dvmObject, String signature, VaList vaList) {
         log.info("callObjectMethodV [Unidbg]: {}", signature);
+        JdkCollectionObject collectionObject = tryJdkCollectionObject(vm, dvmObject, signature, vaList);
+        if (collectionObject.handled) {
+            return collectionObject.value;
+        }
         AndroidTelephonyIdentifierResult telephonyResult = tryAndroidTelephonyIdentifier(vm, signature, vaList);
         if (telephonyResult.handled) {
             return telephonyResult.value;
@@ -1082,8 +1312,9 @@ public abstract class AbstractJni implements Jni {
             // File.getAbsolutePath(): 返回文件的绝对路径
             // 指纹风险: 低。路径本身不含设备信息，但可能暴露目录结构
             case "java/io/File->getAbsolutePath()Ljava/lang/String;":
-                File file = (File) dvmObject.getValue();
-                return new StringObject(vm, file.getAbsolutePath());
+            case "java/io/File->getPath()Ljava/lang/String;": {
+                return new StringObject(vm, guestAbsolutePath(dvmObject.getValue()));
+            }
             
             // ==================== Android PackageManager ====================
             // getPackageManager(): 获取包管理器，用于查询应用信息
@@ -1669,6 +1900,10 @@ public abstract class AbstractJni implements Jni {
     @Override
     public int callIntMethodV(BaseVM vm, DvmObject<?> dvmObject, String signature, VaList vaList) {
         log.info("callIntMethodV [Unidbg]: {}", signature);
+        Optional<Integer> collectionIntV = tryJdkCollectionInt(dvmObject, signature);
+        if (collectionIntV.isPresent()) {
+            return collectionIntV.get().intValue();
+        }
         Integer localeSizeV = tryAndroidLocaleListInt(vm, dvmObject, signature);
         if (localeSizeV != null) {
             return localeSizeV.intValue();
@@ -1882,6 +2117,10 @@ public abstract class AbstractJni implements Jni {
     @Override
     public boolean callBooleanMethod(BaseVM vm, DvmObject<?> dvmObject, String signature, VarArg varArg) {
         log.info("callBooleanMethod [Unidbg]: {}", signature);
+        Optional<Boolean> collectionBool = tryJdkCollectionBoolean(dvmObject, signature, varArg);
+        if (collectionBool.isPresent()) {
+            return collectionBool.get().booleanValue();
+        }
         AndroidTelephonyBooleanResult telephonyResult = tryAndroidTelephonyBoolean(vm, signature);
         if (telephonyResult.handled) {
             return telephonyResult.value;
@@ -2020,6 +2259,10 @@ public abstract class AbstractJni implements Jni {
     @Override
     public boolean callBooleanMethodV(BaseVM vm, DvmObject<?> dvmObject, String signature, VaList vaList) {
         log.info("callBooleanMethodV [Unidbg]: {}", signature);
+        Optional<Boolean> collectionBoolV = tryJdkCollectionBoolean(dvmObject, signature, vaList);
+        if (collectionBoolV.isPresent()) {
+            return collectionBoolV.get().booleanValue();
+        }
         AndroidTelephonyBooleanResult telephonyResult = tryAndroidTelephonyBoolean(vm, signature);
         if (telephonyResult.handled) {
             return telephonyResult.value;
@@ -2260,6 +2503,11 @@ public abstract class AbstractJni implements Jni {
             case "android/content/pm/PackageInfo->versionCode:I":
                 log.info("这里在获取apk的整数版本号！");
                 return (int) vm.getVersionCode();
+            case "java/lang/DexCache->dexFile:I": {
+                long dexFile = vm.getArtDexFilePointer();
+                // jint cannot hold a 39-bit ARM64 pointer; 32-bit guests get the real value.
+                return (dexFile >>> 32) == 0L ? (int) dexFile : 0;
+            }
         }
 
         throw jniUnimplemented(vm, signature);
@@ -2288,6 +2536,9 @@ public abstract class AbstractJni implements Jni {
             // Live marker without configured install times, or foreign-VM marker:
             // must not invent defaults (no sidecar).
             throw jniUnimplemented(vm, signature);
+        }
+        if ("java/lang/DexCache->dexFile:J".equals(signature)) {
+            return vm.getArtDexFilePointer();
         }
         throw jniUnimplemented(vm, signature);
     }
@@ -2670,6 +2921,10 @@ public abstract class AbstractJni implements Jni {
     @Override
     public DvmObject<?> callObjectMethod(BaseVM vm, DvmObject<?> dvmObject, String signature, VarArg varArg) {
         log.info("callObjectMethod [Unidbg]: {}", signature);
+        JdkCollectionObject collectionObject = tryJdkCollectionObject(vm, dvmObject, signature, varArg);
+        if (collectionObject.handled) {
+            return collectionObject.value;
+        }
         AndroidTelephonyIdentifierResult telephonyResult = tryAndroidTelephonyIdentifier(vm, signature, varArg);
         if (telephonyResult.handled) {
             return telephonyResult.value;
@@ -2949,8 +3204,9 @@ public abstract class AbstractJni implements Jni {
             case "java/lang/Class->getClassLoader()Ljava/lang/ClassLoader;":
                 return new ClassLoader(vm, signature);
             case "java/io/File->getAbsolutePath()Ljava/lang/String;":
-                File file = (File) dvmObject.getValue();
-                return new StringObject(vm, file.getAbsolutePath());
+            case "java/io/File->getPath()Ljava/lang/String;": {
+                return new StringObject(vm, guestAbsolutePath(dvmObject.getValue()));
+            }
             case "java/util/HashMap->keySet()Ljava/util/Set;":
                 Map<?, ?> map = (Map<?, ?>) dvmObject.getValue();
                 return vm.resolveClass("java/util/HashSet").newObject(map.keySet());
@@ -3014,6 +3270,10 @@ public abstract class AbstractJni implements Jni {
     @Override
     public int callIntMethod(BaseVM vm, DvmObject<?> dvmObject, String signature, VarArg varArg) {
         log.info("callIntMethod [Unidbg]: {}", signature);
+        Optional<Integer> collectionInt = tryJdkCollectionInt(dvmObject, signature);
+        if (collectionInt.isPresent()) {
+            return collectionInt.get().intValue();
+        }
         Integer localeSize = tryAndroidLocaleListInt(vm, dvmObject, signature);
         if (localeSize != null) {
             return localeSize.intValue();
@@ -16965,6 +17225,40 @@ public abstract class AbstractJni implements Jni {
                 "time=" + value,
                 "json-config", "读取配置的 Build.TIME 构建时间戳");
         return time;
+    }
+
+    /**
+     * Windows {@code File.getAbsolutePath()} prepends a drive letter and uses
+     * backslashes. Guest code compares POSIX paths such as {@code /data/app/...}.
+     */
+    private static String guestAbsolutePath(Object value) {
+        if (value == null) {
+            return "";
+        }
+        String path;
+        if (value instanceof File) {
+            File file = (File) value;
+            path = file.getPath();
+            if (path == null || path.isEmpty()) {
+                path = file.getAbsolutePath();
+            }
+        } else {
+            path = String.valueOf(value);
+        }
+        if (path == null || path.isEmpty()) {
+            return "";
+        }
+        path = path.replace('\\', '/');
+        if (path.length() >= 2 && path.charAt(1) == ':') {
+            path = path.substring(2);
+        }
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        while (path.contains("//")) {
+            path = path.replace("//", "/");
+        }
+        return path;
     }
 
     private String getAndroidBuildString(BaseVM vm, String signature) {

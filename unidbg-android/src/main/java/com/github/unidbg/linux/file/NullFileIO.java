@@ -79,6 +79,11 @@ public class NullFileIO extends BaseAndroidFileIO implements FileIO {
     }
 
     @Override
+    public String getPath() {
+        return path;
+    }
+
+    @Override
     public String toString() {
         return path;
     }

@@ -86,9 +86,9 @@ public class ByteArrayFileIO extends BaseAndroidFileIO {
     @Override
     public int fstat(Emulator<?> emulator, StatStructure stat) {
         stat.st_dev = 1;
-        stat.st_mode = IO.S_IFREG;
-        stat.st_uid = 0;
-        stat.st_gid = 0;
+        stat.st_mode = IO.S_IFREG | 0644;
+        stat.st_uid = AndroidFileOwner.uid(emulator, path);
+        stat.st_gid = AndroidFileOwner.gid(emulator, path);
         stat.st_size = bytes.length;
         stat.st_blksize = emulator.getPageAlign();
         stat.st_blocks = ((bytes.length + emulator.getPageAlign() - 1) / emulator.getPageAlign());

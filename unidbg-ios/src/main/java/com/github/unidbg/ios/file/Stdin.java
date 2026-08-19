@@ -67,6 +67,11 @@ public class Stdin extends BaseDarwinFileIO implements DarwinFileIO {
     }
 
     @Override
+    public String getPath() {
+        return "/dev/stdin";
+    }
+
+    @Override
     public String toString() {
         return "stdin";
     }

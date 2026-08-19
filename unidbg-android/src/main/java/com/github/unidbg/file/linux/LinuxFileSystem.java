@@ -1896,6 +1896,29 @@ public class LinuxFileSystem extends BaseFileSystem<AndroidFileIO> implements Fi
 
         FileUtils.forceMkdir(new File(rootDir, "system"));
         FileUtils.forceMkdir(new File(rootDir, "data"));
+        FileUtils.forceMkdir(new File(rootDir, "data/data"));
+        FileUtils.forceMkdir(new File(rootDir, "data/local/tmp"));
+        seedCurrentProcessDataDir(rootDir);
+    }
+
+    /**
+     * Seed only the running process data dir so legitimate
+     * {@code open(O_CREAT)} under {@code /data/data/<pkg>} still works.
+     * Other package trees stay absent (ENOENT), matching a real device.
+     */
+    private void seedCurrentProcessDataDir(File rootDir) throws IOException {
+        String processName = emulator.getProcessName();
+        if (processName == null || processName.isEmpty()) {
+            return;
+        }
+        if (processName.indexOf('/') >= 0 || processName.indexOf('\\') >= 0
+                || processName.indexOf('\0') >= 0) {
+            return;
+        }
+        File pkg = new File(rootDir, "data/data/" + processName);
+        FileUtils.forceMkdir(pkg);
+        FileUtils.forceMkdir(new File(pkg, "files"));
+        FileUtils.forceMkdir(new File(pkg, "cache"));
     }
 
     @Override

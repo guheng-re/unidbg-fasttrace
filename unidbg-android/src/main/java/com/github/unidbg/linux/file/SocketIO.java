@@ -37,6 +37,11 @@ public abstract class SocketIO extends BaseAndroidFileIO implements AndroidFileI
 
     private static final Logger log = LoggerFactory.getLogger(SocketIO.class);
 
+    @Override
+    public String getPath() {
+        return "socket:[0]";
+    }
+
     public static final short AF_UNSPEC = 0;
     public static final short AF_LOCAL = 1; // AF_UNIX
     public static final short AF_INET = 2;

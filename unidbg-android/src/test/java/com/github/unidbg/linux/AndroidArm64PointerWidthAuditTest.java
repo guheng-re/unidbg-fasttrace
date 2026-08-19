@@ -42,6 +42,24 @@ public class AndroidArm64PointerWidthAuditTest {
     }
 
     @Test
+    public void truncatedFetchJumpsToReconstructedRx() throws Exception {
+        AndroidEmulator emulator = AndroidEmulatorBuilder.for64Bit().build();
+        try {
+            Memory memory = emulator.getMemory();
+            long full = 0x71000011dcL;
+            long page = full & ~0xfffL;
+            memory.mmap2(page, 0x1000,
+                    UnicornConst.UC_PROT_READ | UnicornConst.UC_PROT_EXEC,
+                    AndroidElfLoader.MAP_ANONYMOUS | AndroidElfLoader.MAP_FIXED, 0, 0);
+            emulator.getBackend().mem_write(full, new byte[]{(byte) 0xc0, 0x03, 0x5f, (byte) 0xd6});
+            Number ret = emulator.eFunc(0x11dcL);
+            assertNotNull(ret);
+        } finally {
+            emulator.close();
+        }
+    }
+
+    @Test
     public void mremapReturnsFullPeer() throws Exception {
         AndroidEmulator emulator = AndroidEmulatorBuilder.for64Bit().build();
         try {

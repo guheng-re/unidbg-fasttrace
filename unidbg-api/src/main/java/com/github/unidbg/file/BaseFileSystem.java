@@ -82,14 +82,24 @@ public abstract class BaseFileSystem<T extends NewFileIO> implements FileSystem<
             return FileResult.failed(UnixEmulator.ENOENT);
         }
 
+        // POSIX open(O_CREAT) / mkdir create only the final component.
+        // Inventing missing parents made every /data/data/<other-pkg>/ probe
+        // succeed and tripped packer anti-dump checks.
+        File parent = file.getParentFile();
+        if (parent == null || !parent.exists()) {
+            return FileResult.failed(UnixEmulator.ENOENT);
+        }
+        if (!parent.isDirectory()) {
+            return FileResult.failed(UnixEmulator.ENOTDIR);
+        }
+
         try {
             if (directory) {
-                FileUtils.forceMkdir(file);
+                if (!file.mkdir() && !file.isDirectory()) {
+                    return FileResult.failed(UnixEmulator.EACCES);
+                }
                 return FileResult.success(createDirectoryFileIO(file, oflags, path));
             } else {
-                if (!file.getParentFile().exists()) {
-                    FileUtils.forceMkdir(file.getParentFile());
-                }
                 FileUtils.touch(file);
                 return FileResult.success(createSimpleFileIO(file, oflags, path));
             }

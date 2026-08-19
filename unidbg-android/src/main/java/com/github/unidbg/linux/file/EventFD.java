@@ -66,4 +66,16 @@ public class EventFD extends BaseAndroidFileIO implements NewFileIO {
     public void close() {
     }
 
+    @Override
+    public int fstat(com.github.unidbg.Emulator<?> emulator,
+                     com.github.unidbg.file.linux.StatStructure stat) {
+        AndroidFileOwner.fillAnon(emulator, stat, com.github.unidbg.unix.IO.S_IFCHR | 0600, getPath());
+        return 0;
+    }
+
+    @Override
+    public String getPath() {
+        return "anon_inode:[eventfd]";
+    }
+
 }

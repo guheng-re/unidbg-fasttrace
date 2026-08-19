@@ -41,8 +41,9 @@ public abstract class BackendFactory {
                 }
             }
         }
-        // Unicorn1存在太多问题了，比如不支持armv8.2，这在某些样本中会无限debugger；这里换成Unicorn2就行了；
-        log.info("如果出现各种问题，如因为armv8.2指令而无限debugger，请切换到Unicorn2 backend");
+        // Last resort only: Unicorn1 mishandles some ARM64 B.cond + UC_HOOK_CODE cases
+        // and lacks ARMv8.2. Builders now default to Unicorn2 when the module is present.
+        log.debug("falling back to Unicorn1 backend");
         return new UnicornBackend(emulator, is64Bit);
     }
 

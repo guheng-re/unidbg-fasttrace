@@ -9,6 +9,8 @@ import com.github.unidbg.linux.android.ElfLibraryRawFile;
 import com.github.unidbg.linux.android.dvm.apk.Apk;
 import com.github.unidbg.linux.android.dvm.apk.ApkFactory;
 import com.github.unidbg.linux.android.dvm.apk.AssetResolver;
+import com.github.unidbg.linux.android.dvm.array.LongArray;
+import com.github.unidbg.memory.MemoryBlock;
 import com.github.unidbg.spi.LibraryFile;
 import net.dongliu.apk.parser.bean.CertificateMeta;
 import org.slf4j.Logger;
@@ -125,6 +127,106 @@ public abstract class BaseVM implements VM, DvmClassFactory {
         return hashFunction.hash(className);
     }
 
+    /**
+     * JNI {@code jmethodID}/{@code jfieldID} values are global. GetMethodID on
+     * an interface (e.g. {@code Map.entrySet}) must still resolve when the
+     * receiver is a concrete class ({@code HashMap}) that was not constructed
+     * with that interface as a declared parent.
+     */
+    private final Map<Integer, DvmMethod> instanceMethodIds = new HashMap<Integer, DvmMethod>();
+    private final Map<Integer, DvmMethod> staticMethodIds = new HashMap<Integer, DvmMethod>();
+    private final Map<Integer, DvmField> instanceFieldIds = new HashMap<Integer, DvmField>();
+    private final Map<Integer, DvmField> staticFieldIds = new HashMap<Integer, DvmField>();
+
+    void registerInstanceMethod(int hash, DvmMethod method) {
+        instanceMethodIds.put(hash, method);
+    }
+
+    void registerStaticMethod(int hash, DvmMethod method) {
+        staticMethodIds.put(hash, method);
+    }
+
+    void registerInstanceField(int hash, DvmField field) {
+        instanceFieldIds.put(hash, field);
+    }
+
+    void registerStaticField(int hash, DvmField field) {
+        staticFieldIds.put(hash, field);
+    }
+
+    DvmMethod findInstanceMethod(int hash) {
+        return instanceMethodIds.get(hash);
+    }
+
+    DvmMethod findStaticMethod(int hash) {
+        return staticMethodIds.get(hash);
+    }
+
+    DvmField findInstanceField(int hash) {
+        return instanceFieldIds.get(hash);
+    }
+
+    DvmField findStaticField(int hash) {
+        return staticFieldIds.get(hash);
+    }
+
+    /**
+     * When a well-known JDK type is first resolved without parents, attach the
+     * standard super/interface so interface {@code jmethodID}s work on the
+     * concrete receiver. Only applied on first create.
+     */
+    private DvmClass[] inferDefaultParents(String className) {
+        if (className == null || "java/lang/Object".equals(className) || "java/lang/Class".equals(className)) {
+            return null;
+        }
+        if ("java/util/HashMap".equals(className)
+                || "java/util/LinkedHashMap".equals(className)
+                || "java/util/TreeMap".equals(className)
+                || "java/util/concurrent/ConcurrentHashMap".equals(className)) {
+            return new DvmClass[] {
+                    resolveClass("java/util/AbstractMap"),
+                    resolveClass("java/util/Map")
+            };
+        }
+        if ("java/util/AbstractMap".equals(className)) {
+            return new DvmClass[] { resolveClass("java/lang/Object"), resolveClass("java/util/Map") };
+        }
+        if ("java/util/HashSet".equals(className)
+                || "java/util/LinkedHashSet".equals(className)
+                || "java/util/TreeSet".equals(className)) {
+            return new DvmClass[] {
+                    resolveClass("java/util/AbstractSet"),
+                    resolveClass("java/util/Set")
+            };
+        }
+        if ("java/util/AbstractSet".equals(className)) {
+            return new DvmClass[] { resolveClass("java/lang/Object"), resolveClass("java/util/Set") };
+        }
+        if ("java/util/ArrayList".equals(className)
+                || "java/util/LinkedList".equals(className)
+                || "java/util/Vector".equals(className)
+                || "java/util/Stack".equals(className)
+                || "java/util/concurrent/CopyOnWriteArrayList".equals(className)) {
+            return new DvmClass[] {
+                    resolveClass("java/util/AbstractList"),
+                    resolveClass("java/util/List")
+            };
+        }
+        if ("java/util/AbstractList".equals(className)) {
+            return new DvmClass[] {
+                    resolveClass("java/util/AbstractCollection"),
+                    resolveClass("java/util/List")
+            };
+        }
+        if ("java/util/AbstractCollection".equals(className)) {
+            return new DvmClass[] {
+                    resolveClass("java/lang/Object"),
+                    resolveClass("java/util/Collection")
+            };
+        }
+        return null;
+    }
+
     @Override
     public final DvmClass resolveClass(String className, DvmClass... interfaceClasses) {
         className = className.replace('.', '/');
@@ -136,6 +238,15 @@ public abstract class BaseVM implements VM, DvmClassFactory {
             interfaceClasses = Arrays.copyOfRange(interfaceClasses, 1, interfaceClasses.length);
         }
         if (dvmClass == null) {
+            if (superClass == null && (interfaceClasses == null || interfaceClasses.length == 0)) {
+                DvmClass[] inferred = inferDefaultParents(className);
+                if (inferred != null && inferred.length > 0) {
+                    superClass = inferred[0];
+                    interfaceClasses = inferred.length > 1
+                            ? Arrays.copyOfRange(inferred, 1, inferred.length)
+                            : new DvmClass[0];
+                }
+            }
             if (dvmClassFactory != null) {
                 dvmClass = dvmClassFactory.createClass(this, className, superClass, interfaceClasses);
             }
@@ -149,6 +260,78 @@ public abstract class BaseVM implements VM, DvmClassFactory {
         }
         addGlobalObject(dvmClass);
         return dvmClass;
+    }
+
+    private DvmObject<?> dexCache;
+    private DvmObject<?> dexFileCookie;
+    private MemoryBlock mappedClassesDex;
+    private MemoryBlock fakeArtDexFile;
+    private MemoryBlock fakeArtDexLocation;
+
+    /**
+     * ART {@code java.lang.Class.dexCache}. One stub per VM; packers walk this
+     * to find the loaded DexFile.
+     */
+    public DvmObject<?> getOrCreateDexCache() {
+        if (dexCache == null) {
+            dexCache = resolveClass("java/lang/DexCache").newObject("DexCache");
+        }
+        return dexCache;
+    }
+
+    /**
+     * ART {@code dalvik.system.DexFile.mCookie} as {@code long[]}.
+     *
+     * Real ART O+ stores {@code [0]=OatFile*} (often null) and {@code [1+]=DexFile*}.
+     * Pre-O and many native walkers treat {@code [0]} itself as {@code DexFile*}
+     * and load {@code begin_} at {@code +8}. A null oat slot then becomes a
+     * READ at address 0x8. Both slots therefore hold the same fake
+     * {@code DexFile*} so either convention sees mapped {@code begin_}/{@code size_}.
+     */
+    public DvmObject<?> getOrCreateDexFileCookie() {
+        if (dexFileCookie != null) {
+            return dexFileCookie;
+        }
+        long dexFilePtr = allocateFakeArtDexFile();
+        // Same pointer in both slots: oat-skip walkers use [1], [0]-as-DexFile* walkers use [0].
+        dexFileCookie = new LongArray(this, new long[]{dexFilePtr, dexFilePtr});
+        addObject(dexFileCookie, true, false);
+        return dexFileCookie;
+    }
+
+    /**
+     * Guest pointer to the fake ART {@code DexFile} (vptr / {@code begin_} /
+     * {@code size_}), or 0 if this VM has no {@code classes.dex}.
+     */
+    public long getArtDexFilePointer() {
+        getOrCreateDexFileCookie();
+        return fakeArtDexFile != null ? fakeArtDexFile.getPointer().peer : 0L;
+    }
+
+    private long allocateFakeArtDexFile() {
+        byte[] dex = unzip("classes.dex");
+        if (dex == null || dex.length < 0x70 || dex[0] != 'd' || dex[1] != 'e' || dex[2] != 'x') {
+            return 0L;
+        }
+        mappedClassesDex = emulator.getMemory().malloc(dex.length, true);
+        mappedClassesDex.getPointer().write(0, dex, 0, dex.length);
+        long begin = mappedClassesDex.getPointer().peer;
+        String location = "/data/app/" + getPackageName() + "-1/base.apk";
+        fakeArtDexLocation = emulator.getMemory().malloc(location.length() + 1, true);
+        fakeArtDexLocation.getPointer().setString(0, location);
+        // vptr, begin_, size_, libc++ location_, checksum, header_==begin_
+        fakeArtDexFile = emulator.getMemory().malloc(0x80, true);
+        fakeArtDexFile.getPointer().setLong(0, 0L);
+        fakeArtDexFile.getPointer().setLong(8, begin);
+        fakeArtDexFile.getPointer().setLong(16, dex.length);
+        fakeArtDexFile.getPointer().setLong(24, fakeArtDexLocation.getPointer().peer);
+        fakeArtDexFile.getPointer().setLong(32, location.length());
+        fakeArtDexFile.getPointer().setLong(40, location.length());
+        int checksum = (dex[8] & 0xff) | ((dex[9] & 0xff) << 8)
+                | ((dex[10] & 0xff) << 16) | ((dex[11] & 0xff) << 24);
+        fakeArtDexFile.getPointer().setInt(48, checksum);
+        fakeArtDexFile.getPointer().setLong(56, begin);
+        return fakeArtDexFile.getPointer().peer;
     }
 
     @Override

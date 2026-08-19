@@ -329,7 +329,7 @@ public class UnidbgPointer extends Pointer implements PointerArg {
                 break;
             }
 
-            if (baos.size() > 0x40000) { // 256k
+            if (baos.size() > 0x800000) { // 8M
                 throw new IllegalStateException("buffer overflow");
             }
 

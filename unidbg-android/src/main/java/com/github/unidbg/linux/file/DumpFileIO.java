@@ -41,4 +41,9 @@ public class DumpFileIO extends BaseAndroidFileIO implements AndroidFileIO {
     public int getdents64(Pointer dirp, int size) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public String getPath() {
+        return "/dev/null";
+    }
 }

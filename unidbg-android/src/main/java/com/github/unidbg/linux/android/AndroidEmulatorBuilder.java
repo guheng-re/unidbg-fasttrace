@@ -20,6 +20,7 @@ public class AndroidEmulatorBuilder extends EmulatorBuilder<AndroidEmulator> {
 
     @Override
     public AndroidEmulator build() {
+        addDefaultBackendIfNeeded();
         TraceEnvironmentConfig environmentConfig = resolveEnvironmentConfig();
         return is64Bit ? new AndroidARM64Emulator(processName, rootDir, backendFactories, environmentConfig) : new AndroidARMEmulator(processName, rootDir, backendFactories, environmentConfig);
     }

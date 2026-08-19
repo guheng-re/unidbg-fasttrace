@@ -365,8 +365,16 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
         Module sm = null;
         Symbol ret = null;
         for (LinuxModule module : modules.values()) {
-            if (module.base == handle) { // virtual module may have same base address
-                Symbol symbol = module.findSymbolByName(symbolName, false);
+            // Exact load-bias, or any address inside the module. Maps walkers
+            // often pass a later PT_LOAD (RW) instead of the ELF base.
+            boolean sameObject = module.base == handle
+                    || (handle > module.base && handle < module.base + module.size);
+            if (sameObject) {
+                // bionic dlsym(handle) searches the object and its DT_NEEDED
+                // tree. Packers resolve libc symbols via liblog/libz/libm
+                // handles; searching only the named ELF left the decrypted
+                // image's GOT unbound.
+                Symbol symbol = module.findSymbolByName(symbolName, true);
                 if (symbol != null) {
                     ret = symbol;
                     sm = module;
@@ -768,6 +776,7 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
         module.setEntryPoint(elfFile.entry_point);
         log.debug("Load library {} offset={}ms, entry_point=0x{}", soName, System.currentTimeMillis() - start, Long.toHexString(elfFile.entry_point));
         notifyModuleLoaded(module);
+        emulator.getDlfcn().onLibraryLoaded(emulator, module);
         return module;
     }
 

@@ -24,6 +24,14 @@ public abstract class Dlfcn implements HookListener, Serializable {
         error.setMemory(0, 0x80, (byte) 0);
     }
 
+    /**
+     * Called after a module is mapped. {@code ArmLD64} uses this to overlay
+     * the guest {@code libdl.so} {@code dlsym} export (not {@code dlopen})
+     * so ELF walkers that read dynsym {@code st_value} still hit Java lookup.
+     */
+    public void onLibraryLoaded(Emulator<?> emulator, com.github.unidbg.Module module) {
+    }
+
     protected final long dlsym(Emulator<?> emulator, long handle, String symbolName) {
         Memory memory = emulator.getMemory();
         Symbol symbol = memory.dlsym(handle, symbolName);
