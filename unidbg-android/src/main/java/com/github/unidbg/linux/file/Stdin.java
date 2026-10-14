@@ -67,6 +67,11 @@ public class Stdin extends BaseAndroidFileIO implements AndroidFileIO {
     }
 
     @Override
+    public String getPath() {
+        return "/dev/stdin";
+    }
+
+    @Override
     public String toString() {
         return "stdin";
     }

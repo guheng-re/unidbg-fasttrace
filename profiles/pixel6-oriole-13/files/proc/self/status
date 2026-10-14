@@ -1,0 +1,15 @@
+Name:	com.MobileTicket
+Umask:	0077
+State:	S (sleeping)
+Tgid:	10231
+Ngid:	0
+Pid:	10231
+PPid:	1
+TracerPid:	0
+Uid:	10273	10273	10273	10273
+Gid:	10273	10273	10273	10273
+FDSize:	256
+Groups:	3001 3002 3003 9997 20273 50273
+Threads:	37
+NoNewPrivs:	0
+Seccomp:	2

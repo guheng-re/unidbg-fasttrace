@@ -1,0 +1,143 @@
+5aa3add000-5aa3b09000 r--p 00000000 fe:0a 490                            /system/bin/toybox
+5aa3b09000-5aa3b4f000 r-xp 0002c000 fe:0a 490                            /system/bin/toybox
+5aa3b4f000-5aa3b53000 r--p 00072000 fe:0a 490                            /system/bin/toybox
+5aa3b53000-5aa3b57000 rw-p 00075000 fe:0a 490                            /system/bin/toybox
+5aa3b57000-5aa3b5b000 rw-p 00000000 00:00 0                              [anon:.bss]
+7923be8000-7923ebd000 ---p 00000000 00:00 0                              [anon:cfi shadow]
+7923ebd000-7923ebe000 r--p 00000000 00:00 0                              [anon:cfi shadow]
+7923ebe000-7923fb5000 ---p 00000000 00:00 0                              [anon:cfi shadow]
+7923fb5000-7923fb6000 r--p 00000000 00:00 0                              [anon:cfi shadow]
+7923fb6000-7923fc5000 ---p 00000000 00:00 0                              [anon:cfi shadow]
+7923fc5000-7923fc6000 r--p 00000000 00:00 0                              [anon:cfi shadow]
+7923fc6000-79a3be8000 ---p 00000000 00:00 0                              [anon:cfi shadow]
+79a3be8000-79a3beb000 r--p 00000000 fe:0a 2588                           /system/lib64/libnetd_client.so
+79a3beb000-79a3bef000 r-xp 00003000 fe:0a 2588                           /system/lib64/libnetd_client.so
+79a3bef000-79a3bf0000 r--p 00007000 fe:0a 2588                           /system/lib64/libnetd_client.so
+79a3bf0000-79a3bf1000 rw-p 00007000 fe:0a 2588                           /system/lib64/libnetd_client.so
+79a3c20000-79a3c28000 ---p 00000000 00:00 0 
+79a3c28000-79a3c68000 rw-p 00000000 00:00 0                              [anon:scudo:primary]
+79a3c68000-79b3c22000 ---p 00000000 00:00 0 
+79b3c22000-79b3c62000 rw-p 00000000 00:00 0                              [anon:scudo:primary]
+79b3c62000-79c3c28000 ---p 00000000 00:00 0 
+79c3c28000-79c3c68000 rw-p 00000000 00:00 0                              [anon:scudo:primary]
+79c3c68000-79d3c25000 ---p 00000000 00:00 0 
+79d3c25000-79d3c65000 rw-p 00000000 00:00 0                              [anon:scudo:primary]
+79d3c65000-79f3c21000 ---p 00000000 00:00 0 
+79f3c21000-79f3c61000 rw-p 00000000 00:00 0                              [anon:scudo:primary]
+79f3c61000-7a13c28000 ---p 00000000 00:00 0 
+7a13c28000-7a13c68000 rw-p 00000000 00:00 0                              [anon:scudo:primary]
+7a13c68000-7bb3c20000 ---p 00000000 00:00 0 
+7bb3c20000-7bb3c7b000 r--p 00000000 fe:0a 2433                           /system/lib64/libcrypto.so
+7bb3c7b000-7bb3cf8000 r-xp 0005b000 fe:0a 2433                           /system/lib64/libcrypto.so
+7bb3cf8000-7bb3d55000 --xp 000d8000 fe:0a 2433                           /system/lib64/libcrypto.so
+7bb3d55000-7bb3d5a000 r-xp 00135000 fe:0a 2433                           /system/lib64/libcrypto.so
+7bb3d5a000-7bb3d6a000 r--p 0013a000 fe:0a 2433                           /system/lib64/libcrypto.so
+7bb3d6a000-7bb3d6b000 rw-p 00149000 fe:0a 2433                           /system/lib64/libcrypto.so
+7bb3d6b000-7bb3d71000 rw-p 00000000 00:00 0                              [anon:.bss]
+7bb3d83000-7bb3d95000 r--p 00000000 07:28 41                             /apex/com.android.runtime/lib64/bionic/libm.so
+7bb3d95000-7bb3dbb000 r-xp 00012000 07:28 41                             /apex/com.android.runtime/lib64/bionic/libm.so
+7bb3dbb000-7bb3dbc000 r--p 00038000 07:28 41                             /apex/com.android.runtime/lib64/bionic/libm.so
+7bb3dbc000-7bb3dbd000 rw-p 00038000 07:28 41                             /apex/com.android.runtime/lib64/bionic/libm.so
+7bb3dc7000-7bb3dcc000 r--p 00000000 fe:0a 2542                           /system/lib64/liblog.so
+7bb3dcc000-7bb3dd6000 r-xp 00005000 fe:0a 2542                           /system/lib64/liblog.so
+7bb3dd6000-7bb3dd7000 r--p 0000f000 fe:0a 2542                           /system/lib64/liblog.so
+7bb3dd7000-7bb3dd8000 rw-p 0000f000 fe:0a 2542                           /system/lib64/liblog.so
+7bb3e1e000-7bb3e45000 r--p 00000000 fe:0a 2601                           /system/lib64/libpcre2.so
+7bb3e45000-7bb3e77000 r-xp 00027000 fe:0a 2601                           /system/lib64/libpcre2.so
+7bb3e77000-7bb3e78000 r--p 00059000 fe:0a 2601                           /system/lib64/libpcre2.so
+7bb3e78000-7bb3e79000 rw-p 00059000 fe:0a 2601                           /system/lib64/libpcre2.so
+7bb3e8f000-7bb3eae000 r--p 00000000 fe:0a 2614                           /system/lib64/libprocessgroup.so
+7bb3eae000-7bb3ee3000 r-xp 0001f000 fe:0a 2614                           /system/lib64/libprocessgroup.so
+7bb3ee3000-7bb3ee5000 r--p 00054000 fe:0a 2614                           /system/lib64/libprocessgroup.so
+7bb3ee5000-7bb3ee6000 rw-p 00055000 fe:0a 2614                           /system/lib64/libprocessgroup.so
+7bb3f23000-7bb3f60000 r--p 00000000 07:28 38                             /apex/com.android.runtime/lib64/bionic/libc.so
+7bb3f60000-7bb3ff1000 r-xp 0003d000 07:28 38                             /apex/com.android.runtime/lib64/bionic/libc.so
+7bb3ff1000-7bb3ff5000 r--p 000ce000 07:28 38                             /apex/com.android.runtime/lib64/bionic/libc.so
+7bb3ff5000-7bb3ff7000 rw-p 000d1000 07:28 38                             /apex/com.android.runtime/lib64/bionic/libc.so
+7bb3ff7000-7bb4549000 rw-p 00000000 00:00 0                              [anon:.bss]
+7bb4549000-7bb454a000 r--p 00000000 00:00 0                              [anon:.bss]
+7bb454a000-7bb4552000 rw-p 00000000 00:00 0                              [anon:.bss]
+7bb456b000-7bb45cf000 rw-p 00000000 00:00 0                              [anon:linker_alloc]
+7bb45cf000-7bb45d7000 r--p 00000000 fe:0a 2694                           /system/lib64/libz.so
+7bb45d7000-7bb45ea000 r-xp 00008000 fe:0a 2694                           /system/lib64/libz.so
+7bb45ea000-7bb45eb000 r--p 0001b000 fe:0a 2694                           /system/lib64/libz.so
+7bb45eb000-7bb45ec000 rw-p 0001b000 fe:0a 2694                           /system/lib64/libz.so
+7bb4600000-7bb7e00000 ---p 00000000 00:00 0 
+7bb7e51000-7bb7e52000 r--p 00000000 fe:0a 2598                           /system/lib64/libpackagelistparser.so
+7bb7e52000-7bb7e53000 r-xp 00001000 fe:0a 2598                           /system/lib64/libpackagelistparser.so
+7bb7e53000-7bb7e54000 r--p 00002000 fe:0a 2598                           /system/lib64/libpackagelistparser.so
+7bb7e81000-7bb7ecd000 r--p 00000000 fe:0a 2407                           /system/lib64/libc++.so
+7bb7ecd000-7bb7f1e000 r-xp 0004c000 fe:0a 2407                           /system/lib64/libc++.so
+7bb7f1e000-7bb7f25000 r--p 0009d000 fe:0a 2407                           /system/lib64/libc++.so
+7bb7f25000-7bb7f26000 rw-p 000a3000 fe:0a 2407                           /system/lib64/libc++.so
+7bb7f26000-7bb7f29000 rw-p 00000000 00:00 0                              [anon:.bss]
+7bb7f50000-7bb7f52000 r--p 00000000 fe:0a 2415                           /system/lib64/libcgrouprc.so
+7bb7f52000-7bb7f53000 r-xp 00002000 fe:0a 2415                           /system/lib64/libcgrouprc.so
+7bb7f53000-7bb7f54000 r--p 00003000 fe:0a 2415                           /system/lib64/libcgrouprc.so
+7bb7f54000-7bb7f55000 rw-p 00003000 fe:0a 2415                           /system/lib64/libcgrouprc.so
+7bb7f80000-7bb7f92000 r--p 00000000 fe:0a 2383                           /system/lib64/libbase.so
+7bb7f92000-7bb7fbe000 r-xp 00012000 fe:0a 2383                           /system/lib64/libbase.so
+7bb7fbe000-7bb7fbf000 r--p 0003e000 fe:0a 2383                           /system/lib64/libbase.so
+7bb7fbf000-7bb7fc0000 rw-p 0003e000 fe:0a 2383                           /system/lib64/libbase.so
+7bb7fd2000-7bb7fd3000 r--p 00000000 07:28 39                             /apex/com.android.runtime/lib64/bionic/libdl.so
+7bb7fd3000-7bb7fd4000 r-xp 00001000 07:28 39                             /apex/com.android.runtime/lib64/bionic/libdl.so
+7bb7fd4000-7bb7fd5000 r--p 00002000 07:28 39                             /apex/com.android.runtime/lib64/bionic/libdl.so
+7bb7fd5000-7bb7fd6000 ---p 00000000 00:00 0 
+7bb7fd6000-7bb7fd7000 r--p 00000000 00:00 0                              [anon:.bss]
+7bb801a000-7bb8021000 r--p 00000000 fe:0a 2627                           /system/lib64/libselinux.so
+7bb8021000-7bb8034000 r-xp 00007000 fe:0a 2627                           /system/lib64/libselinux.so
+7bb8034000-7bb8035000 r--p 0001a000 fe:0a 2627                           /system/lib64/libselinux.so
+7bb8035000-7bb8036000 rw-p 0001a000 fe:0a 2627                           /system/lib64/libselinux.so
+7bb8036000-7bb8038000 rw-p 00000000 00:00 0                              [anon:.bss]
+7bb803f000-7bb805f000 r--s 00000000 00:10 212                            /dev/__properties__/u:object_r:heapprofd_prop:s0
+7bb805f000-7bb807f000 r--s 00000000 00:10 225                            /dev/__properties__/u:object_r:libc_debug_prop:s0
+7bb807f000-7bb8080000 rw-p 00000000 00:00 0                              [anon:bionic_alloc_small_objects]
+7bb8080000-7bb80a0000 r--s 00000000 00:10 207                            /dev/__properties__/u:object_r:gwp_asan_prop:s0
+7bb80a0000-7bb80c0000 r--s 00000000 00:10 152                            /dev/__properties__/u:object_r:debug_prop:s0
+7bb80c0000-7bb80e0000 r--s 00000000 00:10 386                            /dev/__properties__/properties_serial
+7bb80e0000-7bb80f4000 r--s 00000000 00:10 80                             /dev/__properties__/property_info
+7bb80f4000-7bb80f5000 ---p 00000000 00:00 0 
+7bb80f5000-7bb80f9000 rw-p 00000000 00:00 0                              [anon:stack_and_tls:main]
+7bb80f9000-7bb80fa000 ---p 00000000 00:00 0 
+7bb813e000-7bb815e000 r--s 00000000 00:10 355                            /dev/__properties__/u:object_r:vendor_socket_hook_prop:s0
+7bb815e000-7bb8226000 r--p 00000000 00:00 0                              [anon:linker_alloc]
+7bb8226000-7bb8229000 rw-p 00000000 00:00 0                              [anon:bionic_alloc_small_objects]
+7bb822a000-7bb822b000 rw-p 00000000 00:00 0                              [anon:bionic_alloc_small_objects]
+7bb822c000-7bb822f000 rw-p 00000000 00:00 0                              [anon:bionic_alloc_small_objects]
+7bb8230000-7bb8233000 rw-p 00000000 00:00 0                              [anon:System property context nodes]
+7bb8233000-7bb8236000 rw-p 00000000 00:00 0                              [anon:bionic_alloc_small_objects]
+7bb8237000-7bb823b000 rw-p 00000000 00:00 0                              [anon:bionic_alloc_small_objects]
+7bb823b000-7bb8245000 rw-p 00000000 00:00 0                              [anon:bionic_alloc_small_objects]
+7bb8245000-7bb8265000 r--s 00000000 00:10 371                            /dev/__properties__/u:object_r:vndk_prop:s0
+7bb8265000-7bb8268000 rw-p 00000000 00:00 0                              [anon:bionic_alloc_small_objects]
+7bb8268000-7bb8288000 r--s 00000000 00:10 91                             /dev/__properties__/u:object_r:arm64_memtag_prop:s0
+7bb8288000-7bb82ec000 r--p 00000000 00:00 0                              [anon:linker_alloc]
+7bb82ec000-7bb830c000 r--s 00000000 00:10 152                            /dev/__properties__/u:object_r:debug_prop:s0
+7bb830c000-7bb832c000 r--s 00000000 00:10 113                            /dev/__properties__/u:object_r:build_prop:s0
+7bb832c000-7bb832d000 ---p 00000000 00:00 0 
+7bb832d000-7bb8335000 rw-p 00000000 00:00 0 
+7bb8335000-7bb8336000 ---p 00000000 00:00 0 
+7bb8336000-7bb8356000 r--s 00000000 00:10 386                            /dev/__properties__/properties_serial
+7bb8356000-7bb8359000 rw-p 00000000 00:00 0                              [anon:System property context nodes]
+7bb8359000-7bb836d000 r--s 00000000 00:10 80                             /dev/__properties__/property_info
+7bb836d000-7bb83d1000 r--p 00000000 00:00 0                              [anon:linker_alloc]
+7bb83d1000-7bb83d3000 rw-p 00000000 00:00 0                              [anon:bionic_alloc_small_objects]
+7bb83d3000-7bb83d4000 r--p 00000000 00:00 0                              [anon:atexit handlers]
+7bb83d4000-7bb8e3c000 ---p 00000000 00:00 0 
+7bb8e3c000-7bb8e3e000 rw-p 00000000 00:00 0 
+7bb8e3e000-7bb93d4000 ---p 00000000 00:00 0 
+7bb93d4000-7bb93d5000 ---p 00000000 00:00 0 
+7bb93d5000-7bb93dd000 rw-p 00000000 00:00 0                              [anon:thread signal stack]
+7bb93dd000-7bb93de000 rw-p 00000000 00:00 0                              [anon:arc4random data]
+7bb93df000-7bb93e0000 r--p 00000000 00:00 0                              [anon:atexit handlers]
+7bb93e0000-7bb93e1000 rw-p 00000000 00:00 0                              [anon:arc4random data]
+7bb93e1000-7bb93e3000 r--p 00000000 00:00 0                              [vvar]
+7bb93e3000-7bb93e4000 r-xp 00000000 00:00 0                              [vdso]
+7bb93e4000-7bb941d000 r--p 00000000 07:28 16                             /apex/com.android.runtime/bin/linker64
+7bb941d000-7bb9507000 r-xp 00039000 07:28 16                             /apex/com.android.runtime/bin/linker64
+7bb9507000-7bb950f000 r--p 00123000 07:28 16                             /apex/com.android.runtime/bin/linker64
+7bb950f000-7bb9511000 rw-p 0012a000 07:28 16                             /apex/com.android.runtime/bin/linker64
+7bb9511000-7bb951a000 rw-p 00000000 00:00 0                              [anon:.bss]
+7bb951a000-7bb951b000 r--p 00000000 00:00 0                              [anon:.bss]
+7bb951b000-7bb951d000 rw-p 00000000 00:00 0                              [anon:.bss]
+7fee031000-7fee052000 rw-p 00000000 00:00 0                              [stack]

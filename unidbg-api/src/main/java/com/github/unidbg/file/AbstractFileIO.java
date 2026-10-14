@@ -169,7 +169,8 @@ public abstract class AbstractFileIO implements NewFileIO {
 
     @Override
     public String getPath() {
-        throw new AbstractMethodError(getClass().getName());
+        // Turing #124 walks /proc/self/fd/*; sockets/stdio must not abort the packer.
+        return "/dev/" + getClass().getSimpleName().toLowerCase();
     }
 
     @Override

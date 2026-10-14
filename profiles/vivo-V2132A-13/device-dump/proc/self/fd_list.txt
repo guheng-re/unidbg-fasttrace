@@ -1,0 +1,6 @@
+total 0
+lrwx------ 1 root root 64 2026-08-17 17:14 0 -> socket:[6113604]
+lrwx------ 1 root root 64 2026-08-17 17:14 1 -> socket:[6113604]
+lrwx------ 1 root root 64 2026-08-17 17:14 2 -> socket:[6113606]
+lr-x------ 1 root root 64 2026-08-17 17:14 3 -> /proc/30812/fd
+lr-x------ 1 root root 64 2026-08-17 17:14 4 -> /proc/30812/fd

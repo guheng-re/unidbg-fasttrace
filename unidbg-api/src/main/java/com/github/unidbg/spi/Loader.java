@@ -26,6 +26,16 @@ public interface Loader {
     Module load(LibraryFile libraryFile);
     Module load(LibraryFile libraryFile, boolean forceCallInit);
 
+    /**
+     * Map PT_LOAD into emulator memory without linking: no DT_NEEDED, no reloc, no
+     * {@code .init_array} / JNI_OnLoad. The module is registered in
+     * {@link #getLoadedModules()} so the next {@code /proc/self/maps} open includes it.
+     * Already-loaded SONAMEs are returned as-is (will not replace libc etc.).
+     */
+    default Module mapNoLink(LibraryFile libraryFile) {
+        throw new UnsupportedOperationException("mapNoLink");
+    }
+
     Module findModuleByAddress(long address);
     Module findModule(String name);
 

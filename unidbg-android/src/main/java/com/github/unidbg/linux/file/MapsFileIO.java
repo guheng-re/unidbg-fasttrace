@@ -32,6 +32,12 @@ public class MapsFileIO extends ByteArrayFileIO implements FileIO {
         super(oflags, path, bytes);
     }
 
+    /**
+     * Built from {@link Memory#getLoadedModules()} plus leftover anonymous maps.
+     * {@link com.github.unidbg.file.linux.LinuxFileSystem} constructs a new instance on every
+     * {@code open("/proc/self/maps")}, so a {@code mapNoLink} that ran after the previous open
+     * shows up on the next open. A fd already held still sees the snapshot from that open.
+     */
     protected static byte[] getMapsData(Emulator<?> emulator, Collection<Module> modules, String additionContent) {
         List<MemRegion> list = new ArrayList<>(modules.size());
         for (Module module : modules) {

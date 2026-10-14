@@ -1,0 +1,37 @@
+Pixel 6 24241FDF6000S1 (oriole / TQ1A.230105.002) adb pull 2026-08-27
+
+mapNoLink (ELF into memory, no linker) — skip if already loaded:
+  /apex/com.android.art/lib64/libart.so
+  /system/lib64/libandroid_runtime.so
+  /system/lib64/libcamera_client.so
+  /system/lib64/libgui.so
+  /system/lib64/libjnigraphics.so
+  /system/lib64/libandroid.so          (skip: 4KB virtual module already)
+  /system/lib64/libc++.so
+  /system/lib64/libutils.so
+  /system/lib64/libui.so
+  /system/lib64/libbinder.so
+  /system/lib64/libhwui.so
+  /system/lib64/libnativeloader_lazy.so
+  /system/lib64/libandroidfw.so
+  /system/framework/arm64/boot-framework.oat
+  /system/framework/arm64/boot.oat
+  /system/framework/arm64/boot-framework-graphics.oat
+  /system/framework/arm64/boot-core-libart.oat
+  /system/framework/arm64/boot-core-icu4j.oat
+  /system/framework/arm64/boot-okhttp.oat
+  /system/framework/arm64/boot-ext.oat
+
+VFS overlay only (do NOT mapNoLink — unidbg already linked sdk23 copies):
+  /apex/com.android.runtime/lib64/bionic/libc.so  (+ copied to /system/lib64/libc.so)
+  /apex/com.android.runtime/lib64/bionic/libm.so
+  /apex/com.android.runtime/lib64/bionic/libdl.so
+  /apex/com.android.runtime/lib64/bionic/libdl_android.so
+  /system/lib64/libz.so
+  /system/lib64/liblog.so
+  /system/lib64/libstdc++.so
+
+Also overlay (not ELF, open() only):
+  boot.art boot.vdex boot-framework.art boot-core-libart.art
+
+Same bytes live under profiles/pixel6-oriole-13/files/<android-path>.

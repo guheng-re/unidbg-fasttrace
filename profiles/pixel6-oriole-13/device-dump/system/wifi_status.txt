@@ -1,0 +1,13 @@
+Wifi is enabled
+Wifi scanning is always available
+==== Primary ClientModeManager instance ====
+Wifi is connected to "LY-office"
+WifiInfo: SSID: "LY-office", BSSID: 8c:79:09:e5:e1:d0, MAC: 74:74:46:b6:4e:fe, IP: /10.41.20.63, Security type: 3, Supplicant state: COMPLETED, Wi-Fi standard: 6, RSSI: -49, Link speed: 516Mbps, Tx Link speed: 516Mbps, Max Supported Tx Link speed: 573Mbps, Rx Link speed: 412Mbps, Max Supported Rx Link speed: 573Mbps, Frequency: 5785MHz, Net ID: 0, Metered hint: false, score: 60, isUsable: true, CarrierMerged: false, SubscriptionId: -1, IsPrimary: 1, Trusted: true, Restricted: false, Ephemeral: false, OEM paid: false, OEM private: false, OSU AP: false, FQDN: <none>, Provider friendly name: <none>, Requesting package name: <none>"LY-office"wpa2-enterpriseMLO Information: , AP MLD Address: <none>, AP MLO Link Id: <none>, AP MLO Affiliated links: <none>
+successfulTxPackets: 893446
+successfulTxPacketsPerSecond: 5.507813765639768E-4
+retriedTxPackets: 190238
+retriedTxPacketsPerSecond: 4.5897432434789235E-5
+lostTxPackets: 8444
+lostTxPacketsPerSecond: 5.04237019245254E-278
+successfulRxPackets: 615738
+successfulRxPacketsPerSecond: 5.966764423014663E-4

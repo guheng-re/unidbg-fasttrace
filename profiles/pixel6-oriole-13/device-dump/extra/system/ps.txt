@@ -1,0 +1,645 @@
+  PID USER         NAME                        CMD            
+    1 root         init                        init
+    2 root         [kthreadd]                  kthreadd
+    3 root         [rcu_gp]                    rcu_gp
+    5 root         [kworker/0:0H-mem_rx_work]  kworker/0:0H-mem_rx_work
+    7 root         [mm_percpu_wq]              mm_percpu_wq
+    9 root         [rcu_tasks_kthre]           rcu_tasks_kthre
+   10 root         [rcu_tasks_trace]           rcu_tasks_trace
+   11 root         [ksoftirqd/0]               ksoftirqd/0
+   12 root         [rcu_preempt]               rcu_preempt
+   13 root         [rcuog/0]                   rcuog/0
+   14 root         [rcuop/0]                   rcuop/0
+   15 root         [rcub/0]                    rcub/0
+   16 root         [rcuc/0]                    rcuc/0
+   17 root         [rcu_exp_gp_kthr]           rcu_exp_gp_kthr
+   18 root         [rcu_exp_par_gp_]           rcu_exp_par_gp_
+   19 root         [migration/0]               migration/0
+   21 root         [cpuhp/0]                   cpuhp/0
+   22 root         [cpuhp/1]                   cpuhp/1
+   23 root         [migration/1]               migration/1
+   24 root         [rcuc/1]                    rcuc/1
+   25 root         [ksoftirqd/1]               ksoftirqd/1
+   27 root         [kworker/1:0H-kblockd]      kworker/1:0H-kblockd
+   28 root         [rcuop/1]                   rcuop/1
+   29 root         [cpuhp/2]                   cpuhp/2
+   30 root         [migration/2]               migration/2
+   31 root         [rcuc/2]                    rcuc/2
+   32 root         [ksoftirqd/2]               ksoftirqd/2
+   34 root         [kworker/2:0H-kblockd]      kworker/2:0H-kblockd
+   35 root         [rcuop/2]                   rcuop/2
+   36 root         [cpuhp/3]                   cpuhp/3
+   37 root         [migration/3]               migration/3
+   38 root         [rcuc/3]                    rcuc/3
+   39 root         [ksoftirqd/3]               ksoftirqd/3
+   41 root         [kworker/3:0H-events_highpri] kworker/3:0H-events_highpri
+   42 root         [rcuop/3]                   rcuop/3
+   43 root         [cpuhp/4]                   cpuhp/4
+   44 root         [migration/4]               migration/4
+   45 root         [rcuc/4]                    rcuc/4
+   46 root         [ksoftirqd/4]               ksoftirqd/4
+   48 root         [kworker/4:0H-kblockd]      kworker/4:0H-kblockd
+   49 root         [rcuog/4]                   rcuog/4
+   50 root         [rcuop/4]                   rcuop/4
+   51 root         [cpuhp/5]                   cpuhp/5
+   52 root         [migration/5]               migration/5
+   53 root         [rcuc/5]                    rcuc/5
+   54 root         [ksoftirqd/5]               ksoftirqd/5
+   56 root         [kworker/5:0H-kblockd]      kworker/5:0H-kblockd
+   57 root         [rcuop/5]                   rcuop/5
+   58 root         [cpuhp/6]                   cpuhp/6
+   59 root         [migration/6]               migration/6
+   60 root         [rcuc/6]                    rcuc/6
+   61 root         [ksoftirqd/6]               ksoftirqd/6
+   63 root         [kworker/6:0H-kblockd]      kworker/6:0H-kblockd
+   64 root         [rcuop/6]                   rcuop/6
+   65 root         [cpuhp/7]                   cpuhp/7
+   66 root         [migration/7]               migration/7
+   67 root         [rcuc/7]                    rcuc/7
+   68 root         [ksoftirqd/7]               ksoftirqd/7
+   70 root         [kworker/7:0H-events_highpri] kworker/7:0H-events_highpri
+   71 root         [rcuop/7]                   rcuop/7
+   72 root         [netns]                     netns
+   80 root         [kauditd]                   kauditd
+   81 root         [khungtaskd]                khungtaskd
+   82 root         [oom_reaper]                oom_reaper
+   83 root         [writeback]                 writeback
+   84 root         [kcompactd0]                kcompactd0
+   85 root         [khugepaged]                khugepaged
+  127 root         [kblockd]                   kblockd
+  128 root         [blkcg_punt_bio]            blkcg_punt_bio
+  129 root         [edac-poller]               edac-poller
+  130 root         [devfreq_wq]                devfreq_wq
+  131 root         [watchdogd]                 watchdogd
+  132 root         [kworker/7:1H-kblockd]      kworker/7:1H-kblockd
+  133 root         [cfg80211]                  cfg80211
+  156 root         [kswapd0]                   kswapd0
+  159 root         [dmabuf-deferred]           dmabuf-deferred
+  160 root         [uas]                       uas
+  161 root         [dm_bufio_cache]            dm_bufio_cache
+  162 root         [ipv6_addrconf]             ipv6_addrconf
+  163 root         [krfcommd]                  krfcommd
+  173 root         [irq/303-1761000]           irq/303-1761000
+  174 root         [acpm_log]                  acpm_log
+  176 root         [spi5]                      spi5
+  177 root         [spi6]                      spi6
+  179 root         [spi14]                     spi14
+  180 root         [spi9]                      spi9
+  181 root         [spi11]                     spi11
+  182 root         [spi13]                     spi13
+  183 root         [irq/253-176c000]           irq/253-176c000
+  188 root         [kdbgd]                     kdbgd
+  189 root         [memlat_wq]                 memlat_wq
+  190 root         [sched_pmu_wq]              sched_pmu_wq
+  191 root         [simpleinteracti]           simpleinteracti
+  192 root         [simpleinteracti]           simpleinteracti
+  193 root         [simpleinteracti]           simpleinteracti
+  194 root         [simpleinteracti]           simpleinteracti
+  195 root         [simpleinteracti]           simpleinteracti
+  196 root         [simpleinteracti]           simpleinteracti
+  197 root         [simpleinteracti]           simpleinteracti
+  198 root         [simpleinteracti]           simpleinteracti
+  201 root         [PT_resize]                 PT_resize
+  202 root         [cp2ap_wakeup_wq]           cp2ap_wakeup_wq
+  203 root         [trigger_cp_cras]           trigger_cp_cras
+  204 root         [cpif_tpmon_moni]           cpif_tpmon_moni
+  205 root         [irq/298-eh_erro]           irq/298-eh_erro
+  206 root         [eh_comp_thread]            eh_comp_thread
+  207 root         [irq/369-s2mpg10]           irq/369-s2mpg10
+  208 root         [irq/416-aerdrv]            irq/416-aerdrv
+  209 root         [pcie_wq]                   pcie_wq
+  210 root         [irq/417-aerdrv]            irq/417-aerdrv
+  211 root         [pcie_wq]                   pcie_wq
+  212 root         [irq/415-s2mpg11]           irq/415-s2mpg11
+  214 root         [thermal_BIG]               thermal_BIG
+  215 root         [BIG_pause]                 BIG_pause
+  216 root         [BIG_hw_throttle]           BIG_hw_throttle
+  217 root         [BIG_hardlimit]             BIG_hardlimit
+  218 root         [thermal_MID]               thermal_MID
+  219 root         [MID_pause]                 MID_pause
+  220 root         [MID_hardlimit]             MID_hardlimit
+  221 root         [thermal_LITTLE]            thermal_LITTLE
+  222 root         [thermal_G3D]               thermal_G3D
+  223 root         [G3D_hardlimit]             G3D_hardlimit
+  224 root         [thermal_ISP]               thermal_ISP
+  225 root         [thermal_TPU]               thermal_TPU
+  226 root         [TPU_pause]                 TPU_pause
+  227 root         [TPU_hardlimit]             TPU_hardlimit
+  228 root         [hwrng]                     hwrng
+  229 root         [irq/91-1a090000]           irq/91-1a090000
+  230 root         [irq/92-1a090000]           irq/92-1a090000
+  231 root         [irq/93-1ca40000]           irq/93-1ca40000
+  232 root         [irq/94-1ca40000]           irq/94-1ca40000
+  233 root         [irq/95-1a510000]           irq/95-1a510000
+  234 root         [irq/96-1a510000]           irq/96-1a510000
+  235 root         [irq/97-1a540000]           irq/97-1a540000
+  236 root         [irq/98-1a540000]           irq/98-1a540000
+  237 root         [irq/99-1b080000]           irq/99-1b080000
+  238 root         [irq/100-1b08000]           irq/100-1b08000
+  239 root         [irq/101-1c10000]           irq/101-1c10000
+  240 root         [irq/102-1c10000]           irq/102-1c10000
+  241 root         [irq/103-1c11000]           irq/103-1c11000
+  242 root         [irq/104-1c11000]           irq/104-1c11000
+  243 root         [irq/105-1c12000]           irq/105-1c12000
+  244 root         [irq/106-1c12000]           irq/106-1c12000
+  245 root         [irq/107-1c66000]           irq/107-1c66000
+  246 root         [irq/108-1c66000]           irq/108-1c66000
+  247 root         [irq/109-1c69000]           irq/109-1c69000
+  248 root         [irq/110-1c69000]           irq/110-1c69000
+  249 root         [irq/111-1c71000]           irq/111-1c71000
+  250 root         [irq/112-1c71000]           irq/112-1c71000
+  251 root         [irq/113-1a88000]           irq/113-1a88000
+  252 root         [irq/114-1a88000]           irq/114-1a88000
+  253 root         [irq/115-1baa000]           irq/115-1baa000
+  254 root         [irq/116-1baa000]           irq/116-1baa000
+  255 root         [irq/117-1bad000]           irq/117-1bad000
+  256 root         [irq/118-1bad000]           irq/118-1bad000
+  257 root         [irq/119-1bb0000]           irq/119-1bb0000
+  258 root         [irq/120-1bb0000]           irq/120-1bb0000
+  259 root         [irq/121-1ad0000]           irq/121-1ad0000
+  260 root         [irq/122-1ad0000]           irq/122-1ad0000
+  261 root         [irq/123-1b78000]           irq/123-1b78000
+  262 root         [irq/124-1b78000]           irq/124-1b78000
+  263 root         [irq/125-1b7b000]           irq/125-1b7b000
+  264 root         [irq/126-1b7b000]           irq/126-1b7b000
+  265 root         [irq/127-1b7e000]           irq/127-1b7e000
+  266 root         [irq/128-1b7e000]           irq/128-1b7e000
+  267 root         [irq/129-1c87000]           irq/129-1c87000
+  268 root         [irq/130-1c87000]           irq/130-1c87000
+  269 root         [irq/131-1c8a000]           irq/131-1c8a000
+  270 root         [irq/132-1c8a000]           irq/132-1c8a000
+  271 root         [irq/133-1bc7000]           irq/133-1bc7000
+  272 root         [irq/134-1bc7000]           irq/134-1bc7000
+  273 root         [irq/135-1bca000]           irq/135-1bca000
+  274 root         [irq/136-1bca000]           irq/136-1bca000
+  275 root         [irq/137-1bcd000]           irq/137-1bcd000
+  276 root         [irq/138-1bcd000]           irq/138-1bcd000
+  277 root         [irq/139-1bd0000]           irq/139-1bd0000
+  278 root         [irq/140-1bd0000]           irq/140-1bd0000
+  279 root         [irq/141-1bd3000]           irq/141-1bd3000
+  280 root         [irq/142-1bd3000]           irq/142-1bd3000
+  281 root         [irq/143-1cc4000]           irq/143-1cc4000
+  282 root         [irq/144-1cc4000]           irq/144-1cc4000
+  283 root         [g2d_completion]            g2d_completion
+  284 root         [g2d_scheduler]             g2d_scheduler
+  285 root         [bcm477x_wq]                bcm477x_wq
+  286 root         [scsi_eh_0]                 scsi_eh_0
+  287 root         [scsi_tmf_0]                scsi_tmf_0
+  288 root         [ufs_mgc_hibern8]           ufs_mgc_hibern8
+  289 root         [ufs_eh_wq_0]               ufs_eh_wq_0
+  290 root         [ufs_clk_gating_]           ufs_clk_gating_
+  293 root         [kworker/6:1H-kblockd]      kworker/6:1H-kblockd
+  294 root         [kworker/5:1H-kblockd]      kworker/5:1H-kblockd
+  295 root         [kworker/4:1H-kblockd]      kworker/4:1H-kblockd
+  299 root         [mfc/inst_migrat]           mfc/inst_migrat
+  303 root         [mfc/butler]                mfc/butler
+  304 root         [irq/419-1c8d000]           irq/419-1c8d000
+  305 root         [mfc_core/meerka]           mfc_core/meerka
+  306 root         [mfc_core/idle]             mfc_core/idle
+  307 root         [mfc_core/butler]           mfc_core/butler
+  308 root         [spmic-init]                spmic-init
+  312 root         [wq_odpm]                   wq_odpm
+  313 root         [wq_odpm]                   wq_odpm
+  315 root         [decon0_kthread]            decon0_kthread
+  316 root         [decon2_kthread]            decon2_kthread
+  317 root         [card0-crtc0]               card0-crtc0
+  318 root         [card0-crtc1]               card0-crtc1
+  319 root         [gpu-dvfs-contro]           gpu-dvfs-contro
+  320 root         [gpu-dvfs-clockd]           gpu-dvfs-clockd
+  321 root         [kbase_job_fault]           kbase_job_fault
+  322 root         [mali_jd_thread]            mali_jd_thread
+  323 root         [mali_apc_thread]           mali_apc_thread
+  324 root         [mali_event_thre]           mali_event_thre
+  325 root         [irq/421-max_fg_]           irq/421-max_fg_
+  326 root         [irq/422-SMPL_WA]           irq/422-SMPL_WA
+  327 root         [irq/423-CPU1_OC]           irq/423-CPU1_OC
+  328 root         [irq/424-CPU2_OC]           irq/424-CPU2_OC
+  329 root         [irq/425-SOFT_CP]           irq/425-SOFT_CP
+  330 root         [irq/426-SOFT_CP]           irq/426-SOFT_CP
+  331 root         [irq/427-TPU_OCP]           irq/427-TPU_OCP
+  332 root         [irq/428-SOFT_TP]           irq/428-SOFT_TP
+  333 root         [irq/429-max777x]           irq/429-max777x
+  334 root         [irq/430-GPU_OCP]           irq/430-GPU_OCP
+  335 root         [irq/431-SOFT_GP]           irq/431-SOFT_GP
+  337 root         [irq/429-max7775]           irq/429-max7775
+  338 root         [wq-tcpm-usb-psy]           wq-tcpm-usb-psy
+  339 root         [wq-tcpm-usb-psy]           wq-tcpm-usb-psy
+  340 root         [max77759-bc12]             max77759-bc12
+  341 root         [wq-tcpm-tcpc]              wq-tcpm-tcpc
+  342 root         [i2c-max77759tcp]           i2c-max77759tcp
+  343 root         [irq/434-i2c-max]           irq/434-i2c-max
+  344 root         [google,usbc_por]           google,usbc_por
+  345 root         [irq/435-p9221-i]           irq/435-p9221-i
+  346 root         [hbm_workq]                 hbm_workq
+  347 root         [pca9468_dc_wq]             pca9468_dc_wq
+  348 root         [irq/436-pca9468]           irq/436-pca9468
+  350 root         [cs35l41_ramp]              cs35l41_ramp
+  351 root         [cs35l41_ramp]              cs35l41_ramp
+  352 root         [irq/437-cs35l41]           irq/437-cs35l41
+  353 root         [irq/438-cs35l41]           irq/438-cs35l41
+  354 root         [cs35l41]                   cs35l41
+  355 root         [cs35l41]                   cs35l41
+  356 root         [st_pstate_work]            st_pstate_work
+  357 root         [irq/441-tbn]               irq/441-tbn
+  362 root         [jbd2/sda8-8]               jbd2/sda8-8
+  363 root         [ext4-rsv-conver]           ext4-rsv-conver
+  364 root         [kdmflush]                  kdmflush
+  365 root         [kdmflush]                  kdmflush
+  366 root         [kdmflush]                  kdmflush
+  367 root         [kdmflush]                  kdmflush
+  368 root         [kdmflush]                  kdmflush
+  369 root         [kdmflush]                  kdmflush
+  370 root         [kdmflush]                  kdmflush
+  371 root         [kdmflush]                  kdmflush
+  372 root         [kdmflush]                  kdmflush
+  373 root         [kdmflush]                  kdmflush
+  374 root         [kdmflush]                  kdmflush
+  375 root         [kverityd]                  kverityd
+  376 root         [ext4-rsv-conver]           ext4-rsv-conver
+  380 root         [kdmflush]                  kdmflush
+  381 root         [kverityd]                  kverityd
+  382 root         [ext4-rsv-conver]           ext4-rsv-conver
+  383 root         [kdmflush]                  kdmflush
+  384 root         [kverityd]                  kverityd
+  385 root         [ext4-rsv-conver]           ext4-rsv-conver
+  386 root         [kdmflush]                  kdmflush
+  387 root         [kverityd]                  kverityd
+  388 root         [ext4-rsv-conver]           ext4-rsv-conver
+  389 root         [kdmflush]                  kdmflush
+  390 root         [kverityd]                  kverityd
+  391 root         [ext4-rsv-conver]           ext4-rsv-conver
+  393 root         init                        init
+  395 root         ueventd                     ueventd
+  407 root         [kdmflush]                  kdmflush
+  408 root         [kdmflush]                  kdmflush
+  409 root         [kdmflush]                  kdmflush
+  410 root         [kdmflush]                  kdmflush
+  411 root         [kdmflush]                  kdmflush
+  413 root         [kdmflush]                  kdmflush
+  414 root         [kdmflush]                  kdmflush
+  415 root         [kdmflush]                  kdmflush
+  416 root         [kdmflush]                  kdmflush
+  417 root         [kdmflush]                  kdmflush
+  419 root         [kdmflush]                  kdmflush
+  420 root         [kdmflush]                  kdmflush
+  421 root         [kdmflush]                  kdmflush
+  422 root         [kdmflush]                  kdmflush
+  424 root         [kdmflush]                  kdmflush
+  427 root         [kdmflush]                  kdmflush
+  428 root         [kdmflush]                  kdmflush
+  429 root         [kdmflush]                  kdmflush
+  432 root         [kdmflush]                  kdmflush
+  433 root         [kdmflush]                  kdmflush
+  435 root         [kdmflush]                  kdmflush
+  440 root         [loop0]                     loop0
+  441 root         [loop1]                     loop1
+  442 root         [loop2]                     loop2
+  443 root         [loop3]                     loop3
+  445 root         [ext4-rsv-conver]           ext4-rsv-conver
+  446 root         [ext4-rsv-conver]           ext4-rsv-conver
+  447 root         [ext4-rsv-conver]           ext4-rsv-conver
+  448 root         [ext4-rsv-conver]           ext4-rsv-conver
+  455 root         [jbd2/sda1-8]               jbd2/sda1-8
+  456 root         [ext4-rsv-conver]           ext4-rsv-conver
+  461 prng_seeder  prng_seeder                 prng_seeder
+  464 logd         logd                        logd
+  465 lmkd         lmkd                        lmkd
+  466 system       servicemanager              servicemanager
+  467 system       hwservicemanager            hwservicemanage
+  468 system       vndservicemanager           vndservicemanag
+  469 root         [psimon]                    psimon
+  473 root         [sugov:0]                   sugov:0
+  474 root         [sugov:4]                   sugov:4
+  475 root         [sugov:6]                   sugov:6
+  479 root         [kworker/2:1H-kblockd]      kworker/2:1H-kblockd
+  483 root         watchdogd                   watchdogd
+  495 root         vold                        binder:495_2
+  498 root         [kworker/1:1H-kblockd]      kworker/1:1H-kblockd
+  500 root         [kworker/3:1H-kblockd]      kworker/3:1H-kblockd
+  501 root         [jbd2/sda5-8]               jbd2/sda5-8
+  502 root         [ext4-rsv-conver]           ext4-rsv-conver
+  506 root         [ext4-rsv-conver]           ext4-rsv-conver
+  509 root         [kdmflush]                  kdmflush
+  515 root         [ext4-rsv-conver]           ext4-rsv-conver
+  516 root         [ext4-rsv-conver]           ext4-rsv-conver
+  518 root         [slg51000wq]                slg51000wq
+  521 system       android.system.suspend@1.0-service suspend@1.0-ser
+  522 keystore     keystore2                   binder:522_2
+  523 root         android.hardware.boot@1.2-service-gs101 boot@1.2-servic
+  524 hsm          android.hardware.security.keymint-service.citadel android.hardwar
+  525 nobody       android.hardware.security.keymint-service.trusty android.hardwar
+  526 hsm          citadeld                    citadeld
+  530 root         [irq/442-vl53l1_]           irq/442-vl53l1_
+  537 system       surfaceflinger              surfaceflinger
+  538 system       android.hardware.graphics.allocator-V1-service binder:538_2
+  539 system       android.hardware.graphics.composer@2.4-service binder:539_2
+  556 root         [irq/444-cs40l25]           irq/444-cs40l25
+  576 root         [lwis_top_trans_]           lwis_top_trans_
+  577 root         [lwis_top_prd_io]           lwis_top_prd_io
+  579 root         [lwis_ioreg_tran]           lwis_ioreg_tran
+  581 root         [lwis_ioreg_prd_]           lwis_ioreg_prd_
+  582 root         [lwis_ioreg_tran]           lwis_ioreg_tran
+  583 root         [lwis_ioreg_prd_]           lwis_ioreg_prd_
+  584 root         [lwis_ioreg_tran]           lwis_ioreg_tran
+  585 root         [lwis_ioreg_prd_]           lwis_ioreg_prd_
+  586 root         [lwis_ioreg_tran]           lwis_ioreg_tran
+  587 root         [lwis_ioreg_prd_]           lwis_ioreg_prd_
+  588 root         [lwis_ioreg_tran]           lwis_ioreg_tran
+  589 root         [lwis_ioreg_prd_]           lwis_ioreg_prd_
+  590 root         [lwis_ioreg_tran]           lwis_ioreg_tran
+  591 root         [lwis_ioreg_prd_]           lwis_ioreg_prd_
+  592 root         [lwis_ioreg_tran]           lwis_ioreg_tran
+  593 root         [lwis_ioreg_prd_]           lwis_ioreg_prd_
+  594 root         [lwis_ioreg_tran]           lwis_ioreg_tran
+  595 root         [lwis_ioreg_prd_]           lwis_ioreg_prd_
+  596 root         [lwis_ioreg_tran]           lwis_ioreg_tran
+  597 root         [lwis_ioreg_prd_]           lwis_ioreg_prd_
+  598 root         [lwis_ioreg_tran]           lwis_ioreg_tran
+  599 root         [lwis_ioreg_prd_]           lwis_ioreg_prd_
+  600 root         [lwis_ioreg_tran]           lwis_ioreg_tran
+  601 root         [lwis_ioreg_prd_]           lwis_ioreg_prd_
+  602 root         [lwis_ioreg_tran]           lwis_ioreg_tran
+  603 root         [lwis_ioreg_prd_]           lwis_ioreg_prd_
+  608 root         [lwis_i2c_trans_]           lwis_i2c_trans_
+  609 root         [lwis_i2c_prd_io]           lwis_i2c_prd_io
+  610 root         [lwis_i2c_trans_]           lwis_i2c_trans_
+  611 root         [lwis_i2c_prd_io]           lwis_i2c_prd_io
+  612 root         [lwis_i2c_trans_]           lwis_i2c_trans_
+  613 root         [lwis_i2c_prd_io]           lwis_i2c_prd_io
+  614 root         [lwis_i2c_trans_]           lwis_i2c_trans_
+  615 root         [lwis_i2c_prd_io]           lwis_i2c_prd_io
+  616 root         [lwis_i2c_trans_]           lwis_i2c_trans_
+  617 root         [lwis_i2c_prd_io]           lwis_i2c_prd_io
+  618 root         [lwis_i2c_trans_]           lwis_i2c_trans_
+  619 root         [lwis_i2c_prd_io]           lwis_i2c_prd_io
+  620 root         [lwis_i2c_trans_]           lwis_i2c_trans_
+  621 root         [lwis_i2c_prd_io]           lwis_i2c_prd_io
+  622 root         [lwis_i2c_trans_]           lwis_i2c_trans_
+  623 root         [lwis_i2c_prd_io]           lwis_i2c_prd_io
+  624 root         [lwis_i2c_trans_]           lwis_i2c_trans_
+  625 root         [lwis_i2c_prd_io]           lwis_i2c_prd_io
+  634 root         [f2fs_ckpt-254:4]           f2fs_ckpt-254:4
+  635 root         [f2fs_flush-254:]           f2fs_flush-254:
+  637 root         [f2fs_discard-25]           f2fs_discard-25
+  647 root         [f2fs_gc-254:46]            f2fs_gc-254:46
+  648 root         android.hardware.power-service.pixel-libperfmgr android.hardwar
+  657 tombstoned   tombstoned                  tombstoned
+  684 root         [loop4]                     loop4
+  685 root         [loop5]                     loop5
+  686 root         [loop6]                     loop6
+  687 root         [loop7]                     loop7
+  700 root         [ext4-rsv-conver]           ext4-rsv-conver
+  701 root         [loop8]                     loop8
+  702 root         [ext4-rsv-conver]           ext4-rsv-conver
+  703 root         [loop9]                     loop9
+  704 root         [ext4-rsv-conver]           ext4-rsv-conver
+  705 root         [ext4-rsv-conver]           ext4-rsv-conver
+  706 root         [loop10]                    loop10
+  707 root         [loop11]                    loop11
+  708 root         [ext4-rsv-conver]           ext4-rsv-conver
+  709 root         [ext4-rsv-conver]           ext4-rsv-conver
+  710 root         [loop12]                    loop12
+  711 root         [loop13]                    loop13
+  712 root         [ext4-rsv-conver]           ext4-rsv-conver
+  713 root         [loop14]                    loop14
+  714 root         [ext4-rsv-conver]           ext4-rsv-conver
+  715 root         [loop15]                    loop15
+  716 root         [ext4-rsv-conver]           ext4-rsv-conver
+  717 root         [ext4-rsv-conver]           ext4-rsv-conver
+  718 root         [loop16]                    loop16
+  719 root         [loop17]                    loop17
+  720 root         [kverityd]                  kverityd
+  721 root         [ext4-rsv-conver]           ext4-rsv-conver
+  722 root         [loop18]                    loop18
+  723 root         [kverityd]                  kverityd
+  724 root         [ext4-rsv-conver]           ext4-rsv-conver
+  725 root         [loop19]                    loop19
+  726 root         [kverityd]                  kverityd
+  727 root         [kverityd]                  kverityd
+  728 root         [ext4-rsv-conver]           ext4-rsv-conver
+  729 root         [ext4-rsv-conver]           ext4-rsv-conver
+  730 root         [loop20]                    loop20
+  731 root         [loop21]                    loop21
+  732 root         [kverityd]                  kverityd
+  733 root         [ext4-rsv-conver]           ext4-rsv-conver
+  734 root         [loop22]                    loop22
+  735 root         [kverityd]                  kverityd
+  736 root         [ext4-rsv-conver]           ext4-rsv-conver
+  737 root         [loop23]                    loop23
+  738 root         [kverityd]                  kverityd
+  739 root         [kverityd]                  kverityd
+  740 root         [ext4-rsv-conver]           ext4-rsv-conver
+  741 root         [ext4-rsv-conver]           ext4-rsv-conver
+  742 root         [loop24]                    loop24
+  743 root         [kverityd]                  kverityd
+  744 root         [loop25]                    loop25
+  745 root         [ext4-rsv-conver]           ext4-rsv-conver
+  746 root         [loop26]                    loop26
+  747 root         [kverityd]                  kverityd
+  748 root         [ext4-rsv-conver]           ext4-rsv-conver
+  749 root         [loop27]                    loop27
+  750 root         [kverityd]                  kverityd
+  751 root         [kverityd]                  kverityd
+  752 root         [ext4-rsv-conver]           ext4-rsv-conver
+  753 root         [kverityd]                  kverityd
+  754 root         [ext4-rsv-conver]           ext4-rsv-conver
+  755 root         [ext4-rsv-conver]           ext4-rsv-conver
+  756 root         [loop28]                    loop28
+  757 root         [loop29]                    loop29
+  758 root         [loop30]                    loop30
+  759 root         [kverityd]                  kverityd
+  760 root         [ext4-rsv-conver]           ext4-rsv-conver
+  761 root         [loop31]                    loop31
+  762 root         [kverityd]                  kverityd
+  763 root         [kverityd]                  kverityd
+  764 root         [ext4-rsv-conver]           ext4-rsv-conver
+  765 root         [kverityd]                  kverityd
+  766 root         [ext4-rsv-conver]           ext4-rsv-conver
+  767 root         [loop32]                    loop32
+  768 root         [ext4-rsv-conver]           ext4-rsv-conver
+  769 root         [loop33]                    loop33
+  770 root         [loop34]                    loop34
+  771 root         [kverityd]                  kverityd
+  772 root         [ext4-rsv-conver]           ext4-rsv-conver
+  773 root         [kverityd]                  kverityd
+  774 root         [kverityd]                  kverityd
+  775 root         [kverityd]                  kverityd
+  776 root         [ext4-rsv-conver]           ext4-rsv-conver
+  777 root         [ext4-rsv-conver]           ext4-rsv-conver
+  778 root         [ext4-rsv-conver]           ext4-rsv-conver
+  797 root         twoshay                     binder:797_2
+  820 system       lspd                        main
+  857 root         zygiskd                     zygiskd
+  865 root         sscoredump                  sscoredump
+  874 statsd       statsd                      binder:874_2
+  892 gps          android.hardware.gnss@2.1-service-brcm binder:892_2
+  893 system       android.hidl.allocator@1.0-service allocator@1.0-s
+  894 system       vendor.google.edgetpu_app_service@1.0-service binder:894_2
+  897 bluetooth    android.hardware.bluetooth@1.1-service.bcmbtlinux binder:897_2
+  898 system       android.hardware.camera.provider@2.7-service-google binder:898_2
+  899 system       rlsservice                  rlsservice
+  904 media        android.hardware.cas@1.2-service cas@1.2-service
+  905 nobody       android.hardware.confirmationui@1.0-service.trusty.vendor confirmationui@
+  906 context_hub  android.hardware.contexthub-service.generic android.hardwar
+  907 media        android.hardware.drm-service.clearkey android.hardwar
+  908 media        android.hardware.drm-service.widevine android.hardwar
+  909 system       android.hardware.dumpstate@1.1-service.gs101 dumpstate@1.1-s
+  910 system       android.hardware.gatekeeper@1.0-service.trusty gatekeeper@1.0-
+  911 system       android.hardware.health-service.gs101 android.hardwar
+  912 nobody       android.hardware.identity@1.0-service.citadel android.hardwar
+  922 system       android.hardware.neuralnetworks@1.3-service-armnn neuralnetworks@
+  924 system       android.hardware.neuralnetworks@service-darwinn-aidl binder:924_2
+  925 system       android.hardware.power.stats-service.pixel android.hardwar
+  926 secure_element android.hardware.secure_element@1.2-service-gto-ese2 secure_element@
+  927 secure_element android.hardware.secure_element@1.2-service-gto secure_element@
+  929 secure_element android.hardware.secure_element@1.2-uicc-service secure_element@
+  937 system       android.hardware.sensors@2.1-service.multihal sensors@2.1-ser
+  938 system       android.hardware.usb-service.gs101 android.hardwar
+  940 system       android.hardware.usb.gadget-service.gs101 gadget-service.
+  941 hsm          android.hardware.weaver@1.0-service.citadel weaver@1.0-serv
+  942 mediacodec   google.hardware.media.c2@1.0-service google.hardware
+  943 graphics     android.hardware.memtrack-service.pixel android.hardwar
+  945 nfc          android.hardware.nfc-service.st android.hardwar
+  953 mediacodec   samsung.hardware.media.c2@1.0-service samsung.hardwar
+  954 mediacodec   vendor.dolby.media.c2@1.0-service vendor.dolby.me
+  957 system       vendor.google.audiometricext@1.0-service-vendor audiometricext@
+  958 system       vendor.google.google_battery-service vendor.google.g
+  961 radio        vendor.google.radioext@1.0-service radioext@1.0-se
+  962 wifi         vendor.google.wifi_ext@1.0-service-vendor wifi_ext@1.0-se
+  963 system       vendor.google.wireless_charger@1.3-service-vendor wireless_charge
+  965 credstore    credstore                   credstore
+  967 gpu_service  gpuservice                  binder:967_2
+  968 radio        modem_svc_sit               modem_svc_sit
+  977 system       android.hardware.vibrator-service.cs40l25 android.hardwar
+ 1048 root         [dhd_rx_pktpool_]           dhd_rx_pktpool_
+ 1049 drm          drmserver                   drmserver
+ 1050 root         [dhd_watchdog_th]           dhd_watchdog_th
+ 1051 root         [dhd_rpm_state_t]           dhd_rpm_state_t
+ 1053 nobody       traced_probes               traced_probes
+ 1055 nobody       traced                      traced
+ 1059 root         wfc-pkt-router              wfc-pkt-router
+ 1060 gps          lhd                         lhd
+ 1061 gps          gpsd                        gpsd
+ 1064 gps          scd                         scd
+ 1069 incidentd    incidentd                   binder:1069_2
+ 1070 root         installd                    binder:1070_2
+ 1072 mediaex      media.extractor             mediaextractor
+ 1078 media        media.metrics               mediametrics
+ 1081 root         storaged                    storaged
+ 1085 mediacodec   media.codec                 omx@1.0-service
+ 1087 system       bipchmgr                    bipchmgr
+ 1088 radio        cbd                         cbd
+ 1091 system       dmd                         dmd
+ 1092 radio        rfsd                        rfsd
+ 1094 radio        rild_exynos                 rild_exynos
+ 1095 system       securedpud.slider           securedpud.slid
+ 1124 system       trusty_metricsd             trusty_metricsd
+ 1130 mediacodec   media.swcodec               mediaswcodec
+ 1131 system       gatekeeperd                 gatekeeperd
+ 1132 root         update_engine               update_engine
+ 1135 system       android.hardware.edgetpu.logging@service-edgetpu-logging android.hardwar
+ 1139 root         aocd                        aocd
+ 1143 context_hub  chre                        chre
+ 1155 system       android.hardware.biometrics.fingerprint-service.goodix android.hardwar
+ 1172 shell        adbd                        adbd
+ 1194 root         [irq/448-gf]                irq/448-gf
+ 1340 root         [com.google.usf]            com.google.usf
+ 1341 root         [com.google.usf.]           com.google.usf.
+ 1378 root         [irq/305-dwc3]              irq/305-dwc3
+ 1523 root         [irq/447-fts]               irq/447-fts
+ 1613 system       android.hardware.thermal@2.0-service.pixel thermal@2.0-ser
+ 1628 root         [kworker/0:2H-kblockd]      kworker/0:2H-kblockd
+ 1663 system       storageproxyd               storageproxyd
+ 1670 system       android.hardware.neuralnetworks@service-darwinn-aidl android.hardwar
+ 1739 nobody       android.hardware.input.processor-service android.hardwar
+ 2214 root         [irq/446-dhdpcie]           irq/446-dhdpcie
+ 2685 root         apd                         apd
+ 2716 root         [loop35]                    loop35
+ 2839 system       pixelstats-vendor           pixelstats-vend
+ 3079 u0_a129      com.google.android.gms.persistent .gms.persistent
+ 3170 u0_a129      com.google.android.gms      gle.android.gms
+ 4714 system       com.android.settings        ndroid.settings
+ 7244 u0_a113      com.google.android.apps.turbo:aab .apps.turbo:aab
+ 8023 u0_a129      com.google.process.gservices ocess.gservices
+ 8241 root         [kworker/4:1-memlat_wq]     kworker/4:1-memlat_wq
+10675 u0_a118      com.google.android.settings.intelligence gs.intelligence
+11184 root         iptables-restore            iptables-restor
+11185 root         ip6tables-restore           ip6tables-resto
+11497 u0_a129      com.google.android.gms.unstable id.gms.unstable
+11688 root         [kworker/3:2-memlat_wq]     kworker/3:2-memlat_wq
+12374 root         zygote64                    main
+12375 root         zygote                      main
+12377 audioserver  audioserver                 audioserver
+12379 cameraserver cameraserver                cameraserver
+12380 media        mediaserver                 mediaserver
+12381 root         netd                        binder:12381_4
+12382 wifi         wificond                    wificond
+12383 audioserver  android.hardware.audio.service binder:12383_2
+12517 system       system_server               system_server
+12524 root         zygiskd64-zygisk_lsposed    zygiskd64
+12712 u0_a215      com.android.systemui        ndroid.systemui
+12756 root         [dhd_logtrace_th]           dhd_logtrace_th
+12767 root         zygiskd32-zygisk_lsposed    zygiskd32
+12769 root         [dhd_eventd]                dhd_eventd
+12796 network_stack com.android.networkstack.process rkstack.process
+12823 u0_a205      com.shannon.qualifiednetworksservice networksservice
+12829 u0_a214      com.android.hbmsvmanager    id.hbmsvmanager
+12849 u0_a219      com.google.android.grilservice oid.grilservice
+12858 radio        com.samsung.slsi.telephony.oem.oemrilhookservice mrilhookservice
+12863 secure_element com.android.se            com.android.se
+12902 wifi         wpa_supplicant              wpa_supplicant
+12909 u0_a221      com.shannon.rcsservice      nnon.rcsservice
+12918 u0_a217      com.shannon.imsservice      nnon.imsservice
+12932 webview_zygote webview_zygote            webview_zygote
+12960 u0_a107      com.google.android.apps.cbrsnetworkmonitor snetworkmonitor
+12967 u0_a202      com.samsung.slsi.telephony.oemril elephony.oemril
+12983 radio        com.android.phone           m.android.phone
+13041 u0_a237      com.google.android.ext.services id.ext.services
+13139 u0_a207      com.google.android.apps.nexuslauncher s.nexuslauncher
+13147 system       com.google.android.iwlan    e.android.iwlan
+13403 u0_a117      com.google.android.ims      gle.android.ims
+13624 u0_a153      com.google.android.as       ogle.android.as
+13653 u0_a161      com.google.android.googlequicksearchbox:interactor hbox:interactor
+13655 u0_a241      com.google.android.providers.media.module rs.media.module
+13664 nfc          com.android.nfc             com.android.nfc
+13699 system       com.google.SSRestartDetector RestartDetector
+13728 u0_a211      com.google.android.connectivitythermalpowermanager malpowermanager
+14047 u0_a161      com.google.android.googlequicksearchbox:search earchbox:search
+14109 u0_a263      com.jingdong.app.mall       ngdong.app.mall
+14837 root         [kworker/0:2-memlat_wq]     kworker/0:2-memlat_wq
+14930 root         [kworker/5:0-trusty-nop-wq] kworker/5:0-trusty-nop-wq
+15373 u0_a209      com.android.remoteprovisioner moteprovisioner
+16399 root         [kworker/u17:1-kbase_pm_poweroff_wait] kworker/u17:1-kbase_pm_poweroff_wait
+16431 root         [kworker/2:0-memlat_wq]     kworker/2:0-memlat_wq
+16474 u0_a130      com.google.android.apps.scone roid.apps.scone
+16553 u0_a113      com.google.android.apps.turbo roid.apps.turbo
+16991 root         [kworker/7:0-memlat_wq]     kworker/7:0-memlat_wq
+17055 root         [kworker/6:1-memlat_wq]     kworker/6:1-memlat_wq
+17261 u0_a180      com.google.android.inputmethod.latin putmethod.latin
+17355 root         [kworker/1:0-memlat_wq]     kworker/1:0-memlat_wq
+17695 root         [kworker/u17:2-trusty-check-wq] kworker/u17:2-trusty-check-wq
+17705 u0_a239      com.google.android.permissioncontroller ssioncontroller
+17731 u0_a74       android.process.acore       d.process.acore
+17778 root         [kworker/3:0-memlat_wq]     kworker/3:0-memlat_wq
+18031 root         [kworker/u16:3-gpu-dvfs-control] kworker/u16:3-gpu-dvfs-control
+18409 u0_i9002     com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0 ocessService0:0
+18435 u0_a161      com.google.android.googlequicksearchbox:privileged_process0 ileged_process0
+19024 root         [kworker/7:2-memlat_wq]     kworker/7:2-memlat_wq
+19246 root         [kworker/2:1-memlat_wq]     kworker/2:1-memlat_wq
+19247 root         [kworker/4:0-memlat_wq]     kworker/4:0-memlat_wq
+19611 root         [kworker/6:0-memlat_wq]     kworker/6:0-memlat_wq
+19637 root         [kworker/0:1-events]        kworker/0:1-events
+19638 root         [kworker/1:2-memlat_wq]     kworker/1:2-memlat_wq
+19639 root         [kworker/5:1-memlat_wq]     kworker/5:1-memlat_wq
+19868 root         [kworker/3:1-memlat_wq]     kworker/3:1-memlat_wq
+20026 root         [kworker/u16:1-events_unbound] kworker/u16:1-events_unbound
+20113 root         [kworker/u17:0-ufs_clk_gating_0] kworker/u17:0-ufs_clk_gating_0
+20234 u0_a105      com.google.android.partnersetup id.partnersetup
+20259 root         [kworker/6:2-memlat_wq]     kworker/6:2-memlat_wq
+20299 root         [kworker/0:0-memlat_wq]     kworker/0:0-memlat_wq
+20475 root         [kworker/u16:0]             kworker/u16:0
+20527 root         sh                          sh
+20650 root         ps                          ps
+21438 root         fs-starfruit                fs-starfruit
+21441 root         logcat                      logcat
+22942 shell        abb                         abb

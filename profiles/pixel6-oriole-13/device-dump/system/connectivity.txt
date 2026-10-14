@@ -1,0 +1,927 @@
+NetworkProviders for:
+  10: OemPaidWifiNetworkFactory
+  11: MultiInternetWifiNetworkFactory
+  1: EthernetNetworkFactory
+  7: WifiNetworkFactory
+  3: VcnNetworkProvider
+  5: PhoneSwitcherNetworkRequstListener
+  4: VpnNetworkProvider:0
+  8: UntrustedWifiNetworkFactory
+  9: RestrictedWifiNetworkFactory
+  6: TelephonyNetworkFactory[0]
+  2: WIFI_AWARE_FACTORY
+
+Active default network: 115
+
+Current network preferences: 
+  Default requests:
+
+Current Networks:
+  NetworkAgentInfo{network{115}  handle{497326936077}  ni{WIFI CONNECTED extra: } created=2026-08-17T21:01:53.627Z Score(Policies : TRANSPORT_PRIMARY&IS_UNMETERED ; KeepConnected : 0)  created acceptPartialConnectivity  lp{{InterfaceName: wlan0 LinkAddresses: [ fe80::60da:58ac:405c:38d6/64,10.41.20.63/21 ] DnsAddresses: [ /10.41.30.125,/10.41.30.126 ] Domains: tcent.cn MTU: 0 ServerAddress: /10.41.30.128 TcpBufferSizes: 524288,2097152,8388608,262144,524288,4194304 Routes: [ fe80::/64 -> :: wlan0 mtu 0,10.41.16.0/21 -> 0.0.0.0 wlan0 mtu 0,0.0.0.0/0 -> 10.41.23.253 wlan0 mtu 0 ] HttpProxy: [10.41.2.3] 18888 xl=}}  nc{[ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_ROAMING&FOREGROUND&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED LinkUpBandwidth>=9650Kbps LinkDnBandwidth>=15256Kbps Specifier: <WifiNetworkAgentSpecifier [WifiConfiguration=, SSID="LY-office", BSSID=8c:79:09:e5:e1:d0, band=2, mMatchLocalOnlySpecifiers=false]> TransportInfo: <SSID: "LY-office", BSSID: 8c:79:09:e5:e1:d0, MAC: 74:74:46:b6:4e:fe, IP: /10.41.20.63, Security type: 3, Supplicant state: COMPLETED, Wi-Fi standard: 6, RSSI: -53, Link speed: 541Mbps, Tx Link speed: 541Mbps, Max Supported Tx Link speed: 573Mbps, Rx Link speed: 309Mbps, Max Supported Rx Link speed: 573Mbps, Frequency: 5785MHz, Net ID: 0, Metered hint: false, score: 60, isUsable: true, CarrierMerged: false, SubscriptionId: -1, IsPrimary: 1, Trusted: true, Restricted: false, Ephemeral: false, OEM paid: false, OEM private: false, OSU AP: false, FQDN: <none>, Provider friendly name: <none>, Requesting package name: <none>"LY-office"wpa2-enterpriseMLO Information: , AP MLD Address: <none>, AP MLO Link Id: <none>, AP MLO Affiliated links: <none>> SignalStrength: -53 OwnerUid: 1000 AdminUids: [1000] SSID: "LY-office" UnderlyingNetworks: Null]}  factorySerialNumber=7}
+    Nat464Xlat:
+      <not started>
+    Requests: REQUEST:51 LISTEN:21 BACKGROUND_REQUEST:0 total:72
+      NetworkRequest [ REQUEST id=1, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=5, [ Capabilities: FOREGROUND RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=7, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=8, [ Capabilities: FOREGROUND RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=9, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&FOREGROUND&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=10, [ RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=11, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=14, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10196 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=16, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10193 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=18, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10190 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=20, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10188 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=22, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10180 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=25, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10177 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=27, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=29, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10153 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=31, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10140 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=33, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10135 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=35, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10119 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=37, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10267 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=39, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=41, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1073 RequestorUid: 1073 RequestorPkg: com.google.android.networkstack UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=42, [ Transports: WIFI Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1073 RequestorUid: 1073 RequestorPkg: com.google.android.networkstack UnderlyingNetworks: Null] ]
+      NetworkRequest [ TRACK_SYSTEM_DEFAULT id=43, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1073 RequestorPkg: com.google.android.networkstack.tethering UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=44, [ Transports: WIFI Capabilities: INTERNET&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=45, [ Transports: CELLULAR|WIFI Capabilities: NOT_VPN RequestorUid: 10215 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=47, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10215 RequestorUid: 10215 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=49, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10215 RequestorUid: 10215 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=50, [ RequestorUid: 10215 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=52, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone UnderlyingNetworks: Null] ]
+      NetworkRequest [ TRACK_SYSTEM_DEFAULT id=53, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1000 RequestorPkg: com.google.android.iwlan UnderlyingNetworks: Null] ]
+      NetworkRequest [ TRACK_SYSTEM_DEFAULT id=54, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1000 RequestorPkg: com.google.android.iwlan UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=57, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=58, [ Transports: CELLULAR|WIFI|WIFI_AWARE Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10263 RequestorUid: 10263 RequestorPkg: com.jingdong.app.mall UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=60, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=62, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10117 RequestorUid: 10117 RequestorPkg: com.google.android.ims UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=64, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10159 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=66, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10117 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=68, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=69, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=71, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10174 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=74, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10138 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=79, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=80, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=86, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10122 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=89, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10209 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=97, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10126 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=108, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10147 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=111, [ Transports: WIFI Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&FOREGROUND&NOT_VCN_MANAGED Uid: 10130 RequestorUid: 10130 RequestorPkg: com.google.android.apps.scone UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=113, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10141 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=115, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10175 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=122, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10178 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=130, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10136 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=132, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10195 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=136, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=138, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10192 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=140, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10169 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=144, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10134 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=155, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10194 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=162, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10130 RequestorUid: 10130 RequestorPkg: com.google.android.apps.scone UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=167, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10146 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=173, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10180 RequestorUid: 10180 RequestorPkg: com.google.android.inputmethod.latin UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=174, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&FOREGROUND&NOT_VCN_MANAGED Uid: 10180 RequestorUid: 10180 RequestorPkg: com.google.android.inputmethod.latin UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=422, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=438, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10157 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=564, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=565, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=567, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=568, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=703, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10209 RequestorUid: 10209 RequestorPkg: com.android.remoteprovisioner UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=877, [ Capabilities: NOT_RESTRICTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]
+      NetworkRequest [ REQUEST id=879, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]
+      NetworkRequest [ LISTEN id=880, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]
+    Inactivity Timers:
+
+Status for known UIDs:
+  UID=10120 blockedReasons=4
+  UID=10141 blockedReasons=4
+  UID=10157 blockedReasons=4
+  UID=10159 blockedReasons=4
+  UID=10165 blockedReasons=4
+  UID=10169 blockedReasons=4
+  UID=10177 blockedReasons=4
+  UID=10178 blockedReasons=4
+  UID=10180 blockedReasons=4
+  UID=10182 blockedReasons=4
+  UID=10184 blockedReasons=4
+  UID=10189 blockedReasons=4
+  UID=10190 blockedReasons=4
+  UID=10193 blockedReasons=4
+  UID=10194 blockedReasons=4
+  UID=10195 blockedReasons=4
+  UID=10242 blockedReasons=4
+  UID=10243 blockedReasons=4
+  UID=10246 blockedReasons=4
+  UID=10247 blockedReasons=4
+  UID=10248 blockedReasons=4
+  UID=10249 blockedReasons=4
+  UID=10251 blockedReasons=4
+  UID=10253 blockedReasons=4
+  UID=10255 blockedReasons=4
+  UID=10256 blockedReasons=4
+  UID=10257 blockedReasons=4
+  UID=10259 blockedReasons=4
+  UID=10260 blockedReasons=4
+  UID=10266 blockedReasons=4
+  UID=10267 blockedReasons=4
+  UID=10268 blockedReasons=4
+  UID=10270 blockedReasons=4
+  UID=10272 blockedReasons=4
+  UID=10276 blockedReasons=4
+  UID=10283 blockedReasons=4
+  UID=10660 blockedReasons=4
+  UID=10661 blockedReasons=4
+  
+Network Requests:
+  uid/pid:1000/12517 activeRequest: 1 callbackRequest: 1 [NetworkRequest [ REQUEST id=1, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 1 order: 2147483647
+  uid/pid:1000/12517 activeRequest: null callbackRequest: 2 [NetworkRequest [ BACKGROUND_REQUEST id=2, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 1 order: 2147483647
+  uid/pid:1000/12517 activeRequest: null callbackRequest: 5 [NetworkRequest [ LISTEN id=5, [ Capabilities: FOREGROUND RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 activeRequest: 7 callbackRequest: 6 [NetworkRequest [ REQUEST id=7, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 activeRequest: null callbackRequest: 8 [NetworkRequest [ LISTEN id=8, [ Capabilities: FOREGROUND RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 activeRequest: null callbackRequest: 9 [NetworkRequest [ LISTEN id=9, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&FOREGROUND&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 activeRequest: null callbackRequest: 10 [NetworkRequest [ LISTEN id=10, [ RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 activeRequest: null callbackRequest: 11 [NetworkRequest [ LISTEN id=11, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 activeRequest: null callbackRequest: 12 [NetworkRequest [ LISTEN id=12, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10196 activeRequest: 14 callbackRequest: 13 [NetworkRequest [ REQUEST id=14, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10196 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10193 activeRequest: 16 callbackRequest: 15 [NetworkRequest [ REQUEST id=16, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10193 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10190 activeRequest: 18 callbackRequest: 17 [NetworkRequest [ REQUEST id=18, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10190 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10188 activeRequest: 20 callbackRequest: 19 [NetworkRequest [ REQUEST id=20, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10188 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10180 activeRequest: 22 callbackRequest: 21 [NetworkRequest [ REQUEST id=22, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10180 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 activeRequest: null callbackRequest: 23 [NetworkRequest [ LISTEN id=23, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&VALIDATED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10177 activeRequest: 25 callbackRequest: 24 [NetworkRequest [ REQUEST id=25, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10177 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10161 activeRequest: 27 callbackRequest: 26 [NetworkRequest [ REQUEST id=27, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10153 activeRequest: 29 callbackRequest: 28 [NetworkRequest [ REQUEST id=29, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10153 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10140 activeRequest: 31 callbackRequest: 30 [NetworkRequest [ REQUEST id=31, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10140 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10135 activeRequest: 33 callbackRequest: 32 [NetworkRequest [ REQUEST id=33, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10135 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10119 activeRequest: 35 callbackRequest: 34 [NetworkRequest [ REQUEST id=35, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10119 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10267 activeRequest: 37 callbackRequest: 36 [NetworkRequest [ REQUEST id=37, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10267 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 activeRequest: 39 callbackRequest: 38 [NetworkRequest [ REQUEST id=39, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1073/12796 activeRequest: 41 callbackRequest: 40 [NetworkRequest [ REQUEST id=41, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1073 RequestorUid: 1073 RequestorPkg: com.google.android.networkstack UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1073/12796 activeRequest: null callbackRequest: 42 [NetworkRequest [ LISTEN id=42, [ Transports: WIFI Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1073 RequestorUid: 1073 RequestorPkg: com.google.android.networkstack UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1073/12796 activeRequest: 43 callbackRequest: 43 [NetworkRequest [ TRACK_SYSTEM_DEFAULT id=43, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1073 RequestorPkg: com.google.android.networkstack.tethering UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1001/12983 activeRequest: null callbackRequest: 44 [NetworkRequest [ LISTEN id=44, [ Transports: WIFI Capabilities: INTERNET&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10215/12712 activeRequest: null callbackRequest: 45 [NetworkRequest [ LISTEN id=45, [ Transports: CELLULAR|WIFI Capabilities: NOT_VPN RequestorUid: 10215 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ]] callback flags: 1 order: 2147483647
+  uid/pid:10215/12712 activeRequest: 47 callbackRequest: 46 [NetworkRequest [ REQUEST id=47, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10215 RequestorUid: 10215 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ]] callback flags: 1 order: 2147483647
+  uid/pid:10215/12712 activeRequest: 49 callbackRequest: 48 [NetworkRequest [ REQUEST id=49, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10215 RequestorUid: 10215 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ]] callback flags: 1 order: 2147483647
+  uid/pid:10215/12712 activeRequest: null callbackRequest: 50 [NetworkRequest [ LISTEN id=50, [ RequestorUid: 10215 RequestorPkg: com.android.systemui UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1001/12983 activeRequest: 52 callbackRequest: 51 [NetworkRequest [ REQUEST id=52, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/13147 activeRequest: 53 callbackRequest: 53 [NetworkRequest [ TRACK_SYSTEM_DEFAULT id=53, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1000 RequestorPkg: com.google.android.iwlan UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/13147 activeRequest: 54 callbackRequest: 54 [NetworkRequest [ TRACK_SYSTEM_DEFAULT id=54, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1000 RequestorPkg: com.google.android.iwlan UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1001/12983 activeRequest: null callbackRequest: 55 [NetworkRequest [ LISTEN id=55, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&VALIDATED&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.ons UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 activeRequest: 57 callbackRequest: 56 [NetworkRequest [ REQUEST id=57, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10263/14109 activeRequest: null callbackRequest: 58 [NetworkRequest [ LISTEN id=58, [ Transports: CELLULAR|WIFI|WIFI_AWARE Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10263 RequestorUid: 10263 RequestorPkg: com.jingdong.app.mall UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10161/14047 activeRequest: 60 callbackRequest: 59 [NetworkRequest [ REQUEST id=60, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10117/13403 activeRequest: 62 callbackRequest: 61 [NetworkRequest [ REQUEST id=62, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10117 RequestorUid: 10117 RequestorPkg: com.google.android.ims UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10159 activeRequest: 64 callbackRequest: 63 [NetworkRequest [ REQUEST id=64, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10159 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10117 activeRequest: 66 callbackRequest: 65 [NetworkRequest [ REQUEST id=66, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10117 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10161/14047 activeRequest: 68 callbackRequest: 67 [NetworkRequest [ REQUEST id=68, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10161/14047 activeRequest: null callbackRequest: 69 [NetworkRequest [ LISTEN id=69, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10174 activeRequest: 71 callbackRequest: 70 [NetworkRequest [ REQUEST id=71, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10174 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10138 activeRequest: 74 callbackRequest: 73 [NetworkRequest [ REQUEST id=74, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10138 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10161/14047 activeRequest: 79 callbackRequest: 78 [NetworkRequest [ REQUEST id=79, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10161/14047 activeRequest: null callbackRequest: 80 [NetworkRequest [ LISTEN id=80, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10122 activeRequest: 86 callbackRequest: 85 [NetworkRequest [ REQUEST id=86, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10122 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10209 activeRequest: 89 callbackRequest: 88 [NetworkRequest [ REQUEST id=89, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10209 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10126 activeRequest: 97 callbackRequest: 96 [NetworkRequest [ REQUEST id=97, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10126 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10147 activeRequest: 108 callbackRequest: 107 [NetworkRequest [ REQUEST id=108, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10147 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10130/16474 activeRequest: null callbackRequest: 111 [NetworkRequest [ LISTEN id=111, [ Transports: WIFI Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&FOREGROUND&NOT_VCN_MANAGED Uid: 10130 RequestorUid: 10130 RequestorPkg: com.google.android.apps.scone UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10141 activeRequest: 113 callbackRequest: 112 [NetworkRequest [ REQUEST id=113, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10141 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10175 activeRequest: 115 callbackRequest: 114 [NetworkRequest [ REQUEST id=115, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10175 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10178 activeRequest: 122 callbackRequest: 121 [NetworkRequest [ REQUEST id=122, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10178 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10136 activeRequest: 130 callbackRequest: 129 [NetworkRequest [ REQUEST id=130, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10136 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10195 activeRequest: 132 callbackRequest: 131 [NetworkRequest [ REQUEST id=132, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10195 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10129 activeRequest: 136 callbackRequest: 135 [NetworkRequest [ REQUEST id=136, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10192 activeRequest: 138 callbackRequest: 137 [NetworkRequest [ REQUEST id=138, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10192 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10169 activeRequest: 140 callbackRequest: 139 [NetworkRequest [ REQUEST id=140, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10169 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10134 activeRequest: 144 callbackRequest: 143 [NetworkRequest [ REQUEST id=144, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10134 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10194 activeRequest: 155 callbackRequest: 154 [NetworkRequest [ REQUEST id=155, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10194 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10130/16474 activeRequest: 162 callbackRequest: 161 [NetworkRequest [ REQUEST id=162, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10130 RequestorUid: 10130 RequestorPkg: com.google.android.apps.scone UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10146 activeRequest: 167 callbackRequest: 166 [NetworkRequest [ REQUEST id=167, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10146 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10180/17261 activeRequest: 173 callbackRequest: 172 [NetworkRequest [ REQUEST id=173, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10180 RequestorUid: 10180 RequestorPkg: com.google.android.inputmethod.latin UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10180/17261 activeRequest: null callbackRequest: 174 [NetworkRequest [ LISTEN id=174, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&FOREGROUND&NOT_VCN_MANAGED Uid: 10180 RequestorUid: 10180 RequestorPkg: com.google.android.inputmethod.latin UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10161/14047 activeRequest: 422 callbackRequest: 421 [NetworkRequest [ REQUEST id=422, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:1000/12517 asUid: 10157 activeRequest: 438 callbackRequest: 437 [NetworkRequest [ REQUEST id=438, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10157 RequestorUid: 1000 RequestorPkg: android UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10161/14047 activeRequest: 564 callbackRequest: 563 [NetworkRequest [ REQUEST id=564, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10161/14047 activeRequest: null callbackRequest: 565 [NetworkRequest [ LISTEN id=565, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10161/14047 activeRequest: 567 callbackRequest: 566 [NetworkRequest [ REQUEST id=567, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10161/14047 activeRequest: null callbackRequest: 568 [NetworkRequest [ LISTEN id=568, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10161 RequestorUid: 10161 RequestorPkg: com.google.android.googlequicksearchbox UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10209/15373 activeRequest: 703 callbackRequest: 702 [NetworkRequest [ REQUEST id=703, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10209 RequestorUid: 10209 RequestorPkg: com.android.remoteprovisioner UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10129/3079 activeRequest: null callbackRequest: 877 [NetworkRequest [ LISTEN id=877, [ Capabilities: NOT_RESTRICTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10129/3079 activeRequest: 879 callbackRequest: 878 [NetworkRequest [ REQUEST id=879, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  uid/pid:10129/3079 activeRequest: null callbackRequest: 880 [NetworkRequest [ LISTEN id=880, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+
+Network Offers:
+  NetworkOffer [ Provider Id (2) Score(Policies : IS_UNMETERED ; KeepConnected : 0) Caps [ Transports: WIFI_AWARE Capabilities: NOT_METERED&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_ROAMING&NOT_CONGESTED&NOT_VCN_MANAGED LinkUpBandwidth>=1Kbps LinkDnBandwidth>=1Kbps Specifier: <android.net.MatchAllNetworkSpecifier@0> SignalStrength: 1 UnderlyingNetworks: Null] Needed by []]
+  NetworkOffer [ Provider Id (3) Score(Policies : TRANSPORT_PRIMARY&EVER_VALIDATED_NOT_AVOIDED_WHEN_BAD&IS_UNMETERED&IS_VALIDATED ; KeepConnected : 0) Caps [ Transports: CELLULAR Capabilities: MMS&SUPL&DUN&FOTA&IMS&CBS&IA&RCS&XCAP&EIMS&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&MCX&NOT_VCN_MANAGED UnderlyingNetworks: Null] Needed by [20, 567, 66, 18, 122, 47, 132, 33, 62, 173, 703, 136, 39, 16, 138, 564, 31, 41, 27, 422, 113, 68, 52, 167, 60, 64, 37, 140, 14, 49, 79, 29, 130, 115, 2, 144, 7, 97, 35, 108, 155, 71, 438, 89, 74, 1, 879, 22, 57, 162, 25, 86]]
+  NetworkOffer [ Provider Id (5) Score(Policies : EVER_VALIDATED_NOT_AVOIDED_WHEN_BAD&IS_INVINCIBLE&IS_UNMETERED&IS_VALIDATED ; KeepConnected : 0) Caps [ Transports: CELLULAR Capabilities: MMS&SUPL&DUN&FOTA&IMS&CBS&IA&RCS&XCAP&EIMS&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&MCX&ENTERPRISE&MMTEL&PRIORITIZE_LATENCY&PRIORITIZE_BANDWIDTH Specifier: <android.net.MatchAllNetworkSpecifier@0> EnterpriseId: 1&2&3&4&5 UnderlyingNetworks: Null] Needed by []]
+  NetworkOffer [ Provider Id (6) Score(Policies : EVER_VALIDATED_NOT_AVOIDED_WHEN_BAD&IS_UNMETERED&IS_VALIDATED ; KeepConnected : 0) Caps [ Transports: CELLULAR Capabilities: MMS&SUPL&DUN&FOTA&IMS&CBS&IA&RCS&XCAP&EIMS&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&MCX&NOT_VCN_MANAGED&ENTERPRISE&MMTEL&PRIORITIZE_LATENCY&PRIORITIZE_BANDWIDTH Specifier: <TelephonyNetworkSpecifier [mSubId = -1]> EnterpriseId: 1&2&3&4&5 UnderlyingNetworks: Null] Needed by [20, 567, 66, 18, 122, 47, 132, 33, 62, 173, 703, 136, 39, 16, 138, 564, 31, 41, 27, 422, 113, 68, 52, 167, 60, 64, 37, 140, 14, 49, 79, 29, 130, 115, 2, 144, 7, 97, 35, 108, 155, 71, 438, 89, 74, 1, 879, 22, 57, 162, 25, 86]]
+  NetworkOffer [ Provider Id (7) Score(Policies : EVER_VALIDATED_NOT_AVOIDED_WHEN_BAD&IS_UNMETERED&IS_VALIDATED ; KeepConnected : 0) Caps [ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_ROAMING&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED LinkUpBandwidth>=1048576Kbps LinkDnBandwidth>=1048576Kbps Specifier: <android.net.MatchAllNetworkSpecifier@0> UnderlyingNetworks: Null] Needed by [20, 567, 66, 18, 122, 47, 132, 33, 62, 173, 703, 39, 136, 16, 138, 564, 31, 41, 27, 422, 113, 68, 52, 167, 60, 64, 37, 140, 14, 49, 79, 29, 115, 130, 144, 7, 97, 35, 108, 155, 71, 438, 89, 1, 74, 879, 22, 57, 162, 25, 86]]
+  NetworkOffer [ Provider Id (8) Score(Policies : EVER_VALIDATED_NOT_AVOIDED_WHEN_BAD&IS_INVINCIBLE&IS_UNMETERED&IS_VALIDATED ; KeepConnected : 0) Caps [ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_ROAMING&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED LinkUpBandwidth>=1048576Kbps LinkDnBandwidth>=1048576Kbps Specifier: <android.net.MatchAllNetworkSpecifier@0> UnderlyingNetworks: Null] Needed by [20, 567, 66, 18, 122, 47, 132, 33, 62, 173, 703, 39, 136, 16, 138, 564, 31, 41, 27, 422, 113, 68, 52, 167, 60, 64, 37, 140, 14, 49, 79, 29, 115, 130, 144, 7, 97, 35, 108, 155, 71, 438, 89, 1, 74, 879, 22, 57, 162, 25, 86]]
+  NetworkOffer [ Provider Id (9) Score(Policies : EVER_VALIDATED_NOT_AVOIDED_WHEN_BAD&IS_INVINCIBLE&IS_UNMETERED&IS_VALIDATED ; KeepConnected : 0) Caps [ Transports: WIFI Capabilities: NOT_METERED&INTERNET&TRUSTED&NOT_VPN&NOT_ROAMING&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED LinkUpBandwidth>=1048576Kbps LinkDnBandwidth>=1048576Kbps Specifier: <android.net.MatchAllNetworkSpecifier@0> UnderlyingNetworks: Null] Needed by []]
+  NetworkOffer [ Provider Id (10) Score(Policies : EVER_VALIDATED_NOT_AVOIDED_WHEN_BAD&IS_INVINCIBLE&IS_UNMETERED&IS_VALIDATED ; KeepConnected : 0) Caps [ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_ROAMING&NOT_CONGESTED&NOT_SUSPENDED&OEM_PAID&OEM_PRIVATE&NOT_VCN_MANAGED LinkUpBandwidth>=1048576Kbps LinkDnBandwidth>=1048576Kbps Specifier: <android.net.MatchAllNetworkSpecifier@0> UnderlyingNetworks: Null] Needed by [20, 567, 66, 18, 122, 47, 132, 33, 62, 173, 703, 39, 136, 16, 138, 564, 31, 41, 27, 422, 113, 68, 52, 167, 60, 64, 37, 140, 14, 49, 79, 29, 115, 130, 144, 7, 97, 35, 108, 155, 71, 438, 89, 1, 74, 879, 22, 57, 162, 25, 86]]
+  NetworkOffer [ Provider Id (11) Score(Policies : EVER_VALIDATED_NOT_AVOIDED_WHEN_BAD&IS_INVINCIBLE&IS_UNMETERED&IS_VALIDATED ; KeepConnected : 0) Caps [ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_ROAMING&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED LinkUpBandwidth>=1048576Kbps LinkDnBandwidth>=1048576Kbps Specifier: <android.net.MatchAllNetworkSpecifier@0> UnderlyingNetworks: Null] Needed by [20, 567, 66, 18, 122, 47, 132, 33, 62, 173, 703, 39, 136, 16, 138, 564, 31, 41, 27, 422, 113, 68, 52, 167, 60, 64, 37, 140, 14, 49, 79, 29, 115, 130, 144, 7, 97, 35, 108, 155, 71, 438, 89, 1, 74, 879, 22, 57, 162, 25, 86]]
+
+mLegacyTypeTracker:
+  Supported types: 0 1 2 3 4 5 7 9 10 11 12 13 14 15 17
+  Current state:
+    1 [115 WIFI]
+
+
+Supported Socket keepalives: [1, 3, 0, 0, 0, 0, 0, 0, 0]
+Reserved Privileged keepalives: 2
+Allowed Unprivileged keepalives per uid: 2
+Socket keepalives:
+
+Bad Wi-Fi avoidance: unrestricted
+
+
+mNetworkRequestInfoLogs (most recent first):
+  2026-08-18T11:03:05.501869 - RELEASE uid/pid:10135/6399 activeRequest: null callbackRequest: 883 [NetworkRequest [ LISTEN id=883, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10135 RequestorUid: 10135 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T11:03:05.500965 - RELEASE uid/pid:10135/6399 activeRequest: 882 callbackRequest: 881 [NetworkRequest [ REQUEST id=882, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10135 RequestorUid: 10135 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T10:00:00.252912 - RELEASE uid/pid:10135/6527 activeRequest: 885 callbackRequest: 884 [NetworkRequest [ REQUEST id=885, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10135 RequestorUid: 10135 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T09:18:40.100862 - REGISTER uid/pid:10135/6527 activeRequest: null callbackRequest: 884 [NetworkRequest [ REQUEST id=885, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10135 RequestorUid: 10135 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T09:18:38.824674 - REGISTER uid/pid:10135/6399 activeRequest: null callbackRequest: 883 [NetworkRequest [ LISTEN id=883, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10135 RequestorUid: 10135 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T09:18:38.822382 - REGISTER uid/pid:10135/6399 activeRequest: null callbackRequest: 881 [NetworkRequest [ REQUEST id=882, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10135 RequestorUid: 10135 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T09:00:00.221093 - RELEASE uid/pid:10135/31528 activeRequest: null callbackRequest: 869 [NetworkRequest [ LISTEN id=869, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10135 RequestorUid: 10135 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T09:00:00.220811 - RELEASE uid/pid:10135/31528 activeRequest: 868 callbackRequest: 867 [NetworkRequest [ REQUEST id=868, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10135 RequestorUid: 10135 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T08:49:10.837991 - RELEASE uid/pid:10147/31890 activeRequest: null callbackRequest: 876 [NetworkRequest [ LISTEN id=876, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10147 RequestorUid: 10147 RequestorPkg: com.google.android.apps.messaging UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T08:49:10.837087 - RELEASE uid/pid:10147/31890 activeRequest: 875 callbackRequest: 874 [NetworkRequest [ REQUEST id=875, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10147 RequestorUid: 10147 RequestorPkg: com.google.android.apps.messaging UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T08:49:10.811329 - RELEASE uid/pid:10126/31839 activeRequest: 873 callbackRequest: 872 [NetworkRequest [ REQUEST id=873, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10126 RequestorUid: 10126 RequestorPkg: com.google.android.apps.gcs UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T08:49:10.802971 - RELEASE uid/pid:10135/31658 activeRequest: 871 callbackRequest: 870 [NetworkRequest [ REQUEST id=871, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10135 RequestorUid: 10135 RequestorPkg: com.android.vending UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T08:46:30.459872 - REGISTER uid/pid:10129/3079 activeRequest: null callbackRequest: 880 [NetworkRequest [ LISTEN id=880, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T08:46:30.457881 - REGISTER uid/pid:10129/3079 activeRequest: null callbackRequest: 878 [NetworkRequest [ REQUEST id=879, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T08:44:45.774876 - REGISTER uid/pid:10129/3079 activeRequest: null callbackRequest: 877 [NetworkRequest [ LISTEN id=877, [ Capabilities: NOT_RESTRICTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T08:44:45.318241 - RELEASE uid/pid:10129/32542 activeRequest: 865 callbackRequest: 864 [NetworkRequest [ REQUEST id=865, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T08:44:45.317566 - RELEASE uid/pid:10129/32542 activeRequest: null callbackRequest: 866 [NetworkRequest [ LISTEN id=866, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T08:44:45.311982 - RELEASE uid/pid:10129/32354 activeRequest: 746 callbackRequest: 745 [NetworkRequest [ REQUEST id=746, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T08:44:45.311394 - RELEASE uid/pid:10129/32354 activeRequest: null callbackRequest: 747 [NetworkRequest [ LISTEN id=747, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+  2026-08-18T08:44:45.310685 - RELEASE uid/pid:10129/32354 activeRequest: null callbackRequest: 744 [NetworkRequest [ LISTEN id=744, [ Capabilities: NOT_RESTRICTED&NOT_VCN_MANAGED Uid: 10129 RequestorUid: 10129 RequestorPkg: com.google.android.gms UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+
+mNetworkInfoBlockingLogs (most recent first):
+  2026-08-18T01:41:27.805146 - BLOCKED 10190(18) on netId 114: 4
+  2026-08-18T01:31:27.758980 - UNBLOCKED 10190(18) on netId 114: 0
+  2026-08-17T14:00:59.328163 - BLOCKED 10169(820) on netId 111: 4
+  2026-08-17T14:00:59.327907 - BLOCKED 10169(140) on netId 111: 4
+  2026-08-17T13:40:49.162543 - BLOCKED 10190(18) on netId 111: 4
+  2026-08-17T13:32:00.361925 - BLOCKED 10194
+  2026-08-17T13:31:31.641316 - BLOCKED 10178
+  2026-08-17T13:31:19.289968 - BLOCKED 10194(831) on netId 111: 4
+  2026-08-17T13:31:19.289755 - BLOCKED 10194(829) on netId 111: 4
+  2026-08-17T13:31:19.289527 - BLOCKED 10194(827) on netId 111: 4
+  2026-08-17T13:31:19.281832 - BLOCKED 10194(825) on netId 111: 4
+  2026-08-17T13:31:19.281564 - BLOCKED 10194(824) on netId 111: 4
+  2026-08-17T13:31:19.281167 - BLOCKED 10194(822) on netId 111: 4
+  2026-08-17T13:31:19.280392 - BLOCKED 10194(155) on netId 111: 4
+  2026-08-17T13:31:17.936502 - BLOCKED 10159(815) on netId 111: 4
+  2026-08-17T13:31:17.935669 - BLOCKED 10159(64) on netId 111: 4
+  2026-08-17T13:31:16.928283 - BLOCKED 10178(811) on netId 111: 4
+  2026-08-17T13:31:16.928016 - BLOCKED 10178(809) on netId 111: 4
+  2026-08-17T13:31:16.927628 - BLOCKED 10178(807) on netId 111: 4
+  2026-08-17T13:31:16.927337 - BLOCKED 10178(806) on netId 111: 4
+  2026-08-17T13:31:16.926992 - BLOCKED 10178(804) on netId 111: 4
+  2026-08-17T13:31:16.926651 - BLOCKED 10178(122) on netId 111: 4
+  2026-08-17T13:31:15.204987 - BLOCKED 10193(797) on netId 111: 4
+  2026-08-17T13:31:15.204420 - BLOCKED 10193(16) on netId 111: 4
+  2026-08-17T13:31:15.003840 - BLOCKED 10157(438) on netId 111: 4
+  2026-08-17T13:30:59.545078 - UNBLOCKED 10194
+  2026-08-17T13:30:59.267381 - UNBLOCKED 10194(155) on netId 111: 0
+  2026-08-17T13:30:58.885916 - UNBLOCKED 10169(140) on netId 111: 0
+  2026-08-17T13:30:58.159663 - UNBLOCKED 10159
+  2026-08-17T13:30:57.923738 - UNBLOCKED 10159(64) on netId 111: 0
+  2026-08-17T13:30:57.032563 - UNBLOCKED 10178
+  2026-08-17T13:30:56.908768 - UNBLOCKED 10178(122) on netId 111: 0
+  2026-08-17T13:30:56.617992 - BLOCKED 10189(802) on netId 111: 4
+  2026-08-17T13:30:56.617826 - BLOCKED 10189(801) on netId 111: 4
+  2026-08-17T13:30:55.196116 - UNBLOCKED 10193(16) on netId 111: 0
+  2026-08-17T13:30:54.979299 - UNBLOCKED 10157(438) on netId 111: 0
+  2026-08-17T13:30:51.965536 - UNBLOCKED 10190(18) on netId 111: 0
+  2026-08-17T07:39:03.208377 - BLOCKED 10190(18) on netId 111: 4
+  2026-08-17T07:29:03.199897 - UNBLOCKED 10190(18) on netId 111: 0
+  2026-08-17T01:40:43.252191 - BLOCKED 10190(18) on netId 111: 4
+
+NetTransition WakeLock activity (most recent first):
+  total acquisitions: 14
+  total releases: 14
+  cumulative duration: 334s
+  longest duration: 60s
+  2026-08-18T05:01:55.237965 - RELEASE (EVENT_CLEAR_NET_TRANSITION_WAKELOCK)
+  2026-08-18T05:01:50.323487 - ACQUIRE for [114 WIFI]
+  2026-08-17T23:26:04.450055 - RELEASE (EVENT_EXPIRE_NET_TRANSITION_WAKELOCK)
+  2026-08-17T23:25:04.416148 - ACQUIRE for [113 WIFI]
+  2026-08-17T23:17:38.598513 - RELEASE (EVENT_EXPIRE_NET_TRANSITION_WAKELOCK)
+  2026-08-17T23:16:38.544660 - ACQUIRE for [112 WIFI]
+  2026-08-17T23:07:32.132682 - RELEASE (EVENT_EXPIRE_NET_TRANSITION_WAKELOCK)
+  2026-08-17T23:06:32.068304 - ACQUIRE for [111 WIFI]
+  2026-08-16T07:16:12.130192 - RELEASE (EVENT_CLEAR_NET_TRANSITION_WAKELOCK)
+  2026-08-16T07:16:05.846807 - ACQUIRE for [110 WIFI]
+  2026-08-15T06:02:01.419241 - RELEASE (EVENT_CLEAR_NET_TRANSITION_WAKELOCK)
+  2026-08-15T06:01:23.729557 - ACQUIRE for [109 WIFI]
+  2026-08-14T18:37:23.620395 - RELEASE (EVENT_CLEAR_NET_TRANSITION_WAKELOCK)
+  2026-08-14T18:37:21.441860 - ACQUIRE for [108 WIFI]
+  2026-08-14T18:37:18.866637 - RELEASE (EVENT_CLEAR_NET_TRANSITION_WAKELOCK)
+  2026-08-14T18:37:17.831454 - ACQUIRE for [107 WIFI]
+  2026-08-14T16:29:29.194743 - RELEASE (EVENT_CLEAR_NET_TRANSITION_WAKELOCK)
+  2026-08-14T16:29:24.598423 - ACQUIRE for [106 WIFI]
+  2026-08-14T12:54:40.372548 - RELEASE (EVENT_CLEAR_NET_TRANSITION_WAKELOCK)
+  2026-08-14T12:54:35.694056 - ACQUIRE for [105 WIFI]
+  
+  bandwidth update requests (by uid):
+
+mOemNetworkPreferencesLogs (most recent first):
+
+
+Permission Monitor:
+  Interface filtering rules:
+  
+  Lockdown filtering rules:
+  
+  Update logs:
+    2026-08-11T15:13:12.577533 - Package add: uid=10268, nPerm=(NONE/NONE), tPerm=INTERNET
+    2026-08-11T15:13:12.542034 - Package remove: uid=10268, nPerm=(NONE/NONE), tPerm=INTERNET
+    2026-08-11T15:08:30.401618 - Package add: uid=10268, nPerm=(NONE/NONE), tPerm=INTERNET
+    2026-08-11T15:08:30.399131 - Package remove: uid=10268, nPerm=(NONE/NONE), tPerm=INTERNET
+    2026-08-11T14:28:59.333617 - Package add: uid=10268, nPerm=(NONE/NONE), tPerm=INTERNET
+    2026-08-11T14:28:59.329181 - Package remove: uid=10268, nPerm=(NONE/NONE), tPerm=INTERNET
+    2026-08-11T14:27:02.081442 - Package add: uid=10268, nPerm=(NONE/NONE), tPerm=INTERNET
+    2026-08-11T14:27:02.072922 - Package remove: uid=10268, nPerm=(NONE/NONE), tPerm=INTERNET
+    2026-08-11T14:01:13.616979 - Package add: uid=10268, nPerm=(NONE/NONE), tPerm=INTERNET
+    2026-08-11T13:26:41.323086 - New user(0) added: nPerm uids={1000=2, 1001=2, 1002=1, 1073=2, 2000=2, 10078=2, 10090=2, 10091=2, 10104=1, 10116=2, 10117=2, 10122=1, 10124=1, 10126=1, 10128=1, 10129=2, 10131=1, 10134=2, 10135=1, 10146=1, 10147=2, 10152=2, 10156=1, 10157=1, 10159=2, 10161=1, 10190=1, 10193=1, 10196=1, 10203=2, 10205=1, 10212=2, 10213=1, 10215=1, 10217=2, 10221=1, 10243=1, 10254=1, 10255=1, 10257=1, 10259=1, 10263=1, 10266=1, 10267=1, 10270=1, 10271=1, 10272=1, 10279=1, 10283=1, 10660=1, 20078=2, 20090=2, 20091=2, 20104=1, 20116=2, 20117=2, 20122=1, 20124=1, 20126=1, 20128=1, 20129=2, 20131=1, 20134=2, 20135=1, 20146=1, 20147=2, 20152=2, 20156=1, 20157=1, 20159=2, 20161=1, 20190=1, 20193=1, 20196=1, 20203=2, 20205=1, 20212=2, 20213=1, 20215=1, 20217=2, 20221=1, 20243=1, 20254=1, 20255=1, 20257=1, 20259=1, 20263=1, 20266=1, 20267=1, 20270=1, 20271=1, 20272=1, 20279=1, 20283=1, 20660=1}, tPerm appIds={1000=12, 1001=12, 1002=12, 1027=4, 1068=0, 1073=12, 2000=12, 10000=0, 10001=0, 10002=0, 10003=0, 10004=0, 10005=0, 10006=0, 10007=0, 10008=0, 10009=0, 10010=0, 10011=0, 10012=0, 10013=0, 10014=0, 10015=0, 10016=0, 10017=0, 10018=0, 10019=0, 10020=0, 10021=0, 10022=0, 10023=0, 10024=0, 10025=0, 10026=0, 10027=0, 10028=0, 10029=0, 10030=0, 10031=0, 10032=0, 10033=0, 10034=0, 10035=0, 10036=0, 10037=0, 10038=0, 10039=0, 10040=0, 10041=0, 10042=0, 10043=0, 10044=0, 10045=0, 10046=0, 10047=0, 10048=0, 10049=0, 10050=0, 10051=0, 10052=0, 10053=0, 10054=0, 10055=0, 10056=0, 10057=0, 10058=0, 10059=0, 10060=0, 10061=0, 10062=0, 10063=0, 10064=0, 10065=0, 10066=0, 10067=0, 10068=0, 10069=0, 10070=0, 10071=4, 10072=0, 10073=0, 10074=0, 10075=4, 10076=0, 10077=0, 10078=12, 10079=4, 10080=0, 10081=0, 10082=0, 10083=0, 10084=0, 10085=0, 10086=4, 10087=0, 10088=0, 10089=4, 10090=4, 10091=4, 10092=0, 10093=0, 10094=0, 10095=0, 10096=0, 10097=4, 10098=0, 10099=0, 10100=0, 10101=0, 10102=0, 10103=0, 10104=4, 10105=4, 10106=0, 10107=0, 10108=0, 10109=4, 10110=0, 10111=4, 10112=4, 10113=4, 10114=4, 10115=0, 10116=4, 10117=4, 10118=4, 10119=4, 10120=4, 10121=4, 10122=4, 10123=4, 10124=4, 10125=4, 10126=4, 10127=4, 10128=4, 10129=12, 10130=4, 10131=4, 10132=0, 10133=4, 10134=4, 10135=12, 10136=4, 10137=0, 10138=4, 10139=4, 10140=4, 10141=4, 10142=4, 10143=0, 10144=4, 10145=0, 10146=4, 10147=4, 10148=0, 10149=0, 10150=0, 10151=4, 10152=4, 10153=8, 10154=4, 10155=4, 10156=4, 10157=4, 10158=0, 10159=4, 10160=4, 10161=4, 10162=0, 10163=0, 10164=0, 10165=4, 10166=4, 10167=0, 10168=0, 10169=4, 10170=0, 10171=0, 10172=4, 10173=0, 10174=4, 10175=4, 10177=4, 10178=4, 10179=0, 10180=4, 10181=0, 10182=4, 10183=0, 10184=4, 10186=0, 10187=0, 10188=4, 10189=4, 10190=4, 10191=4, 10192=4, 10193=4, 10194=4, 10195=4, 10196=4, 10197=0, 10198=4, 10199=4, 10200=4, 10201=0, 10202=0, 10203=4, 10204=0, 10205=4, 10206=4, 10207=0, 10208=4, 10209=4, 10210=0, 10211=0, 10212=4, 10213=4, 10214=0, 10215=4, 10216=0, 10217=4, 10218=0, 10219=0, 10220=0, 10221=4, 10222=0, 10223=0, 10224=0, 10225=0, 10226=0, 10227=4, 10228=4, 10229=0, 10230=4, 10231=0, 10232=0, 10233=0, 10234=0, 10235=0, 10236=0, 10237=4, 10238=0, 10239=0, 10240=0, 10241=8, 10242=4, 10243=4, 10244=0, 10245=0, 10246=4, 10247=4, 10248=4, 10249=4, 10250=0, 10251=4, 10252=0, 10253=4, 10254=4, 10255=4, 10256=4, 10257=4, 10258=0, 10259=4, 10260=4, 10261=0, 10262=0, 10263=4, 10264=4, 10265=0, 10266=4, 10267=4, 10269=0, 10270=4, 10271=4, 10272=4, 10276=4, 10279=4, 10283=4, 10436=0, 10437=0, 10660=4, 10661=4, 20000=0, 20001=0, 20002=0, 20003=0, 20004=0, 20005=0, 20006=0, 20007=0, 20008=0, 20009=0, 20010=0, 20011=0, 20012=0, 20013=0, 20014=0, 20015=0, 20016=0, 20017=0, 20018=0, 20019=0, 20020=0, 20021=0, 20022=0, 20023=0, 20024=0, 20025=0, 20026=0, 20027=0, 20028=0, 20029=0, 20030=0, 20031=0, 20032=0, 20033=0, 20034=0, 20035=0, 20036=0, 20037=0, 20038=0, 20039=0, 20040=0, 20041=0, 20042=0, 20043=0, 20044=0, 20045=0, 20046=0, 20047=0, 20048=0, 20049=0, 20050=0, 20051=0, 20052=0, 20053=0, 20054=0, 20055=0, 20056=0, 20057=0, 20058=0, 20059=0, 20060=0, 20061=0, 20062=0, 20063=0, 20064=0, 20065=0, 20066=0, 20067=0, 20068=0, 20069=0, 20070=0, 20071=4, 20072=0, 20073=0, 20074=0, 20075=4, 20076=0, 20077=0, 20078=12, 20079=4, 20080=0, 20081=0, 20082=0, 20083=0, 20084=0, 20085=0, 20086=4, 20087=0, 20088=0, 20089=4, 20090=4, 20091=4, 20092=0, 20093=0, 20094=0, 20095=0, 20096=0, 20097=4, 20098=0, 20099=0, 20100=0, 20101=0, 20102=0, 20103=0, 20104=4, 20105=4, 20106=0, 20107=0, 20108=0, 20109=4, 20110=0, 20111=4, 20112=4, 20113=4, 20114=4, 20115=0, 20116=4, 20117=4, 20118=4, 20119=4, 20120=4, 20121=4, 20122=4, 20123=4, 20124=4, 20125=4, 20126=4, 20127=4, 20128=4, 20129=12, 20130=4, 20131=4, 20132=0, 20133=4, 20134=4, 20135=12, 20136=4, 20137=0, 20138=4, 20139=4, 20140=4, 20141=4, 20142=4, 20143=0, 20144=4, 20145=0, 20146=4, 20147=4, 20148=0, 20149=0, 20150=0, 20151=4, 20152=4, 20153=8, 20154=4, 20155=4, 20156=4, 20157=4, 20158=0, 20159=4, 20160=4, 20161=4, 20162=0, 20163=0, 20164=0, 20165=4, 20166=4, 20167=0, 20168=0, 20169=4, 20170=0, 20171=0, 20172=4, 20173=0, 20174=4, 20175=4, 20177=4, 20178=4, 20179=0, 20180=4, 20181=0, 20182=4, 20183=0, 20184=4, 20186=0, 20187=0, 20188=4, 20189=4, 20190=4, 20191=4, 20192=4, 20193=4, 20194=4, 20195=4, 20196=4, 20197=0, 20198=4, 20199=4, 20200=4, 20201=0, 20202=0, 20203=4, 20204=0, 20205=4, 20206=4, 20207=0, 20208=4, 20209=4, 20210=0, 20211=0, 20212=4, 20213=4, 20214=0, 20215=4, 20216=0, 20217=4, 20218=0, 20219=0, 20220=0, 20221=4, 20222=0, 20223=0, 20224=0, 20225=0, 20226=0, 20227=4, 20228=4, 20229=0, 20230=4, 20231=0, 20232=0, 20233=0, 20234=0, 20235=0, 20236=0, 20237=4, 20238=0, 20239=0, 20240=0, 20241=8, 20242=4, 20243=4, 20244=0, 20245=0, 20246=4, 20247=4, 20248=4, 20249=4, 20250=0, 20251=4, 20252=0, 20253=4, 20254=4, 20255=4, 20256=4, 20257=4, 20258=0, 20259=4, 20260=4, 20261=0, 20262=0, 20263=4, 20264=4, 20265=0, 20266=4, 20267=4, 20269=0, 20270=4, 20271=4, 20272=4, 20276=4, 20279=4, 20283=4, 20436=0, 20437=0, 20660=4, 20661=4}
+
+Legacy network activity:
+  mNetworkActive=false
+  Idle timers:
+    wlan0:
+      timeout=15 type=1
+
+BPF programs & maps:
+  TrafficController
+
+    mCookieTagMap status: OK
+    mStatsMapA status: OK
+    mStatsMapB status: OK
+    mIfaceIndexNameMap status: OK
+    mIfaceStatsMap status: OK
+    mConfigurationMap status: OK
+    mUidOwnerMap status: OK
+
+    Cgroup ingress program status: OK
+    Cgroup egress program status: OK
+    xt_bpf ingress program status: OK
+    xt_bpf egress program status: OK
+    xt_bpf bandwidth allowlist program status: OK
+    xt_bpf bandwidth denylist program status: OK
+
+    BPF map content:
+
+      mCookieTagMap:
+      cookie=1357630 tag=0xfffffe01 uid=1073
+      cookie=50823 tag=0x8003 uid=10175
+      cookie=53712 tag=0xfffffe01 uid=1073
+      cookie=50822 tag=0x8001 uid=10136
+      cookie=50798 tag=0x8001 uid=10157
+      cookie=50818 tag=0xac298c6d uid=10175
+
+      mStatsMapA:
+      ifaceIndex ifaceName tag_hex uid_int cnt_set rxBytes rxPackets txBytes txPackets
+
+      mStatsMapB:
+      ifaceIndex ifaceName tag_hex uid_int cnt_set rxBytes rxPackets txBytes txPackets
+      47 wlan0 0x0 1073 1 260 2 1550 26
+      2 dummy0 0x0 0 0 0 0 56 1
+      47 wlan0 0x8001203 10129 1 0 0 480 8
+      47 wlan0 0xffffff82 10209 0 207 1 79 1
+      1 lo 0x0 2000 0 54912 1056 54912 1056
+      47 wlan0 0xffffff82 1073 1 260 2 110 2
+      1 lo 0x0 0 0 54912 1056 54912 1056
+      47 wlan0 0x0 10209 0 207 1 2479 41
+      47 wlan0 0x0 10263 0 52198 156 104611 233
+      47 wlan0 0xffffff82 10263 0 1596 12 698 12
+      47 wlan0 0xffffff81 1073 1 0 0 1440 24
+      47 wlan0 0x0 10129 1 0 0 480 8
+
+      mIfaceIndexNameMap:
+      ifaceIndex=18 ifaceName=rmnet4
+      ifaceIndex=46 ifaceName=aware_nmi0
+      ifaceIndex=9 ifaceName=ip_vti0
+      ifaceIndex=4 ifaceName=ifb1
+      ifaceIndex=27 ifaceName=rmnet13
+      ifaceIndex=47 ifaceName=wlan0
+      ifaceIndex=39 ifaceName=rmnet25
+      ifaceIndex=50 ifaceName=radiotap0
+      ifaceIndex=13 ifaceName=ip6gre0
+      ifaceIndex=25 ifaceName=rmnet11
+      ifaceIndex=1 ifaceName=lo
+      ifaceIndex=44 ifaceName=dummy
+      ifaceIndex=35 ifaceName=rmnet21
+      ifaceIndex=5 ifaceName=tunl0
+      ifaceIndex=23 ifaceName=rmnet9
+      ifaceIndex=48 ifaceName=wlan1
+      ifaceIndex=24 ifaceName=rmnet10
+      ifaceIndex=21 ifaceName=rmnet7
+      ifaceIndex=28 ifaceName=rmnet14
+      ifaceIndex=30 ifaceName=rmnet16
+      ifaceIndex=12 ifaceName=ip6tnl0
+      ifaceIndex=33 ifaceName=rmnet19
+      ifaceIndex=3 ifaceName=ifb0
+      ifaceIndex=41 ifaceName=rmnet27
+      ifaceIndex=17 ifaceName=rmnet3
+      ifaceIndex=22 ifaceName=rmnet8
+      ifaceIndex=6 ifaceName=gre0
+      ifaceIndex=37 ifaceName=rmnet23
+      ifaceIndex=29 ifaceName=rmnet15
+      ifaceIndex=31 ifaceName=rmnet17
+      ifaceIndex=15 ifaceName=rmnet1
+      ifaceIndex=16 ifaceName=rmnet2
+      ifaceIndex=38 ifaceName=rmnet24
+      ifaceIndex=19 ifaceName=rmnet5
+      ifaceIndex=43 ifaceName=rmnet29
+      ifaceIndex=40 ifaceName=rmnet26
+      ifaceIndex=36 ifaceName=rmnet22
+      ifaceIndex=7 ifaceName=gretap0
+      ifaceIndex=10 ifaceName=ip6_vti0
+      ifaceIndex=14 ifaceName=rmnet0
+      ifaceIndex=32 ifaceName=rmnet18
+      ifaceIndex=20 ifaceName=rmnet6
+      ifaceIndex=2 ifaceName=dummy0
+      ifaceIndex=11 ifaceName=sit0
+      ifaceIndex=8 ifaceName=erspan0
+      ifaceIndex=49 ifaceName=dit0
+      ifaceIndex=52 ifaceName=radiotap0
+      ifaceIndex=42 ifaceName=rmnet28
+      ifaceIndex=26 ifaceName=rmnet12
+      ifaceIndex=34 ifaceName=rmnet20
+
+      mIfaceStatsMap::
+      ifaceIndex ifaceName rxBytes rxPackets txBytes txPackets
+      47 wlan0 262297713 620781 277295375 1522253
+      1 lo 170245482 1410178 170245482 1410178
+      46 aware_nmi0 0 0 296 4
+      2 dummy0 0 0 10808 193
+      48 wlan1 47065 99 33671 376
+
+      current ownerMatch configuration: 8 STANDBY_MATCH
+      current statsMap configuration: 1 SELECT_MAP_B
+
+      mUidOwnerMap:
+      10141  STANDBY_MATCH
+      10180  STANDBY_MATCH
+      10242  STANDBY_MATCH
+      20243  STANDBY_MATCH
+      20221  HAPPY_BOX_MATCH
+      20266  STANDBY_MATCH
+      10272  STANDBY_MATCH
+      20177  STANDBY_MATCH
+      20259  STANDBY_MATCH
+      10268  STANDBY_MATCH
+      10194  STANDBY_MATCH
+      20190  STANDBY_MATCH
+      10129  HAPPY_BOX_MATCH
+      20169  STANDBY_MATCH
+      20113  HAPPY_BOX_MATCH
+      10267  STANDBY_MATCH
+      20078  HAPPY_BOX_MATCH
+      10661  STANDBY_MATCH
+      10215  HAPPY_BOX_MATCH
+      10221  HAPPY_BOX_MATCH
+      10270  STANDBY_MATCH
+      20157  STANDBY_MATCH
+      20268  STANDBY_MATCH
+      20141  STANDBY_MATCH
+      10660  STANDBY_MATCH
+      10120  STANDBY_MATCH
+      10257  STANDBY_MATCH
+      10117  HAPPY_BOX_MATCH
+      10249  STANDBY_MATCH
+      20283  STANDBY_MATCH
+      10157  STANDBY_MATCH
+      10169  STANDBY_MATCH
+      10276  STANDBY_MATCH
+      10161  HAPPY_BOX_MATCH
+      20195  STANDBY_MATCH
+      20247  STANDBY_MATCH
+      20193  STANDBY_MATCH
+      20276  STANDBY_MATCH
+      10184  STANDBY_MATCH
+      10205  HAPPY_BOX_MATCH
+      20184  STANDBY_MATCH
+      10259  STANDBY_MATCH
+      10266  STANDBY_MATCH
+      20180  STANDBY_MATCH
+      10190  STANDBY_MATCH
+      20242  STANDBY_MATCH
+      20146  HAPPY_BOX_MATCH
+      10182  STANDBY_MATCH
+      20215  HAPPY_BOX_MATCH
+      10159  STANDBY_MATCH
+      10146  HAPPY_BOX_MATCH
+      20116  HAPPY_BOX_MATCH
+      10251  STANDBY_MATCH
+      10189  STANDBY_MATCH
+      20217  HAPPY_BOX_MATCH
+      20194  STANDBY_MATCH
+      20249  STANDBY_MATCH
+      20178  STANDBY_MATCH
+      20256  STANDBY_MATCH
+      10177  STANDBY_MATCH
+      10248  STANDBY_MATCH
+      10246  STANDBY_MATCH
+      20267  STANDBY_MATCH
+      10113  HAPPY_BOX_MATCH
+      20272  STANDBY_MATCH
+      20182  STANDBY_MATCH
+      10217  HAPPY_BOX_MATCH
+      20165  STANDBY_MATCH
+      20205  HAPPY_BOX_MATCH
+      20270  STANDBY_MATCH
+      10256  STANDBY_MATCH
+      20189  STANDBY_MATCH
+      20129  HAPPY_BOX_MATCH
+      20159  STANDBY_MATCH
+      10255  STANDBY_MATCH
+      20253  STANDBY_MATCH
+      20660  STANDBY_MATCH
+      10237  HAPPY_BOX_MATCH
+      10260  STANDBY_MATCH
+      20246  STANDBY_MATCH
+      10283  STANDBY_MATCH
+      10195  STANDBY_MATCH
+      20661  STANDBY_MATCH
+      10193  STANDBY_MATCH
+      20257  STANDBY_MATCH
+      10243  STANDBY_MATCH
+      10116  HAPPY_BOX_MATCH
+      20260  STANDBY_MATCH
+      20117  HAPPY_BOX_MATCH
+      20255  STANDBY_MATCH
+      10078  HAPPY_BOX_MATCH
+      20237  HAPPY_BOX_MATCH
+      10165  STANDBY_MATCH
+      20251  STANDBY_MATCH
+      20161  HAPPY_BOX_MATCH
+      20248  STANDBY_MATCH
+      10247  STANDBY_MATCH
+      20120  STANDBY_MATCH
+      10178  STANDBY_MATCH
+      10253  STANDBY_MATCH
+
+      mUidPermissionMap:
+      20035 PERMISSION_NONE
+      10042 PERMISSION_NONE
+      10010 PERMISSION_NONE
+      20135  BPF_PERMISSION_INTERNET BPF_PERMISSION_UPDATE_DEVICE_STATS
+      10148 PERMISSION_NONE
+      10052 PERMISSION_NONE
+      20236 PERMISSION_NONE
+      20033 PERMISSION_NONE
+      10106 PERMISSION_NONE
+      20010 PERMISSION_NONE
+      20148 PERMISSION_NONE
+      10066 PERMISSION_NONE
+      10049 PERMISSION_NONE
+      1041  BPF_PERMISSION_UPDATE_DEVICE_STATS
+      20053 PERMISSION_NONE
+      10013 PERMISSION_NONE
+      10008 PERMISSION_NONE
+      20022 PERMISSION_NONE
+      20214 PERMISSION_NONE
+      20207 PERMISSION_NONE
+      10051 PERMISSION_NONE
+      1047  BPF_PERMISSION_UPDATE_DEVICE_STATS
+      20220 PERMISSION_NONE
+      20115 PERMISSION_NONE
+      10021 PERMISSION_NONE
+      10027 PERMISSION_NONE
+      10048 PERMISSION_NONE
+      1000  BPF_PERMISSION_INTERNET BPF_PERMISSION_UPDATE_DEVICE_STATS
+      10115 PERMISSION_NONE
+      10063 PERMISSION_NONE
+      10436 PERMISSION_NONE
+      10085 PERMISSION_NONE
+      10239 PERMISSION_NONE
+      10269 PERMISSION_NONE
+      10145 PERMISSION_NONE
+      10074 PERMISSION_NONE
+      20095 PERMISSION_NONE
+      20051 PERMISSION_NONE
+      10103 PERMISSION_NONE
+      10110 PERMISSION_NONE
+      20225 PERMISSION_NONE
+      10034 PERMISSION_NONE
+      20013 PERMISSION_NONE
+      10018 PERMISSION_NONE
+      20197 PERMISSION_NONE
+      10050 PERMISSION_NONE
+      10038 PERMISSION_NONE
+      20026 PERMISSION_NONE
+      10244 PERMISSION_NONE
+      10020 PERMISSION_NONE
+      20004 PERMISSION_NONE
+      20000 PERMISSION_NONE
+      10092 PERMISSION_NONE
+      10220 PERMISSION_NONE
+      10081 PERMISSION_NONE
+      20084 PERMISSION_NONE
+      20261 PERMISSION_NONE
+      10164 PERMISSION_NONE
+      20050 PERMISSION_NONE
+      10017 PERMISSION_NONE
+      20034 PERMISSION_NONE
+      10054 PERMISSION_NONE
+      10070 PERMISSION_NONE
+      20269 PERMISSION_NONE
+      10234 PERMISSION_NONE
+      10132 PERMISSION_NONE
+      10102 PERMISSION_NONE
+      20003 PERMISSION_NONE
+      20001 PERMISSION_NONE
+      10041 PERMISSION_NONE
+      20023 PERMISSION_NONE
+      20218 PERMISSION_NONE
+      10261 PERMISSION_NONE
+      20129  BPF_PERMISSION_INTERNET BPF_PERMISSION_UPDATE_DEVICE_STATS
+      1013  BPF_PERMISSION_INTERNET BPF_PERMISSION_UPDATE_DEVICE_STATS
+      20201 PERMISSION_NONE
+      20065 PERMISSION_NONE
+      20107 PERMISSION_NONE
+      20067 PERMISSION_NONE
+      20094 PERMISSION_NONE
+      20226 PERMISSION_NONE
+      20009 PERMISSION_NONE
+      20219 PERMISSION_NONE
+      10087 PERMISSION_NONE
+      20076 PERMISSION_NONE
+      20024 PERMISSION_NONE
+      20170 PERMISSION_NONE
+      20087 PERMISSION_NONE
+      20012 PERMISSION_NONE
+      10216 PERMISSION_NONE
+      20096 PERMISSION_NONE
+      20014 PERMISSION_NONE
+      20040 PERMISSION_NONE
+      10000 PERMISSION_NONE
+      10007 PERMISSION_NONE
+      20031 PERMISSION_NONE
+      10093 PERMISSION_NONE
+      10067 PERMISSION_NONE
+      20181 PERMISSION_NONE
+      10168 PERMISSION_NONE
+      10088 PERMISSION_NONE
+      20029 PERMISSION_NONE
+      20020 PERMISSION_NONE
+      20158 PERMISSION_NONE
+      10023 PERMISSION_NONE
+      10223 PERMISSION_NONE
+      10225 PERMISSION_NONE
+      20083 PERMISSION_NONE
+      20437 PERMISSION_NONE
+      20062 PERMISSION_NONE
+      10019 PERMISSION_NONE
+      10057 PERMISSION_NONE
+      10210 PERMISSION_NONE
+      10229 PERMISSION_NONE
+      20006 PERMISSION_NONE
+      20108 PERMISSION_NONE
+      20041 PERMISSION_NONE
+      10043 PERMISSION_NONE
+      20042 PERMISSION_NONE
+      1068 PERMISSION_NONE
+      20239 PERMISSION_NONE
+      10015 PERMISSION_NONE
+      10143 PERMISSION_NONE
+      20262 PERMISSION_NONE
+      20021 PERMISSION_NONE
+      10009 PERMISSION_NONE
+      20168 PERMISSION_NONE
+      20019 PERMISSION_NONE
+      20099 PERMISSION_NONE
+      10204 PERMISSION_NONE
+      10095 PERMISSION_NONE
+      20088 PERMISSION_NONE
+      10030 PERMISSION_NONE
+      20241  BPF_PERMISSION_UPDATE_DEVICE_STATS
+      20235 PERMISSION_NONE
+      20057 PERMISSION_NONE
+      20064 PERMISSION_NONE
+      10101 PERMISSION_NONE
+      10129  BPF_PERMISSION_INTERNET BPF_PERMISSION_UPDATE_DEVICE_STATS
+      20179 PERMISSION_NONE
+      20025 PERMISSION_NONE
+      10053 PERMISSION_NONE
+      10033 PERMISSION_NONE
+      20186 PERMISSION_NONE
+      20092 PERMISSION_NONE
+      20017 PERMISSION_NONE
+      10040 PERMISSION_NONE
+      10016 PERMISSION_NONE
+      20110 PERMISSION_NONE
+      20068 PERMISSION_NONE
+      10047 PERMISSION_NONE
+      10056 PERMISSION_NONE
+      20238 PERMISSION_NONE
+      20103 PERMISSION_NONE
+      10083 PERMISSION_NONE
+      10072 PERMISSION_NONE
+      10135  BPF_PERMISSION_INTERNET BPF_PERMISSION_UPDATE_DEVICE_STATS
+      10068 PERMISSION_NONE
+      20132 PERMISSION_NONE
+      10078  BPF_PERMISSION_INTERNET BPF_PERMISSION_UPDATE_DEVICE_STATS
+      20234 PERMISSION_NONE
+      10022 PERMISSION_NONE
+      10108 PERMISSION_NONE
+      2000  BPF_PERMISSION_INTERNET BPF_PERMISSION_UPDATE_DEVICE_STATS
+      10100 PERMISSION_NONE
+      20044 PERMISSION_NONE
+      20223 PERMISSION_NONE
+      20011 PERMISSION_NONE
+      20100 PERMISSION_NONE
+      10171 PERMISSION_NONE
+      10080 PERMISSION_NONE
+      20258 PERMISSION_NONE
+      10241  BPF_PERMISSION_UPDATE_DEVICE_STATS
+      10181 PERMISSION_NONE
+      20036 PERMISSION_NONE
+      20245 PERMISSION_NONE
+      20028 PERMISSION_NONE
+      20015 PERMISSION_NONE
+      10099 PERMISSION_NONE
+      10004 PERMISSION_NONE
+      20032 PERMISSION_NONE
+      20080 PERMISSION_NONE
+      10197 PERMISSION_NONE
+      20149 PERMISSION_NONE
+      10035 PERMISSION_NONE
+      20052 PERMISSION_NONE
+      10236 PERMISSION_NONE
+      20027 PERMISSION_NONE
+      10039 PERMISSION_NONE
+      20240 PERMISSION_NONE
+      20102 PERMISSION_NONE
+      10240 PERMISSION_NONE
+      10003 PERMISSION_NONE
+      10252 PERMISSION_NONE
+      20173 PERMISSION_NONE
+      20005 PERMISSION_NONE
+      20047 PERMISSION_NONE
+      20030 PERMISSION_NONE
+      10098 PERMISSION_NONE
+      10069 PERMISSION_NONE
+      20039 PERMISSION_NONE
+      10262 PERMISSION_NONE
+      10046 PERMISSION_NONE
+      10153  BPF_PERMISSION_UPDATE_DEVICE_STATS
+      10222 PERMISSION_NONE
+      20078  BPF_PERMISSION_INTERNET BPF_PERMISSION_UPDATE_DEVICE_STATS
+      20265 PERMISSION_NONE
+      10250 PERMISSION_NONE
+      10258 PERMISSION_NONE
+      10163 PERMISSION_NONE
+      20058 PERMISSION_NONE
+      10150 PERMISSION_NONE
+      10202 PERMISSION_NONE
+      10137 PERMISSION_NONE
+      10437 PERMISSION_NONE
+      10029 PERMISSION_NONE
+      10173 PERMISSION_NONE
+      10214 PERMISSION_NONE
+      10028 PERMISSION_NONE
+      20167 PERMISSION_NONE
+      10062 PERMISSION_NONE
+      10058 PERMISSION_NONE
+      10014 PERMISSION_NONE
+      10224 PERMISSION_NONE
+      10024 PERMISSION_NONE
+      20098 PERMISSION_NONE
+      20038 PERMISSION_NONE
+      20244 PERMISSION_NONE
+      20101 PERMISSION_NONE
+      20069 PERMISSION_NONE
+      10232 PERMISSION_NONE
+      20061 PERMISSION_NONE
+      20060 PERMISSION_NONE
+      10179 PERMISSION_NONE
+      10226 PERMISSION_NONE
+      10073 PERMISSION_NONE
+      20063 PERMISSION_NONE
+      10238 PERMISSION_NONE
+      10045 PERMISSION_NONE
+      10084 PERMISSION_NONE
+      10096 PERMISSION_NONE
+      20048 PERMISSION_NONE
+      10012 PERMISSION_NONE
+      10245 PERMISSION_NONE
+      10044 PERMISSION_NONE
+      10002 PERMISSION_NONE
+      20229 PERMISSION_NONE
+      20045 PERMISSION_NONE
+      20055 PERMISSION_NONE
+      10107 PERMISSION_NONE
+      20145 PERMISSION_NONE
+      20056 PERMISSION_NONE
+      20187 PERMISSION_NONE
+      10060 PERMISSION_NONE
+      20137 PERMISSION_NONE
+      20002 PERMISSION_NONE
+      20164 PERMISSION_NONE
+      20106 PERMISSION_NONE
+      20233 PERMISSION_NONE
+      20085 PERMISSION_NONE
+      20252 PERMISSION_NONE
+      20070 PERMISSION_NONE
+      20171 PERMISSION_NONE
+      10025 PERMISSION_NONE
+      20162 PERMISSION_NONE
+      20066 PERMISSION_NONE
+      10036 PERMISSION_NONE
+      20143 PERMISSION_NONE
+      20224 PERMISSION_NONE
+      20210 PERMISSION_NONE
+      20072 PERMISSION_NONE
+      20043 PERMISSION_NONE
+      10170 PERMISSION_NONE
+      20046 PERMISSION_NONE
+      10031 PERMISSION_NONE
+      20054 PERMISSION_NONE
+      10233 PERMISSION_NONE
+      10065 PERMISSION_NONE
+      1002  BPF_PERMISSION_INTERNET BPF_PERMISSION_UPDATE_DEVICE_STATS
+      20008 PERMISSION_NONE
+      10235 PERMISSION_NONE
+      20231 PERMISSION_NONE
+      10207 PERMISSION_NONE
+      10037 PERMISSION_NONE
+      10064 PERMISSION_NONE
+      20211 PERMISSION_NONE
+      10265 PERMISSION_NONE
+      20202 PERMISSION_NONE
+      20073 PERMISSION_NONE
+      10061 PERMISSION_NONE
+      20007 PERMISSION_NONE
+      10082 PERMISSION_NONE
+      20204 PERMISSION_NONE
+      10094 PERMISSION_NONE
+      20250 PERMISSION_NONE
+      20216 PERMISSION_NONE
+      10026 PERMISSION_NONE
+      20150 PERMISSION_NONE
+      20093 PERMISSION_NONE
+      1001  BPF_PERMISSION_INTERNET BPF_PERMISSION_UPDATE_DEVICE_STATS
+      10218 PERMISSION_NONE
+      20081 PERMISSION_NONE
+      20232 PERMISSION_NONE
+      10059 PERMISSION_NONE
+      20183 PERMISSION_NONE
+      20018 PERMISSION_NONE
+      20037 PERMISSION_NONE
+      10201 PERMISSION_NONE
+      10162 PERMISSION_NONE
+      10186 PERMISSION_NONE
+      20074 PERMISSION_NONE
+      10005 PERMISSION_NONE
+      20016 PERMISSION_NONE
+      10158 PERMISSION_NONE
+      10149 PERMISSION_NONE
+      10006 PERMISSION_NONE
+      10055 PERMISSION_NONE
+      10011 PERMISSION_NONE
+      10231 PERMISSION_NONE
+      10077 PERMISSION_NONE
+      20049 PERMISSION_NONE
+      20082 PERMISSION_NONE
+      20059 PERMISSION_NONE
+      20077 PERMISSION_NONE
+      10183 PERMISSION_NONE
+      20436 PERMISSION_NONE
+      20153  BPF_PERMISSION_UPDATE_DEVICE_STATS
+      10032 PERMISSION_NONE
+      10219 PERMISSION_NONE
+      10211 PERMISSION_NONE
+      1073  BPF_PERMISSION_INTERNET BPF_PERMISSION_UPDATE_DEVICE_STATS
+      10076 PERMISSION_NONE
+      10187 PERMISSION_NONE
+      20163 PERMISSION_NONE
+      10001 PERMISSION_NONE
+      10167 PERMISSION_NONE
+      20222 PERMISSION_NONE
+
+      mPrivilegedUser:
+      1000 ALLOW_UPDATE_DEVICE_STATS
+      1001 ALLOW_UPDATE_DEVICE_STATS
+      1002 ALLOW_UPDATE_DEVICE_STATS
+      1013 ALLOW_UPDATE_DEVICE_STATS
+      1041 ALLOW_UPDATE_DEVICE_STATS
+      1047 ALLOW_UPDATE_DEVICE_STATS
+      1073 ALLOW_UPDATE_DEVICE_STATS
+      2000 ALLOW_UPDATE_DEVICE_STATS
+      10078 ALLOW_UPDATE_DEVICE_STATS
+      10129 ALLOW_UPDATE_DEVICE_STATS
+      10135 ALLOW_UPDATE_DEVICE_STATS
+      10153 ALLOW_UPDATE_DEVICE_STATS
+      10241 ALLOW_UPDATE_DEVICE_STATS
+      20078 ALLOW_UPDATE_DEVICE_STATS
+      20129 ALLOW_UPDATE_DEVICE_STATS
+      20135 ALLOW_UPDATE_DEVICE_STATS
+      20153 ALLOW_UPDATE_DEVICE_STATS
+      20241 ALLOW_UPDATE_DEVICE_STATS

@@ -1,8 +1,11 @@
 package com.github.unidbg.virtualmodule.android;
 
 import com.github.unidbg.Emulator;
+import com.github.unidbg.arm.Arm64Hook;
 import com.github.unidbg.arm.Arm64Svc;
+import com.github.unidbg.arm.ArmHook;
 import com.github.unidbg.arm.ArmSvc;
+import com.github.unidbg.arm.HookStatus;
 import com.github.unidbg.arm.backend.Backend;
 import com.github.unidbg.arm.backend.BackendException;
 import com.github.unidbg.arm.context.RegisterContext;
@@ -194,15 +197,23 @@ public class AndroidModule extends VirtualModule<VM> {
                 return sensorGetType(emulator);
             }
         }));
-        symbols.put("ASensor_getResolution", svcMemory.registerSvc(is64Bit ? new Arm64Svc() {
+        symbols.put("ASensor_getResolution", svcMemory.registerSvc(is64Bit ? new Arm64Hook() {
             @Override
-            public long handle(Emulator<?> emulator) {
-                return sensorGetResolutionBits(emulator);
+            protected HookStatus hook(Emulator<?> emulator) {
+                lastResolution = sensorResolution(emulator);
+                writeFloatReturn(emulator, lastResolution);
+                TraceEnvironmentEventSink.emit(emulator, "android_sensor",
+                        "ASensor_getResolution",
+                        "resolution=" + lastResolution,
+                        "json-config", "读取配置的 NDK 传感器分辨率");
+                return HookStatus.LR(emulator, Float.floatToIntBits(lastResolution) & 0xffffffffL);
             }
-        } : new ArmSvc() {
+        } : new ArmHook() {
             @Override
-            public long handle(Emulator<?> emulator) {
-                return sensorGetResolutionBits(emulator);
+            protected HookStatus hook(Emulator<?> emulator) {
+                lastResolution = sensorResolution(emulator);
+                writeFloatReturn(emulator, lastResolution);
+                return HookStatus.LR(emulator, Float.floatToIntBits(lastResolution) & 0xffffffffL);
             }
         }));
     }
@@ -292,15 +303,20 @@ public class AndroidModule extends VirtualModule<VM> {
      * (ARM64) or {@code s0} (ARM32). {@code X0}/{@code R0} still receive the IEEE bits
      * because the SVC dispatcher only stores the long return.
      */
+    private float lastResolution;
+
     public long sensorGetResolutionBits(Emulator<?> emulator) {
-        Pointer sensor = emulator.getContext().getPointerArg(0);
-        if (sensor == null) {
-            writeFloatReturn(emulator, 0f);
-            return 0L;
-        }
-        float resolution = sensor.getFloat(8);
+        float resolution = sensorResolution(emulator);
         writeFloatReturn(emulator, resolution);
         return Float.floatToIntBits(resolution) & 0xffffffffL;
+    }
+
+    float sensorResolution(Emulator<?> emulator) {
+        Pointer sensor = emulator.getContext().getPointerArg(0);
+        if (sensor == null) {
+            return 0f;
+        }
+        return sensor.getFloat(8);
     }
 
     static void writeFloatReturn(Emulator<?> emulator, float value) {

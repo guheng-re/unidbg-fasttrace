@@ -1,0 +1,1238 @@
+[
+  {
+    "path": "network.interfaces[0]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[1]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[2]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[3]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[4]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[5]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[6]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[7]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[8]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[9]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[10]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[11]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[12]",
+    "reason": "no ipv4 in dump"
+  },
+  {
+    "path": "network.interfaces[13]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[14]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[15]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[16]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[17]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[18]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[19]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[20]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[21]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[22]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[23]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[24]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[25]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[26]",
+    "reason": "no ipv4 in dump"
+  },
+  {
+    "path": "network.interfaces[27]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[28]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[29]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[30]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[31]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[32]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[33]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[34]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[35]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[36]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[37]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[38]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[39]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[40]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[41]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[42]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[43]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[44]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[45]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[46]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[47]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces[48]",
+    "reason": "no index in dump or overlay if_inet6"
+  },
+  {
+    "path": "network.interfaces",
+    "reason": "empty after drop"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/AndroidClock.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/CarroisGothicSC-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/ComingSoon.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/CutiveMono.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/DancingScript-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/DancingScript-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/DroidSans-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/DroidSans.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/DroidSansMono.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoColorEmoji.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoColorEmojiFlags.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoColorEmojiLegacy.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoNaskhArabic-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoNaskhArabic-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoNaskhArabicUI-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoNaskhArabicUI-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansAdlam-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansAhom-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansAnatolianHieroglyphs-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansArmenian-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansAvestan-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansBalinese-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansBamum-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansBassaVah-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansBatak-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansBengali-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansBengaliUI-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansBhaiksuki-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansBrahmi-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansBuginese-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansBuhid-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansCJK-Regular.ttc\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansCanadianAboriginal-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansCarian-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansChakma-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansCham-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansCham-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansCherokee-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansCoptic-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansCuneiform-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansCypriot-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansDeseret-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansDevanagari-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansDevanagariUI-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansEgyptianHieroglyphs-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansElbasan-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansEthiopic-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansGeorgian-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansGlagolitic-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansGothic-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansGrantha-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansGujarati-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansGujarati-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansGujaratiUI-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansGujaratiUI-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansGunjalaGondi-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansGurmukhi-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansGurmukhiUI-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansHanifiRohingya-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansHanunoo-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansHatran-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansHebrew-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansHebrew-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansImperialAramaic-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansInscriptionalPahlavi-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansInscriptionalParthian-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansJavanese-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansKaithi-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansKannada-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansKannadaUI-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansKayahLi-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansKharoshthi-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansKhmer-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansKhmerUI-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansKhmerUI-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansKhojki-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansLao-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansLao-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansLaoUI-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansLaoUI-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansLepcha-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansLimbu-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansLinearA-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansLinearB-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansLisu-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansLycian-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansLydian-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMalayalam-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMalayalamUI-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMandaic-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansManichaean-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMarchen-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMasaramGondi-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMedefaidrin-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMeeteiMayek-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMeroitic-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMiao-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansModi-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMongolian-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMro-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMultani-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMyanmar-Bold.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMyanmar-Medium.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMyanmar-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMyanmarUI-Bold.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMyanmarUI-Medium.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansMyanmarUI-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansNKo-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansNabataean-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansNewTaiLue-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansNewa-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOgham-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOlChiki-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOldItalic-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOriya-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOldNorthArabian-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOldPermic-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOldPersian-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOldSouthArabian-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOldTurkic-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOriya-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOriyaUI-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOriyaUI-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOsage-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansOsmanya-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansPahawhHmong-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansPalmyrene-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansPauCinHau-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansPhagsPa-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansPhoenician-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansRejang-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansRunic-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSamaritan-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSaurashtra-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSharada-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansShavian-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSinhala-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSinhalaUI-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSoraSompeng-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSoyombo-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSundanese-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSylotiNagri-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSymbols-Regular-Subsetted.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSymbols-Regular-Subsetted2.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSyriacEastern-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSyriacEstrangela-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansSyriacWestern-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansTagalog-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansTagbanwa-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansTaiLe-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansTaiTham-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansTaiViet-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansTakri-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansTamil-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansTamilUI-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansTelugu-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansTeluguUI-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansThaana-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansThaana-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansThai-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansThai-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansThaiUI-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansThaiUI-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansTifinagh-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansUgaritic-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansVai-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansWancho-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansWarangCiti-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSansYi-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerif-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerif-BoldItalic.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerif-Italic.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerif-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifArmenian-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifBengali-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifCJK-Regular.ttc\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifDevanagari-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifDogra-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifEthiopic-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifGeorgian-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifGujarati-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifGurmukhi-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifHebrew-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifHebrew-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifKannada-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifKhmer-Bold.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifKhmer-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifLao-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifLao-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifMalayalam-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifMyanmar-Bold.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifMyanmar-Regular.otf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifNyiakengPuachueHmong-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifSinhala-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifTamil-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifTelugu-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifThai-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifThai-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifTibetan-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/NotoSerifYezidi-VF.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/Roboto-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/RobotoStatic-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/SourceSansPro-Bold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/SourceSansPro-BoldItalic.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/SourceSansPro-Italic.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/SourceSansPro-Regular.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/SourceSansPro-SemiBold.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "filesystem.stat[\"/system/fonts/SourceSansPro-SemiBoldItalic.ttf\"].name",
+    "reason": "not a unidbg stat key, dropped"
+  },
+  {
+    "path": "android.sensors.types",
+    "reason": "type 65538 out of 1..65535, dropped"
+  },
+  {
+    "path": "android.sensors.types",
+    "reason": "type 65539 out of 1..65535, dropped"
+  },
+  {
+    "path": "android.sensors.types",
+    "reason": "type 65541 out of 1..65535, dropped"
+  },
+  {
+    "path": "android.sensors.types",
+    "reason": "type 65545 out of 1..65535, dropped"
+  },
+  {
+    "path": "android.sensors.types",
+    "reason": "type 131073 out of 1..65535, dropped"
+  },
+  {
+    "path": "android.sensors.types",
+    "reason": "type 131077 out of 1..65535, dropped"
+  },
+  {
+    "path": "android.sensors.types",
+    "reason": "type 131083 out of 1..65535, dropped"
+  },
+  {
+    "path": "android.sensors.types",
+    "reason": "type 131085 out of 1..65535, dropped"
+  },
+  {
+    "path": "android.sensors.types",
+    "reason": "type 131087 out of 1..65535, dropped"
+  },
+  {
+    "path": "android.sensors.types",
+    "reason": "type 131088 out of 1..65535, dropped"
+  },
+  {
+    "path": "android.sensors.names.65538",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.names.65539",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.names.65541",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.names.65545",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.names.131073",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.names.131077",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.names.131083",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.names.131085",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.names.131087",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.names.131088",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.vendors.65538",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.vendors.65539",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.vendors.65541",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.vendors.65545",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.vendors.131073",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.vendors.131077",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.vendors.131083",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.vendors.131085",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.vendors.131087",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.vendors.131088",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.versions.65538",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.versions.65539",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.versions.65541",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.versions.65545",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.versions.131073",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.versions.131077",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.versions.131083",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.versions.131085",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.versions.131087",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.sensors.versions.131088",
+    "reason": "type not in 1..65535 types"
+  },
+  {
+    "path": "android.inputMethods[0]",
+    "reason": "missing id or enabled, dropped"
+  },
+  {
+    "path": "android.inputMethods[1]",
+    "reason": "missing id or enabled, dropped"
+  },
+  {
+    "path": "android.inputMethods[2]",
+    "reason": "missing id or enabled, dropped"
+  },
+  {
+    "path": "android.inputMethods",
+    "reason": "empty after drop"
+  },
+  {
+    "path": "android.features[45].name",
+    "reason": "invalid feature name, dropped"
+  },
+  {
+    "path": "android.features[63].name",
+    "reason": "invalid feature name, dropped"
+  },
+  {
+    "path": "android.features[90].name",
+    "reason": "invalid feature name, dropped"
+  },
+  {
+    "path": "android.telephony",
+    "reason": "missing required phoneCount/slots, dropped section"
+  },
+  {
+    "path": "graphics.eglVendor",
+    "reason": "collector placeholder, dropped"
+  },
+  {
+    "path": "graphics",
+    "reason": "dropped"
+  },
+  {
+    "path": "linux.sysinfo",
+    "reason": "missing required procs, dropped section"
+  }
+]

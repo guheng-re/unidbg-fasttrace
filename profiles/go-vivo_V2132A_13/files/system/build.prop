@@ -1,0 +1,4 @@
+ro.product.brand=vivo
+ro.product.model=V2132A
+ro.hardware=erd9815_rt
+ro.build.fingerprint=vivo/PD2132/PD2134:13/TP1A.220624.014/compiler10211842:user/release-keys

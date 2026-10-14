@@ -1,0 +1,31 @@
+ACCESSIBILITY MANAGER (dumpsys accessibility)
+
+currentUserId=0
+hasWindowMagnificationConnection=false
+Magnifier on display#0
+    MagnificationConfig[mode: 1, scale: 1.0, centerX: 0.0, centerY: 0.0] 
+    Magnification region=SkRegion((5,5,1075,2337))
+    IdOfLastServiceToMagnify=-1
+    SupportWindowMagnification=true
+    WindowMagnificationConnectionState=DISCONNECTED
+User state[
+     attributes:{id=0, touchExplorationEnabled=false, serviceHandlesDoubleTap=false, requestMultiFingerGestures=false, requestTwoFingerPassthrough=false, sendMotionEventsEnabledfalse, displayMagnificationEnabled=false, autoclickEnabled=false, nonInteractiveUiTimeout=0, interactiveUiTimeout=0, installedServiceCount=8, magnificationModes={0=1}, magnificationCapabilities=3, audioDescriptionByDefaultEnabled=false, magnificationFollowTypingEnabled=true}
+     shortcut key:{}
+     button:{}
+     button target:{null}
+     Bound services:{}
+     Enabled services:{}
+     Binding services:{}
+     Crashed services:{}
+     Client list info:{
+          Client list callbacks: 5
+          Client list killed: false
+          Client list broadcasts count: -1
+          Registered clients:{
+[com.google.android.as][com.google.android.apps.nexuslauncher][com.google.android.inputmethod.latin][com.google.android.googlequicksearchbox][com.jingdong.app.mall]}]
+Global client list info:{
+    Client list callbacks: 4
+    Client list killed: false
+    Client list broadcasts count: -1
+    Registered clients:{
+[com.android.hbmsvmanager][com.google.android.permissioncontroller][com.google.SSRestartDetector, com.android.wallpaperbackup, com.android.server.telecom, com.android.dynsystem, android, com.android.inputdevices, com.android.providers.settings, com.google.android.iwlan, com.android.location.fused, com.android.localtransport, com.android.settings, com.android.keychain][com.android.systemui]

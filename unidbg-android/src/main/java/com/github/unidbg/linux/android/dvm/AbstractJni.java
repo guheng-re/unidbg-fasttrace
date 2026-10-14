@@ -1083,7 +1083,7 @@ public abstract class AbstractJni implements Jni {
             // 指纹风险: 低。路径本身不含设备信息，但可能暴露目录结构
             case "java/io/File->getAbsolutePath()Ljava/lang/String;":
                 File file = (File) dvmObject.getValue();
-                return new StringObject(vm, file.getAbsolutePath());
+                return new StringObject(vm, guestAbsolutePath(file));
             
             // ==================== Android PackageManager ====================
             // getPackageManager(): 获取包管理器，用于查询应用信息
@@ -2950,7 +2950,7 @@ public abstract class AbstractJni implements Jni {
                 return new ClassLoader(vm, signature);
             case "java/io/File->getAbsolutePath()Ljava/lang/String;":
                 File file = (File) dvmObject.getValue();
-                return new StringObject(vm, file.getAbsolutePath());
+                return new StringObject(vm, guestAbsolutePath(file));
             case "java/util/HashMap->keySet()Ljava/util/Set;":
                 Map<?, ?> map = (Map<?, ?>) dvmObject.getValue();
                 return vm.resolveClass("java/util/HashSet").newObject(map.keySet());
@@ -13591,8 +13591,40 @@ public abstract class AbstractJni implements Jni {
         return true;
     }
 
-    private static String configuredDisplayName() {
+    private static String configuredDisplayName(BaseVM vm) {
+        TraceEnvironmentConfig config = vm == null ? null : TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config != null && config.isAndroidDisplaysConfigured()) {
+            java.util.List<TraceEnvironmentConfig.AndroidDisplayEntryConfig> displays =
+                    config.getAndroidDisplays();
+            if (!displays.isEmpty()) {
+                String name = displays.get(0).getName();
+                if (name != null && !name.isEmpty()) {
+                    return name;
+                }
+            }
+        }
         return ANDROID_DISPLAY_DEFAULT_NAME;
+    }
+
+    private static int configuredDisplayFlags(BaseVM vm) {
+        TraceEnvironmentConfig config = vm == null ? null : TraceEnvironmentConfig.get(vm.getEmulator());
+        if (config != null && config.isAndroidDisplaysConfigured()) {
+            java.util.List<TraceEnvironmentConfig.AndroidDisplayEntryConfig> displays =
+                    config.getAndroidDisplays();
+            if (!displays.isEmpty()) {
+                return displays.get(0).getFlags();
+            }
+        }
+        return ANDROID_DISPLAY_FLAG_SECURE;
+    }
+
+    private static boolean isConfiguredDisplayEntry(BaseVM vm, DvmObject<?> dvmObject) {
+        if (vm == null || dvmObject == null
+                || !(dvmObject.getValue() instanceof ConfiguredDisplayEntry)) {
+            return false;
+        }
+        ConfiguredDisplayEntry marker = (ConfiguredDisplayEntry) dvmObject.getValue();
+        return marker.owner == vm;
     }
 
     private static String configuredDisplayUniqueId(TraceEnvironmentConfig.AndroidDisplayConfig displayConfig) {
@@ -13698,7 +13730,7 @@ public abstract class AbstractJni implements Jni {
                 return AndroidDisplayObjectResult.of(mode);
             }
             if ("android/view/Display->getName()Ljava/lang/String;".equals(signature)) {
-                String name = configuredDisplayName();
+                String name = configuredDisplayName(vm);
                 TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Display.getName",
                         "result=" + name, "json-config", "读取配置 Display 的名称");
                 return AndroidDisplayObjectResult.of(new StringObject(vm, name));
@@ -13708,6 +13740,19 @@ public abstract class AbstractJni implements Jni {
                 TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Display.getUniqueId",
                         "result=" + uniqueId, "json-config", "读取配置 Display 的 uniqueId");
                 return AndroidDisplayObjectResult.of(new StringObject(vm, uniqueId));
+            }
+            throw jniUnimplemented(vm, signature);
+        }
+        if (isConfiguredDisplayEntry(vm, dvmObject)) {
+            ConfiguredDisplayEntry marker = (ConfiguredDisplayEntry) dvmObject.getValue();
+            if ("android/view/Display->getName()Ljava/lang/String;".equals(signature)) {
+                String name = marker.entry.getName();
+                if (name == null || name.isEmpty()) {
+                    name = configuredDisplayName(vm);
+                }
+                TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Display.getName",
+                        "result=" + name, "json-config", "读取配置 Display 列表的名称");
+                return AndroidDisplayObjectResult.of(new StringObject(vm, name));
             }
             throw jniUnimplemented(vm, signature);
         }
@@ -13853,10 +13898,37 @@ public abstract class AbstractJni implements Jni {
                 return AndroidDisplayIntFieldResult.of(ANDROID_DISPLAY_STATE_ON);
             }
             if ("android/view/Display->getFlags()I".equals(signature)) {
+                int flags = configuredDisplayFlags(vm);
                 TraceEnvironmentEventSink.emit(vm.getEmulator(), "android_display", "Display.getFlags",
-                        "field=flags,result=" + ANDROID_DISPLAY_FLAG_SECURE,
+                        "field=flags,result=" + flags,
                         "json-config", "读取配置 Display 的 flags");
-                return AndroidDisplayIntFieldResult.of(ANDROID_DISPLAY_FLAG_SECURE);
+                return AndroidDisplayIntFieldResult.of(flags);
+            }
+            throw jniUnimplemented(vm, signature);
+        }
+        if (isConfiguredDisplayEntry(vm, dvmObject)) {
+            ConfiguredDisplayEntry marker = (ConfiguredDisplayEntry) dvmObject.getValue();
+            TraceEnvironmentConfig.AndroidDisplayEntryConfig entry = marker.entry;
+            if ("android/view/Display->getDisplayId()I".equals(signature)) {
+                return AndroidDisplayIntFieldResult.of(entry.getId());
+            }
+            if ("android/view/Display->getWidth()I".equals(signature)) {
+                return AndroidDisplayIntFieldResult.of(entry.getWidthPixels());
+            }
+            if ("android/view/Display->getHeight()I".equals(signature)) {
+                return AndroidDisplayIntFieldResult.of(entry.getHeightPixels());
+            }
+            if ("android/view/Display->getFlags()I".equals(signature)) {
+                return AndroidDisplayIntFieldResult.of(entry.getFlags());
+            }
+            if ("android/view/Display->getType()I".equals(signature)) {
+                return AndroidDisplayIntFieldResult.of(ANDROID_DISPLAY_TYPE_INTERNAL);
+            }
+            if ("android/view/Display->getState()I".equals(signature)) {
+                return AndroidDisplayIntFieldResult.of(ANDROID_DISPLAY_STATE_ON);
+            }
+            if ("android/view/Display->getRotation()I".equals(signature)) {
+                return AndroidDisplayIntFieldResult.of(0);
             }
             throw jniUnimplemented(vm, signature);
         }
@@ -16965,6 +17037,31 @@ public abstract class AbstractJni implements Jni {
                 "time=" + value,
                 "json-config", "读取配置的 Build.TIME 构建时间戳");
         return time;
+    }
+
+    /** Windows File.getAbsolutePath() prepends a drive letter; Turing wants POSIX guest paths. */
+    private static String guestAbsolutePath(File file) {
+        if (file == null) {
+            return "";
+        }
+        String path = file.getPath();
+        if (path == null || path.isEmpty()) {
+            path = file.getAbsolutePath();
+        }
+        if (path == null) {
+            return "";
+        }
+        path = path.replace('\\', '/');
+        if (path.length() >= 2 && path.charAt(1) == ':') {
+            path = path.substring(2);
+        }
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        while (path.contains("//")) {
+            path = path.replace("//", "/");
+        }
+        return path;
     }
 
     private String getAndroidBuildString(BaseVM vm, String signature) {

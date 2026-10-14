@@ -1608,14 +1608,15 @@ public class ARM32SyscallHandler extends AndroidSyscallHandler {
                 }
                 break;
             case SocketIO.AF_NETLINK:
-                switch (type) {
+                switch (type & 0xff) {
                     case SocketIO.SOCK_DGRAM:
+                    case SocketIO.SOCK_RAW:
                         fd = getMinFd();
                         fdMap.put(fd, new NetLinkSocket(emulator));
                         return fd;
-                    case SocketIO.SOCK_RAW:
                     default:
-                        throw new UnsupportedOperationException();
+                        emulator.getMemory().setErrno(UnixEmulator.EOPNOTSUPP);
+                        return -1;
                 }
         }
         log.info("socket domain={}, type={}, protocol={}", domain, type, protocol);

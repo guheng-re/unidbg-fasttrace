@@ -12,10 +12,17 @@ public class ElfLibraryFile implements LibraryFile {
 
     private final File elfFile;
     private final boolean is64Bit;
+    private final String mapPath;
 
     public ElfLibraryFile(File elfFile, boolean is64Bit) {
+        this(elfFile, is64Bit, null);
+    }
+
+    /** {@code mapPath} is the pathname shown in {@code /proc/self/maps} (and {@link #getPath()}). */
+    public ElfLibraryFile(File elfFile, boolean is64Bit, String mapPath) {
         this.elfFile = elfFile;
         this.is64Bit = is64Bit;
+        this.mapPath = mapPath;
     }
 
     @Override
@@ -46,6 +53,9 @@ public class ElfLibraryFile implements LibraryFile {
 
     @Override
     public String getPath() {
+        if (mapPath != null && !mapPath.isEmpty()) {
+            return mapPath;
+        }
         String name = getName();
         if (name.endsWith(".so")) {
             return "/system/" + (is64Bit ? "lib64/" : "lib/") + name;

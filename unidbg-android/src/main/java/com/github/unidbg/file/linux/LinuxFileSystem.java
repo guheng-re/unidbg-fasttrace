@@ -54,10 +54,7 @@ public class LinuxFileSystem extends BaseFileSystem<AndroidFileIO> implements Fi
                     return FileResult.failed(UnixEmulator.EACCES);
                 }
                 DirectoryFileIO.DirectoryEntry[] entries =
-                        new DirectoryFileIO.DirectoryEntry[overlayDir.length];
-                for (int i = 0; i < overlayDir.length; i++) {
-                    entries[i] = new DirectoryFileIO.DirectoryEntry(true, overlayDir[i]);
-                }
+                        overlayDirectoryEntries(config, pathname, overlayDir);
                 TraceEnvironmentEventSink.emit(emulator, "linux_file", "open(\"" + pathname + "\")",
                         "path=" + pathname + ",count=" + overlayDir.length, "profile-file",
                         "枚举画像目录 " + pathname);
@@ -71,10 +68,8 @@ public class LinuxFileSystem extends BaseFileSystem<AndroidFileIO> implements Fi
                     return FileResult.failed(UnixEmulator.EACCES);
                 }
                 DirectoryFileIO.DirectoryEntry[] entries =
-                        new DirectoryFileIO.DirectoryEntry[names.size()];
-                for (int i = 0; i < names.size(); i++) {
-                    entries[i] = new DirectoryFileIO.DirectoryEntry(true, names.get(i));
-                }
+                        overlayDirectoryEntries(config, pathname,
+                                names.toArray(new String[names.size()]));
                 TraceEnvironmentEventSink.emit(emulator, "filesystem_directory", "open(\"" + pathname + "\")",
                         "path=" + pathname + ",count=" + names.size(), "json-config",
                         "枚举配置目录 " + pathname);
@@ -1884,6 +1879,36 @@ public class LinuxFileSystem extends BaseFileSystem<AndroidFileIO> implements Fi
             return true;
         }
         return ("/proc/" + emulator.getPid() + "/net/dev_mcast").equals(pathname);
+    }
+
+    /**
+     * Overlay / {@code filesystem.directories} children must report {@code DT_DIR} vs
+     * {@code DT_REG}. Turing's {@code /system} walk uses {@code d_type} to recurse;
+     * marking every child as a file stopped the walk at the first level.
+     */
+    private DirectoryFileIO.DirectoryEntry[] overlayDirectoryEntries(TraceEnvironmentConfig config,
+                                                                     String dirPath,
+                                                                     String[] names) {
+        DirectoryFileIO.DirectoryEntry[] entries =
+                new DirectoryFileIO.DirectoryEntry[names.length];
+        for (int i = 0; i < names.length; i++) {
+            String child = joinGuestPath(dirPath, names[i]);
+            boolean isDir = config.listProfileOverlayDirectory(child) != null
+                    || (config.isFilesystemDirectoriesConfigured()
+                    && config.getFilesystemDirectoryEntries(child) != null);
+            entries[i] = new DirectoryFileIO.DirectoryEntry(!isDir, names[i]);
+        }
+        return entries;
+    }
+
+    private static String joinGuestPath(String dirPath, String name) {
+        if (dirPath == null || dirPath.isEmpty() || "/".equals(dirPath)) {
+            return "/" + name;
+        }
+        if (dirPath.endsWith("/")) {
+            return dirPath + name;
+        }
+        return dirPath + "/" + name;
     }
 
     public LogCatHandler getLogCatHandler() {

@@ -1,0 +1,170 @@
+Location Manager State:
+  User Info:
+    current users: u[0]
+  Location Settings:
+    Location Setting: false
+    Location Allow/Deny Packages:
+    Throttling Allow Packages:
+      com.google.android.gms
+    Emergency Bypass Allow Packages:
+      com.google.android.dialer[*]
+      com.google.android.gms[.thunderbird]
+      com.shannon.imsservice[*]
+  Location Controller Extra Package: com.google.android.gms.location.history [disabled]
+  Location Providers:
+    passive provider:
+      service: unregistered
+      listeners:
+        1000/android[SensorNotificationService]/CB9A22C1 Request[PASSIVE, minUpdateInterval=+30m0s0ms, minUpdateDistance=100000.0, WorkSource{1000 android}] (inactive)
+      last location=null
+      enabled=false
+      allowed=true
+      identity=1000/android[LocationService]
+      properties=ProviderProperties[powerUsage=Low, accuracy=Fine]
+    network provider:
+      service: ProviderRequest[OFF]
+      listeners:
+        1000/android[GnssService]/8B27414A Request[PASSIVE, minUpdateInterval=0, hiddenFromAppOps, WorkSource{1000 android}] (inactive)
+        10153/com.google.android.as/980E7A39 {na} Request[@+6h0m0s0ms BALANCED, minUpdateDistance=100000.0, WorkSource{10153 com.google.android.as}] (inactive)
+      last location=null
+      enabled=false
+      allowed=true
+      identity=10129/com.google.android.gms[network_provider_shim]
+      extra attribution tags={awareness_provider, activity_recognition_provider, network_location_provider, network_location_calibration, fused_provider_shim, current_semantic_location, fused_location_provider, network_provider_shim, geofencer_provider}
+      properties=ProviderProperties[powerUsage=Medium, accuracy=Fine, requires=network, supports=[altitude]]
+      stationary throttled=false (not idle)
+      target service=10129/com.google.android.gms/com.google.android.location.network.NetworkLocationService@2
+      connected=true
+    fused provider:
+      service: ProviderRequest[OFF]
+      last location=null
+      enabled=false
+      allowed=true
+      identity=10129/com.google.android.gms[fused_provider_shim]
+      extra attribution tags={awareness_provider, activity_recognition_provider, network_location_provider, network_location_calibration, fused_provider_shim, current_semantic_location, fused_location_provider, network_provider_shim, geofencer_provider}
+      properties=ProviderProperties[powerUsage=Low, accuracy=Fine, supports=[bearing,speed,altitude]]
+      stationary throttled=false (not idle)
+      target service=10129/com.google.android.gms/com.google.android.location.fused.FusedLocationService@1
+      connected=true
+    gps provider:
+      service: ProviderRequest[OFF]
+      last location=null
+      enabled=false
+      allowed=true
+      identity=1000/android[GnssService]
+      properties=ProviderProperties[powerUsage=High, accuracy=Fine, requires=satellite, supports=[bearing,speed,altitude]]
+      stationary throttled=false (not idle)
+      mStarted=false   (changed +7d19h4m7s375ms ago)
+      mBatchingEnabled=false
+      mBatchingStarted=false
+      mBatchSize=0
+      mFixInterval=1000
+      GNSS_KPI_START
+        KPI logging start time: +21h7m28s432ms
+        KPI logging end time: +7d19h4m7s376ms
+        Number of location reports: 0
+        Number of TTFF reports: 0
+        Number of position accuracy reports: 0
+        Number of CN0 reports: 0
+        Total number of sv status messages processed: 0
+        Total number of L5 sv status messages processed: 0
+        Total number of sv status messages processed, where sv is used in fix: 0
+        Total number of L5 sv status messages processed, where sv is used in fix: 0
+        Number of L5 CN0 reports: 0
+        Used-in-fix constellation types: 
+      GNSS_KPI_END
+      Power Metrics
+        Time on battery (min): 25911.539133333332
+        Amount of time (while on battery) Top 4 Avg CN0 > 20.0 dB-Hz (min): 0.0
+        Amount of time (while on battery) Top 4 Avg CN0 <= 20.0 dB-Hz (min): 0.0
+        Energy consumed while on battery (mAh): 0.0
+      Hardware Version: MP1.0
+  Historical Aggregate Location Provider Data:
+    passive:
+      1000/android[SensorNotificationService]: min/max interval = passive/passive, total/active/foreground duration = +6d21h56m37s140ms/0/+6d21h56m37s140ms, locations = 0
+      10279/com.autonavi.minimap: min/max interval = passive/passive, total/active/foreground duration = +5d7h25m16s44ms/0/+4d23h40m32s755ms, locations = 0
+    gps:
+      10279/com.autonavi.minimap: min/max interval = 1s/1s, total/active/foreground duration = +4d23h40m32s81ms/0/+4d23h40m31s356ms, locations = 0
+    network:
+      10153/com.google.android.as: min/max interval = 21600s/21600s, total/active/foreground duration = +6d21h56m33s123ms/0/+6d21h56m33s123ms, locations = 0
+      1000/android[GnssService]: min/max interval = passive/passive, total/active/foreground duration = +6d21h56m38s920ms/0/+6d21h56m38s920ms, locations = 0
+  GNSS Manager:
+    Capabilities: [SCHEDULING MSB MSA MEASUREMENTS NAVIGATION_MESSAGES SATELLITE_BLOCKLIST SATELLITE_PVT MEASUREMENT_CORRECTIONS LOS_SATS EXCESS_PATH_LENGTH REFLECTING_PLANE TOTAL_POWER SINGLEBAND_TRACKING_POWER MULTIBAND_TRACKING_POWER SINGLEBAND_ACQUISITION_POWER MULTIBAND_ACQUISITION_POWER OTHER_MODES_POWER]
+    Status Provider:
+      service: unregistered
+      listeners:
+        10129/com.google.android.gms[network_location_provider]/456AF8FB (inactive)
+        10129/com.google.android.gms[fused_location_provider]/2B960C52 (inactive)
+    Measurements Provider:
+      service: unregistered
+    Navigation Message Provider:
+      service: unregistered
+    Antenna Info Provider:
+      Antenna Infos: null
+      service: unregistered
+  Geofence Manager:
+    service: unregistered
+  Event Log:
+    08-11 13:26:33.716: network provider +registration 1000/android[GnssService]/8B27414A -> Request[PASSIVE, minUpdateInterval=0, hiddenFromAppOps, WorkSource{1000 android}]
+    08-11 13:26:35.497: passive provider +registration 1000/android[SensorNotificationService]/CB9A22C1 -> Request[PASSIVE, minUpdateInterval=+30m0s0ms, minUpdateDistance=100000.0, WorkSource{1000 android}]
+    08-11 13:26:39.514: network provider +registration 10153/com.google.android.as/980E7A39 -> Request[@+6h0m0s0ms BALANCED, minUpdateDistance=100000.0, WorkSource{10153 com.google.android.as}]
+    08-12 16:22:39.672: passive provider +registration 10279/com.autonavi.minimap/AFCCD202 -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:22:39.675: gps provider +registration 10279/com.autonavi.minimap/803CF91E -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:22:39.701: gps provider -registration 10279/com.autonavi.minimap/803CF91E
+    08-12 16:22:39.915: gps provider +registration 10279/com.autonavi.minimap/EA1105BC -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:22:39.923: passive provider +registration 10279/com.autonavi.minimap/1870F87E -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:22:58.237: gps provider -registration 10279/com.autonavi.minimap/EA1105BC
+    08-12 16:22:58.238: passive provider -registration 10279/com.autonavi.minimap/1870F87E
+    08-12 16:22:58.339: passive provider -registration 10279/com.autonavi.minimap/AFCCD202
+    08-12 16:23:02.092: passive provider +registration 10279/com.autonavi.minimap/8C0B0E50 -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:23:02.101: gps provider +registration 10279/com.autonavi.minimap/71D5A04A -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:23:02.116: gps provider -registration 10279/com.autonavi.minimap/71D5A04A
+    08-12 16:23:02.281: passive provider +registration 10279/com.autonavi.minimap/135DB457 -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:23:02.294: gps provider +registration 10279/com.autonavi.minimap/0F479354 -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:23:23.753: gps provider -registration 10279/com.autonavi.minimap/0F479354
+    08-12 16:23:23.753: passive provider -registration 10279/com.autonavi.minimap/135DB457
+    08-12 16:23:23.813: passive provider -registration 10279/com.autonavi.minimap/8C0B0E50
+    08-12 16:23:27.577: passive provider +registration 10279/com.autonavi.minimap/4F219B20 -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:23:27.581: gps provider +registration 10279/com.autonavi.minimap/01811F74 -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:23:27.613: gps provider -registration 10279/com.autonavi.minimap/01811F74
+    08-12 16:23:27.778: passive provider +registration 10279/com.autonavi.minimap/75110AD8 -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:23:27.782: gps provider +registration 10279/com.autonavi.minimap/7CD2AD21 -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:23:38.871: passive provider -registration 10279/com.autonavi.minimap/75110AD8
+    08-12 16:23:38.871: gps provider -registration 10279/com.autonavi.minimap/7CD2AD21
+    08-12 16:23:38.975: passive provider -registration 10279/com.autonavi.minimap/4F219B20
+    08-12 16:23:42.697: passive provider +registration 10279/com.autonavi.minimap/2594E64B -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:23:42.699: gps provider +registration 10279/com.autonavi.minimap/96B6E4F3 -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:23:42.781: gps provider -registration 10279/com.autonavi.minimap/96B6E4F3
+    08-12 16:23:42.964: passive provider +registration 10279/com.autonavi.minimap/2A12D966 -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:23:42.970: gps provider +registration 10279/com.autonavi.minimap/5029D4EF -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:27:41.558: gps provider +registration 10279/com.autonavi.minimap/96B6E4F3 -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:27:41.630: gps provider -registration 10279/com.autonavi.minimap/5029D4EF
+    08-12 16:27:41.631: passive provider -registration 10279/com.autonavi.minimap/2A12D966
+    08-12 16:27:41.884: passive provider -registration 10279/com.autonavi.minimap/2594E64B
+    08-12 16:27:41.885: gps provider -registration 10279/com.autonavi.minimap/96B6E4F3
+    08-12 16:27:45.723: passive provider +registration 10279/com.autonavi.minimap/1126BFD9 -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:27:45.725: gps provider +registration 10279/com.autonavi.minimap/E1A36F59 -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:27:45.751: gps provider -registration 10279/com.autonavi.minimap/E1A36F59
+    08-12 16:27:45.891: passive provider +registration 10279/com.autonavi.minimap/B81B5880 -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:27:45.903: gps provider +registration 10279/com.autonavi.minimap/B8D9FDA0 -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:28:21.947: passive provider -registration 10279/com.autonavi.minimap/B81B5880
+    08-12 16:28:21.947: gps provider -registration 10279/com.autonavi.minimap/B8D9FDA0
+    08-12 16:28:22.010: passive provider -registration 10279/com.autonavi.minimap/1126BFD9
+    08-12 16:28:24.882: passive provider +registration 10279/com.autonavi.minimap/15382E37 -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:28:24.883: gps provider +registration 10279/com.autonavi.minimap/C4D9A6EF -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:28:43.973: gps provider -registration 10279/com.autonavi.minimap/C4D9A6EF
+    08-12 16:28:44.102: passive provider +registration 10279/com.autonavi.minimap/E3E0958C -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:28:44.107: gps provider +registration 10279/com.autonavi.minimap/2EDD3906 -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:30:31.763: gps provider -registration 10279/com.autonavi.minimap/2EDD3906
+    08-12 16:30:31.763: passive provider -registration 10279/com.autonavi.minimap/E3E0958C
+    08-12 16:30:31.848: passive provider -registration 10279/com.autonavi.minimap/15382E37
+    08-12 16:30:34.679: passive provider +registration 10279/com.autonavi.minimap/D02813BA -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:30:34.684: gps provider +registration 10279/com.autonavi.minimap/62244618 -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:30:34.702: gps provider -registration 10279/com.autonavi.minimap/62244618
+    08-12 16:30:35.028: passive provider +registration 10279/com.autonavi.minimap/1BAF52EB -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-12 16:30:35.030: gps provider +registration 10279/com.autonavi.minimap/5D177B35 -> Request[@+1s0ms HIGH_ACCURACY, WorkSource{10279 com.autonavi.minimap}]
+    08-17 16:03:34.334: passive provider -registration 10279/com.autonavi.minimap/D02813BA
+    08-17 16:03:34.337: gps provider -registration 10279/com.autonavi.minimap/5D177B35
+    08-17 16:03:36.018: passive provider -registration 10279/com.autonavi.minimap/1BAF52EB
+    08-17 16:16:11.046: passive provider +registration 10279/com.autonavi.minimap/4381A3A6 -> Request[PASSIVE, minUpdateInterval=0, WorkSource{10279 com.autonavi.minimap}]
+    08-18 00:00:51.525: passive provider -registration 10279/com.autonavi.minimap/4381A3A6

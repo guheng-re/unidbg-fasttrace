@@ -267,7 +267,7 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
 
     protected final LinuxModule loadInternal(LibraryFile libraryFile, boolean forceCallInit) {
         try {
-            LinuxModule module = loadInternal(libraryFile);
+            LinuxModule module = loadMapped(libraryFile, true);
             resolveSymbols(!forceCallInit);
             if (callInitFunction || forceCallInit) {
                 for (LinuxModule m : modules.values().toArray(new LinuxModule[0])) {
@@ -331,7 +331,7 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
         }
 
         try {
-            LinuxModule module = loadInternal(file);
+            LinuxModule module = loadMapped(file, true);
             resolveSymbols(false);
             if (!callInitFunction) { // No need call init array
                 for (LinuxModule m : modules.values()) {
@@ -408,7 +408,36 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
         return false;
     }
 
+    @Override
+    public Module mapNoLink(LibraryFile libraryFile) {
+        String guess = FilenameUtils.getName(libraryFile.getName());
+        LinuxModule existing = modules.get(guess);
+        if (existing != null) {
+            log.info("mapNoLink skip already loaded {}", existing.name);
+            return existing;
+        }
+        try {
+            LinuxModule module = loadMapped(libraryFile, false);
+            module.addReferenceCount();
+            log.info("mapNoLink {} base=0x{} size=0x{} maps={}",
+                    module.name,
+                    Long.toHexString(module.base),
+                    Long.toHexString(module.size),
+                    libraryFile.getMapRegionName());
+            return module;
+        } catch (IOException e) {
+            throw new IllegalStateException("mapNoLink " + libraryFile.getName(), e);
+        }
+    }
+
     private LinuxModule loadInternal(LibraryFile libraryFile) throws IOException {
+        return loadMapped(libraryFile, true);
+    }
+
+    /**
+     * @param link when false, only PT_LOAD is mapped: no DT_NEEDED, reloc, or init.
+     */
+    private LinuxModule loadMapped(LibraryFile libraryFile, boolean link) throws IOException {
         final ElfFile elfFile = ElfFile.fromBuffer(libraryFile.mapBuffer());
 
         if (emulator.is32Bit() && elfFile.objectSize != ElfFile.CLASS_32) {
@@ -547,12 +576,19 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
             }
         }
 
-        if (dynamicStructure == null) {
+        if (link && dynamicStructure == null) {
             throw new IllegalStateException("dynamicStructure is empty.");
         }
-        final String soName = dynamicStructure.getSOName(libraryFile.getName());
+        final String soName = dynamicStructure != null
+                ? dynamicStructure.getSOName(libraryFile.getName())
+                : libraryFile.getName();
 
         Map<String, Module> neededLibraries = new HashMap<>();
+        List<ModuleSymbol> list = new ArrayList<>();
+        List<ModuleSymbol> resolvedSymbols = new ArrayList<>();
+        List<InitFunction> initFunctionList = new ArrayList<>();
+        boolean executable = false;
+        if (link) {
         for (String neededLibrary : dynamicStructure.getNeededLibraries()) {
             if (log.isDebugEnabled()) {
                 log.debug("{} need dependency {}", soName, neededLibrary);
@@ -591,8 +627,6 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
             }
         }
 
-        List<ModuleSymbol> list = new ArrayList<>();
-        List<ModuleSymbol> resolvedSymbols = new ArrayList<>();
         for (MemoizedObject<ElfRelocation> object : dynamicStructure.getRelocations()) {
             ElfRelocation relocation = object.getValue();
             final int type = relocation.type();
@@ -686,9 +720,8 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
             }
         }
 
-        List<InitFunction> initFunctionList = new ArrayList<>();
         int preInitArraySize = dynamicStructure.getPreInitArraySize();
-        boolean executable = elfFile.file_type == ElfFile.FT_EXEC || preInitArraySize > 0;
+        executable = elfFile.file_type == ElfFile.FT_EXEC || preInitArraySize > 0;
         if (executable) {
             int count = preInitArraySize / emulator.getPointerSize();
             if (count > 0) {
@@ -721,9 +754,10 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
                 }
             }
         }
+        } // link
 
-        SymbolLocator dynsym = dynamicStructure.getSymbolStructure();
-        if (dynsym == null) {
+        SymbolLocator dynsym = dynamicStructure != null ? dynamicStructure.getSymbolStructure() : null;
+        if (link && dynsym == null) {
             throw new IllegalStateException("dynsym is null");
         }
         ElfSection symbolTableSection = null;
@@ -739,23 +773,25 @@ public class AndroidElfLoader extends AbstractLoader<AndroidFileIO> implements M
         }
         LinuxModule module = new LinuxModule(load_virtual_address, load_base, size, soName, dynsym, list, initFunctionList, neededLibraries, regions,
                 armExIdx, ehFrameHeader, symbolTableSection, elfFile, dynamicStructure, libraryFile, initFunctionFilter);
-        for (ModuleSymbol symbol : resolvedSymbols) {
-            symbol.relocation(emulator, module);
-        }
-        if (executable) {
-            for (LinuxModule linuxModule : modules.values()) {
-                for (Map.Entry<String, ModuleSymbol> entry : linuxModule.resolvedSymbols.entrySet()) {
-                    ElfSymbol symbol = module.getELFSymbolByName(entry.getKey());
-                    if (symbol != null && !symbol.isUndef()) {
-                        entry.getValue().relocation(emulator, module, symbol);
-                    }
-                }
-                linuxModule.resolvedSymbols.clear();
+        if (link) {
+            for (ModuleSymbol symbol : resolvedSymbols) {
+                symbol.relocation(emulator, module);
             }
-        }
-        if ("libc.so".equals(soName)) { // libc
-            malloc = module.findSymbolByName("malloc", false);
-            free = module.findSymbolByName("free", false);
+            if (executable) {
+                for (LinuxModule linuxModule : modules.values()) {
+                    for (Map.Entry<String, ModuleSymbol> entry : linuxModule.resolvedSymbols.entrySet()) {
+                        ElfSymbol symbol = module.getELFSymbolByName(entry.getKey());
+                        if (symbol != null && !symbol.isUndef()) {
+                            entry.getValue().relocation(emulator, module, symbol);
+                        }
+                    }
+                    linuxModule.resolvedSymbols.clear();
+                }
+            }
+            if ("libc.so".equals(soName)) { // libc
+                malloc = module.findSymbolByName("malloc", false);
+                free = module.findSymbolByName("free", false);
+            }
         }
 
         modules.put(soName, module);

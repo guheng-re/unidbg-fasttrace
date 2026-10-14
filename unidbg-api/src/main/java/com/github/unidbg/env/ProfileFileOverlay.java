@@ -39,6 +39,9 @@ public final class ProfileFileOverlay {
      * in the overlay. Never follows host symlinks.
      */
     public String[] list(String pathname) {
+        if ("/".equals(pathname)) {
+            return listRoot();
+        }
         String normalized = normalizeGuestPath(pathname);
         if (normalized == null || isBlockedProcFd(normalized)
                 || overlayRoot == null || profileDir == null) {
@@ -86,6 +89,23 @@ public final class ProfileFileOverlay {
             }
         }
         return null;
+    }
+
+    private String[] listRoot() {
+        Path overlayReal = resolveContainedDirectory(overlayRoot, profileDir);
+        if (overlayReal == null) {
+            return null;
+        }
+        try {
+            String[] names = overlayReal.toFile().list();
+            if (names == null) {
+                return null;
+            }
+            java.util.Arrays.sort(names);
+            return names;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String[] listExact(Path overlayReal, String guestPath) {

@@ -18651,6 +18651,59 @@ public class TraceEnvironmentConfig {
         return value == null ? fallback : value;
     }
 
+    /**
+     * Live-update {@code time.currentTimeMillis} / {@code time.monotonicNanos} so
+     * subsequent {@code clock_gettime}/{@code gettimeofday}/SystemClock reads
+     * return a paced virtual clock instead of host wall time.
+     */
+    public synchronized void setVirtualTime(Long currentTimeMillis, Long monotonicNanos) {
+        JSONObject time = root.getJSONObject("time");
+        if (time == null) {
+            time = new JSONObject();
+            root.put("time", time);
+        }
+        if (currentTimeMillis != null) {
+            time.put("currentTimeMillis", currentTimeMillis);
+        }
+        if (monotonicNanos != null) {
+            time.put("monotonicNanos", monotonicNanos);
+        }
+    }
+
+    /**
+     * When virtual time is on, {@code nanosleep} instantly adds the requested
+     * duration to the clock. Camera-driven tests tick the clock themselves and
+     * must turn this off or worker sleeps stack on top of the 33ms frame step.
+     */
+    private volatile boolean nanosleepAdvancesVirtualTime = true;
+
+    public void setNanosleepAdvancesVirtualTime(boolean nanosleepAdvancesVirtualTime) {
+        this.nanosleepAdvancesVirtualTime = nanosleepAdvancesVirtualTime;
+    }
+
+    public boolean isNanosleepAdvancesVirtualTime() {
+        return nanosleepAdvancesVirtualTime;
+    }
+
+    /** Advance both configured clocks by {@code deltaMillis} when they are set. */
+    public synchronized void addVirtualTime(long deltaMillis) {
+        if (deltaMillis == 0L) {
+            return;
+        }
+        JSONObject time = root.getJSONObject("time");
+        if (time == null) {
+            return;
+        }
+        Long wall = getLongObject(time, "currentTimeMillis");
+        if (wall != null) {
+            time.put("currentTimeMillis", wall.longValue() + deltaMillis);
+        }
+        Long mono = getLongObject(time, "monotonicNanos");
+        if (mono != null) {
+            time.put("monotonicNanos", mono.longValue() + deltaMillis * 1000000L);
+        }
+    }
+
     public byte[] getRandomSeed(String key) {
         String hex = getRandomHex(key);
         return hex == null ? null : parseHex(key, hex);

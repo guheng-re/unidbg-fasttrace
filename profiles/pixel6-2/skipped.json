@@ -1,0 +1,386 @@
+[
+  {
+    "path": "android.properties.dalvik.vm.dex2oat-flags",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.gsm.operator.alpha",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.gsm.operator.numeric",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.apexd",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.apexd-bootstrap",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.apexd-snapshotde",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.bootanim",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.boringssl_self_test32",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.boringssl_self_test32_vendor",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.boringssl_self_test64",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.boringssl_self_test64_vendor",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.boringssl_self_test_apex32",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.boringssl_self_test_apex64",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.bpfloader",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.derive_classpath",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.derive_sdk",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.edgetpu_vendor_service",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.heapprofd",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.idmap2d",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.init-radio-sh",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.insmod_sh_common",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.insmod_sh_raviole",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.logd-auditctl",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.logd-reinit",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.odsign",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.traced_perf",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.update_verifier_nonencrypted",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.usbd",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.vendor.atrace-hal-1-0",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.vendor.init_citadel",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.vendor.rebalance_interrupts-vendor",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.vendor.theme_set",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.init.svc_debug_pid.vendor.thermal.symlinks",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.persist.adb.tls_server.enable",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.persist.log.tag",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.persist.logd.size",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.persist.logd.size.crash",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.persist.logd.size.main",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.persist.radio.airplane_mode_on",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.persist.radio.uim.remote.mcc",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.persist.sys.boot.reason",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.ro.build.version.base_os",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.ro.wifi.channels",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.sys.boot_mitigation_count",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.sys.boot_mitigation_start",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.sys.rescue_boot_start",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.vendor.powerhal.rendering",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.vendor.ril.encrypted.pin.0",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.vendor.ril.encrypted.pin.1",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.vendor.ril.gsm.sim.imsi_0",
+    "reason": "empty"
+  },
+  {
+    "path": "android.properties.count",
+    "reason": "ok=1082 keys=1132"
+  },
+  {
+    "path": "android.build.SERIAL",
+    "reason": "java.lang.SecurityException: getSerial: The uid 10246 does not meet the requirements to access device identifiers."
+  },
+  {
+    "path": "settings.secure.accessibility_button_mode",
+    "reason": "java.lang.SecurityException: Settings key: <accessibility_button_mode> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.active_unlock_on_biometric_fail",
+    "reason": "java.lang.SecurityException: Settings key: <active_unlock_on_biometric_fail> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.active_unlock_on_unlock_intent",
+    "reason": "java.lang.SecurityException: Settings key: <active_unlock_on_unlock_intent> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.active_unlock_on_wake",
+    "reason": "java.lang.SecurityException: Settings key: <active_unlock_on_wake> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.bluetooth_address",
+    "reason": "java.lang.SecurityException: Settings key: <bluetooth_address> is only readable to apps with targetSdkVersion lower than or equal to: 31"
+  },
+  {
+    "path": "settings.secure.bluetooth_name",
+    "reason": "java.lang.SecurityException: Settings key: <bluetooth_name> is only readable to apps with targetSdkVersion lower than or equal to: 31"
+  },
+  {
+    "path": "settings.secure.default_voice_input_method",
+    "reason": "java.lang.SecurityException: Settings key: <default_voice_input_method> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.device_state_rotation_lock",
+    "reason": "java.lang.SecurityException: Settings key: <device_state_rotation_lock> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.display_density_forced",
+    "reason": "null"
+  },
+  {
+    "path": "settings.secure.extra_automatic_power_save_mode",
+    "reason": "java.lang.SecurityException: Settings key: <extra_automatic_power_save_mode> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.known_trust_agents_initialized",
+    "reason": "java.lang.SecurityException: Settings key: <known_trust_agents_initialized> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.location_changer",
+    "reason": "null"
+  },
+  {
+    "path": "settings.secure.location_time_zone_detection_enabled",
+    "reason": "java.lang.SecurityException: Settings key: <location_time_zone_detection_enabled> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.lock_screen_show_qr_code_scanner",
+    "reason": "java.lang.SecurityException: Settings key: <lock_screen_show_qr_code_scanner> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.lockscreen_show_controls",
+    "reason": "java.lang.SecurityException: Settings key: <lockscreen_show_controls> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.lockscreen_show_wallet",
+    "reason": "java.lang.SecurityException: Settings key: <lockscreen_show_wallet> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.nfc_payment_default_component",
+    "reason": "java.lang.SecurityException: Settings key: <nfc_payment_default_component> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.odi_captions_volume_ui_enabled",
+    "reason": "java.lang.SecurityException: Settings key: <odi_captions_volume_ui_enabled> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.one_handed_mode_activated",
+    "reason": "java.lang.SecurityException: Settings key: <one_handed_mode_activated> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.one_handed_mode_enabled",
+    "reason": "java.lang.SecurityException: Settings key: <one_handed_mode_enabled> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.spatial_audio_enabled",
+    "reason": "java.lang.SecurityException: Settings key: <spatial_audio_enabled> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.swipe_bottom_to_notification_enabled",
+    "reason": "java.lang.SecurityException: Settings key: <swipe_bottom_to_notification_enabled> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.secure.theme_customization_overlay_packages",
+    "reason": "null"
+  },
+  {
+    "path": "settings.global.captive_portal_http_url",
+    "reason": "null"
+  },
+  {
+    "path": "settings.global.captive_portal_https_url",
+    "reason": "null"
+  },
+  {
+    "path": "settings.global.data_roaming",
+    "reason": "java.lang.SecurityException: Settings key: <data_roaming> is only readable to apps with targetSdkVersion lower than or equal to: 32"
+  },
+  {
+    "path": "settings.global.debug_view_attributes",
+    "reason": "null"
+  },
+  {
+    "path": "settings.global.enable_cellular_on_boot",
+    "reason": "null"
+  },
+  {
+    "path": "settings.global.enable_multi_slot_timeout_millis",
+    "reason": "java.lang.SecurityException: Settings key: <enable_multi_slot_timeout_millis> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.global.euicc_switch_slot_timeout_millis",
+    "reason": "java.lang.SecurityException: Settings key: <euicc_switch_slot_timeout_millis> is not readable. From S+, settings keys annotated with @hide are restricted to system_server and system apps only, unless they are annotated with @Readable."
+  },
+  {
+    "path": "settings.global.global_http_proxy_exclusion_list",
+    "reason": "null"
+  },
+  {
+    "path": "settings.global.global_http_proxy_host",
+    "reason": "null"
+  },
+  {
+    "path": "settings.global.global_http_proxy_port",
+    "reason": "null"
+  },
+  {
+    "path": "settings.global.global_proxy_pac_url",
+    "reason": "null"
+  },
+  {
+    "path": "settings.global.http_proxy",
+    "reason": "null"
+  },
+  {
+    "path": "settings.global.multi_sim_data_call",
+    "reason": "java.lang.SecurityException: access global settings MULTI_SIM_DATA_CALL_SUBSCRIPTION: Neither user 10246 nor current process has android.permission.READ_PRIVILEGED_PHONE_STATE."
+  },
+  {
+    "path": "settings.global.verifier_verify_adb_installs",
+    "reason": "null"
+  },
+  {
+    "path": "settings.system.buildIdDuringOnboarding",
+    "reason": "null"
+  },
+  {
+    "path": "settings.system.show_touches",
+    "reason": "null"
+  },
+  {
+    "path": "android.telephony.imei",
+    "reason": "java.lang.SecurityException: getImeiForSlot: The uid 10246 does not meet the requirements to access device identifiers."
+  },
+  {
+    "path": "android.location",
+    "reason": "no last location"
+  },
+  {
+    "path": "files.\/system\/build.prop",
+    "reason": "unreadable"
+  },
+  {
+    "path": "random.devUrandomHex",
+    "reason": "sampled; do not use for HuiYan AES"
+  },
+  {
+    "path": "graphics.gl",
+    "reason": "no EGL context in collector"
+  }
+]

@@ -74,6 +74,9 @@ public class SystemPropertyHook implements HookListener {
                         protected HookStatus hook(Emulator<?> emulator) {
                             RegisterContext context = emulator.getContext();
                             Pointer pi = context.getPointerArg(0);
+                            if (pi == null) {
+                                return HookStatus.LR(emulator, 0);
+                            }
                             String key = pi.share(PROP_VALUE_MAX + 4).getString(0);
                             return __system_property_read(old, key);
                         }
@@ -84,6 +87,9 @@ public class SystemPropertyHook implements HookListener {
                         protected HookStatus hook(Emulator<?> emulator) {
                             RegisterContext context = emulator.getContext();
                             Pointer pi = context.getPointerArg(0);
+                            if (pi == null) {
+                                return HookStatus.LR(emulator, 0);
+                            }
                             String key = pi.share(PROP_VALUE_MAX + 4).getString(0);
                             return __system_property_read(old, key);
                         }
@@ -152,11 +158,20 @@ public class SystemPropertyHook implements HookListener {
             String value = propertyProvider.getProperty(key);
             if (value != null) {
                 log.debug("__system_property_read key={}, value={}", key, value);
-                byte[] keyData = key.getBytes(StandardCharsets.UTF_8);
-                Pointer keyPointer = context.getPointerArg(1);
-                keyPointer.write(0, Arrays.copyOf(keyData, keyData.length + 1), 0, keyData.length + 1);
+                // AOSP: int __system_property_read(const prop_info *pi, char *name, char *value)
+                // libc __system_property_get and atrace pass name == NULL.
+                Pointer namePointer = context.getPointerArg(1);
+                if (namePointer != null && key != null) {
+                    byte[] keyData = key.getBytes(StandardCharsets.UTF_8);
+                    namePointer.write(0, Arrays.copyOf(keyData, keyData.length + 1), 0, keyData.length + 1);
+                }
                 emitPropertyEvent("__system_property_read", key, value, propertyEventSource());
-                return writePropertyValue(context.getPointerArg(2), key, value);
+                Pointer valuePointer = context.getPointerArg(2);
+                if (valuePointer == null) {
+                    byte[] data = value.getBytes(StandardCharsets.UTF_8);
+                    return HookStatus.LR(emulator, data.length);
+                }
+                return writePropertyValue(valuePointer, key, value);
             }
         }
 

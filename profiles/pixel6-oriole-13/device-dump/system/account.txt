@@ -1,0 +1,84 @@
+User UserInfo{0:机主:c13}:
+  Accounts: 2
+    Account {name=美团, type=com.sankuai.meituan.pin.account.sync.type}
+    Account {name=抖音, type=com.ss.android.ugc.aweme}
+  
+  AccountId, Action_Type, timestamp, UID, TableName, Key
+  Accounts History
+  81,action_account_add,2026-07-30 22:57:38,10259,accounts,41
+  81,action_called_account_remove,2026-07-30 23:23:08,10259,accounts,42
+  81,action_account_remove,2026-07-30 23:23:08,10259,accounts,43
+  82,action_account_add,2026-07-30 23:23:16,10259,accounts,44
+  82,action_called_account_remove,2026-07-30 23:29:31,10259,accounts,45
+  82,action_account_remove,2026-07-30 23:29:31,10259,accounts,46
+  83,action_account_add,2026-07-30 23:29:39,10259,accounts,47
+  83,action_called_account_remove,2026-07-30 23:34:00,10259,accounts,48
+  83,action_account_remove,2026-07-30 23:34:00,10259,accounts,49
+  84,action_account_add,2026-07-30 23:34:08,10259,accounts,50
+  84,action_called_account_remove,2026-07-30 23:37:32,10259,accounts,51
+  84,action_account_remove,2026-07-30 23:37:33,10259,accounts,52
+  85,action_account_add,2026-07-30 23:37:40,10259,accounts,53
+  85,action_called_account_remove,2026-07-30 23:39:27,10259,accounts,54
+  85,action_account_remove,2026-07-30 23:39:27,10259,accounts,55
+  86,action_account_add,2026-07-30 23:39:35,10259,accounts,56
+  86,action_called_account_remove,2026-07-30 23:43:44,10259,accounts,57
+  86,action_account_remove,2026-07-30 23:43:44,10259,accounts,58
+  87,action_account_add,2026-07-30 23:43:52,10259,accounts,59
+  87,action_called_account_remove,2026-07-30 23:45:39,10259,accounts,60
+  87,action_account_remove,2026-07-30 23:45:39,10259,accounts,61
+  88,action_account_add,2026-07-30 23:45:47,10259,accounts,62
+  88,action_account_remove,2026-07-30 23:46:55,10259,accounts,0
+  88,action_called_account_remove,2026-07-30 23:46:55,10259,accounts,63
+  89,action_account_add,2026-07-30 23:47:03,10259,accounts,1
+  89,action_called_account_remove,2026-07-30 23:52:03,10259,accounts,2
+  89,action_account_remove,2026-07-30 23:52:03,10259,accounts,3
+  90,action_account_add,2026-07-30 23:52:11,10259,accounts,4
+  90,action_called_account_remove,2026-07-30 23:55:07,10259,accounts,5
+  90,action_account_remove,2026-07-30 23:55:08,10259,accounts,6
+  91,action_account_add,2026-07-30 23:55:15,10259,accounts,7
+  91,action_called_account_remove,2026-07-30 23:59:04,10259,accounts,8
+  91,action_account_remove,2026-07-30 23:59:04,10259,accounts,9
+  92,action_account_add,2026-07-30 23:59:12,10259,accounts,10
+  92,action_called_account_remove,2026-07-31 00:01:37,10259,accounts,11
+  92,action_account_remove,2026-07-31 00:01:37,10259,accounts,12
+  93,action_account_add,2026-07-31 00:01:45,10259,accounts,13
+  93,action_called_account_remove,2026-07-31 00:10:02,10259,accounts,14
+  93,action_account_remove,2026-07-31 00:10:02,10259,accounts,15
+  94,action_account_add,2026-07-31 00:10:10,10259,accounts,16
+  94,action_called_account_remove,2026-07-31 00:11:43,10259,accounts,17
+  94,action_account_remove,2026-07-31 00:11:43,10259,accounts,18
+  95,action_account_add,2026-07-31 00:11:51,10259,accounts,19
+  95,action_called_account_remove,2026-07-31 00:19:08,10259,accounts,20
+  95,action_account_remove,2026-07-31 00:19:08,10259,accounts,21
+  96,action_account_add,2026-07-31 00:19:16,10259,accounts,22
+  96,action_called_account_remove,2026-07-31 00:21:37,10259,accounts,23
+  96,action_account_remove,2026-07-31 00:21:37,10259,accounts,24
+  97,action_account_add,2026-07-31 00:21:45,10259,accounts,25
+  97,action_called_account_remove,2026-07-31 00:28:58,10259,accounts,26
+  97,action_account_remove,2026-07-31 00:28:58,10259,accounts,27
+  98,action_account_add,2026-07-31 00:29:06,10259,accounts,28
+  98,action_called_account_remove,2026-07-31 00:30:30,10259,accounts,29
+  98,action_account_remove,2026-07-31 00:30:30,10259,accounts,30
+  99,action_account_add,2026-07-31 00:30:38,10259,accounts,31
+  99,action_called_account_remove,2026-07-31 00:37:58,10259,accounts,32
+  99,action_account_remove,2026-07-31 00:37:58,10259,accounts,33
+  100,action_account_add,2026-07-31 00:38:06,10259,accounts,34
+  100,action_called_account_remove,2026-07-31 00:40:12,10259,accounts,35
+  100,action_account_remove,2026-07-31 00:40:12,10259,accounts,36
+  101,action_account_add,2026-07-31 00:40:20,10259,accounts,37
+  101,action_called_account_remove,2026-07-31 00:41:43,10259,accounts,38
+  101,action_account_remove,2026-07-31 00:41:43,10259,accounts,39
+  102,action_account_add,2026-07-31 00:41:51,10259,accounts,40
+  
+  Active Sessions: 0
+  
+  RegisteredServicesCache: 6 services
+    ServiceInfo: AuthenticatorDescription {type=com.ss.android.ugc.aweme}, ComponentInfo{com.ss.android.ugc.aweme/com.bytedance.sdk.account.sync.AuthenticatorService}, uid 10259
+    ServiceInfo: AuthenticatorDescription {type=com.google.android.gm.pop3}, ComponentInfo{com.google.android.gm/com.android.email.service.Pop3AuthenticatorService}, uid 10190
+    ServiceInfo: AuthenticatorDescription {type=com.google}, ComponentInfo{com.google.android.gms/com.google.android.gms.auth.account.authenticator.GoogleAccountAuthenticatorService}, uid 10129
+    ServiceInfo: AuthenticatorDescription {type=com.sankuai.meituan.pin.account.sync.type}, ComponentInfo{com.sankuai.meituan/com.meituan.android.hades.account.PinAuthenticationService}, uid 10267
+    ServiceInfo: AuthenticatorDescription {type=com.google.android.gm.exchange}, ComponentInfo{com.google.android.gm/com.android.email.service.EasAuthenticatorService}, uid 10190
+    ServiceInfo: AuthenticatorDescription {type=com.google.android.gm.legacyimap}, ComponentInfo{com.google.android.gm/com.android.email.service.LegacyImapAuthenticatorService}, uid 10190
+  
+  Account visibility:
+  

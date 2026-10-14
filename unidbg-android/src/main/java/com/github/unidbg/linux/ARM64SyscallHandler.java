@@ -121,6 +121,7 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
                 if (svc != null) {
                     log.debug("swi={}, svc={}", swi, svc);
                     backend.reg_write(Arm64Const.UC_ARM64_REG_X0, svc.handle(emulator));
+                    svc.handlePostCallback(emulator);
                     return;
                 }
                 backend.emu_stop();
@@ -1154,14 +1155,16 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
                 }
                 break;
             case SocketIO.AF_NETLINK:
-                switch (type) {
+                switch (type & 0xff) {
                     case SocketIO.SOCK_DGRAM:
+                    case SocketIO.SOCK_RAW:
                         fd = getMinFd();
                         fdMap.put(fd, new NetLinkSocket(emulator));
                         return fd;
-                    case SocketIO.SOCK_RAW:
                     default:
-                        throw new UnsupportedOperationException();
+                        log.info("socket AF_NETLINK type={} protocol={} -> EOPNOTSUPP", type, protocol);
+                        emulator.getMemory().setErrno(UnixEmulator.EOPNOTSUPP);
+                        return -1;
                 }
         }
         log.info("socket domain={}, type={}, protocol={}", domain, type, protocol);
@@ -1607,6 +1610,10 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
         Pointer pathname_p = context.getPointerArg(1);
         int oflags = context.getIntArg(2);
         int mode = context.getIntArg(3);
+        if (pathname_p == null) {
+            emulator.getMemory().setErrno(UnixEmulator.EFAULT);
+            return -1;
+        }
         String pathname = pathname_p.getString(0);
         if (log.isDebugEnabled()) {
             log.debug("faccessat dirfd={}, pathname={}, oflags=0x{}, mode=0x{}", dirfd, pathname, Integer.toHexString(oflags), Integer.toHexString(mode));
@@ -1634,6 +1641,10 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
         Pointer pathname = context.getPointerArg(1);
         Pointer statbuf = context.getPointerArg(2);
         int flags = context.getIntArg(3);
+        if (pathname == null) {
+            emulator.getMemory().setErrno(UnixEmulator.EFAULT);
+            return -1;
+        }
         String path = FilenameUtils.normalize(pathname.getString(0), true);
         if (log.isDebugEnabled()) {
             log.debug("fstatat64 dirfd={}, pathname={}, statbuf={}, flags={}", dirfd, path, statbuf, flags);
@@ -1663,6 +1674,10 @@ public class ARM64SyscallHandler extends AndroidSyscallHandler {
         Pointer pathname_p = context.getPointerArg(1);
         int oflags = context.getIntArg(2);
         int mode = context.getIntArg(3);
+        if (pathname_p == null) {
+            emulator.getMemory().setErrno(UnixEmulator.EFAULT);
+            return -1;
+        }
         String pathname = pathname_p.getString(0);
         log.debug("openat dirfd={}, pathname={}, oflags=0x{}, mode={}", dirfd, pathname, Integer.toHexString(oflags), Integer.toHexString(mode));
         pathname = FilenameUtils.normalize(pathname, true);

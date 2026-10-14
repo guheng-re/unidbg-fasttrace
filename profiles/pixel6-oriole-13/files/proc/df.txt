@@ -1,0 +1,104 @@
+Filesystem        1K-blocks     Used Available Use% Mounted on
+
+/dev/block/dm-10     846116   843524         0 100% /
+
+tmpfs               3878956     1548   3877408   1% /dev
+
+tmpfs               3878956        0   3878956   0% /mnt
+
+/dev/block/sda8       10224      120      9620   2% /metadata
+
+/dev/block/dm-11     356296   355228         0 100% /system_ext
+
+/dev/block/dm-12    2600816  2593008         0 100% /product
+
+/dev/block/dm-13     511100   509524         0 100% /vendor
+
+/dev/block/dm-14      39004    38884         0 100% /vendor_dlkm
+
+tmpfs               3878956       32   3878924   1% /apex
+
+tmpfs               3878956      680   3878276   1% /linkerconfig
+
+/dev/block/sda1       59376    12500     44916  22% /mnt/vendor/persist
+
+/dev/block/sda5        5808     1064      4440  20% /mnt/vendor/efs
+
+/dev/block/sda6        4944      544      4252  12% /mnt/vendor/efs_backup
+
+/dev/block/sda7        4944       36      4760   1% /mnt/vendor/modem_userdata
+
+/dev/block/sda20      93560    92948         0 100% /mnt/vendor/modem_img
+
+/dev/block/dm-46  115621972 25817176  89673724  23% /data
+
+tmpfs               3878956        0   3878956   0% /data_mirror
+
+/dev/block/loop4      36980    36948         0 100% /apex/com.android.i18n@1
+
+/dev/block/loop6       1624     1596         0 100% /apex/com.google.mainline.primary.libs@331058000
+
+/dev/block/loop5       8032     7996         0 100% /apex/com.android.runtime@1
+
+/dev/block/loop7      20640    20608         0 100% /apex/com.android.btservices@339990000
+
+/dev/block/loop8        232       96       132  43% /apex/com.android.apex.cts.shim@1
+
+/dev/block/loop9       5352     5320         0 100% /apex/com.android.compos@1
+
+/dev/block/loop10       792      764        12  99% /apex/com.android.tzdata@331012040
+
+/dev/block/loop11     47672    47644         0 100% /apex/com.android.vndk.v33@1
+
+/dev/block/loop13    136968   136864         0 100% /apex/com.google.pixel.camera.hal@609325679
+
+/dev/block/loop12     91980    91936         0 100% /apex/com.android.virt@1
+
+/dev/block/dm-45        232      116       112  51% /apex/com.android.scheduling@330443040
+
+/dev/block/dm-43        752      724        16  98% /apex/com.android.ipsec@331014020
+
+/dev/block/dm-42        232       88       140  39% /apex/com.android.ondevicepersonalization@330442000
+
+/dev/block/dm-39       7384     7352         0 100% /apex/com.android.neuralnetworks@330443030
+
+/dev/block/dm-38      13964    13936         0 100% /apex/com.android.cellbroadcast@331013010
+
+/dev/block/dm-32       7032     7004         0 100% /apex/com.android.wifi@331016070
+
+/dev/block/dm-30      19168    19140         0 100% /apex/com.android.media.swcodec@331012020
+
+/dev/block/dm-31       6492     6460         0 100% /apex/com.android.adbd@331011042
+
+/dev/block/dm-29       8208     8176         0 100% /apex/com.android.tethering@331012080
+
+/dev/block/dm-27       3908     3880         0 100% /apex/com.android.resolv@331011050
+
+/dev/block/dm-37      16372    16344         0 100% /apex/com.android.permission@331019040
+
+/dev/block/dm-34       4792     4764         0 100% /apex/com.android.conscrypt@331011010
+
+/dev/block/dm-26       3392     3360         0 100% /apex/com.android.appsearch@331011020
+
+/dev/block/dm-19      50904    50868         0 100% /apex/com.android.art@331012050
+
+/dev/block/dm-24       5820     5792         0 100% /apex/com.android.extservices@331012020
+
+/dev/block/dm-25       3324     3292         0 100% /apex/com.android.uwb@331015040
+
+/dev/block/dm-17       8536     8504         0 100% /apex/com.android.mediaprovider@331011070
+
+/dev/block/dm-21       1872     1844         0 100% /apex/com.android.os.statsd@331010010
+
+/dev/block/dm-18        244      212        28  89% /apex/com.android.adservices@330442000
+
+/dev/block/dm-20        704      676        16  98% /apex/com.android.sdkext@330810050
+
+/dev/block/dm-23       5840     5812         0 100% /apex/com.android.media@331012020
+
+APatch              3878956        0   3878956   0% /debug_ramdisk
+
+tmpfs               3878956      968   3877988   1% /system/etc/security/cacerts
+
+/dev/fuse         115621972 25817176  89673724  23% /storage/emulated
+

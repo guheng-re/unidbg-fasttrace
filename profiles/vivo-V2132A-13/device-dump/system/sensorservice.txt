@@ -1,0 +1,569 @@
+Captured at: 17:14:53.727
+Sensor Device:
+Total 35 h/w sensors, 35 running 0 disabled clients:
+0x00000001) active-count = 1; sampling_period(ms) = {1.0}, selected = 1.00 ms; batching_period(ms) = {0.0}, selected = 0.00 ms
+0x01010001) active-count = 1; sampling_period(ms) = {200.0}, selected = 200.00 ms; batching_period(ms) = {2000.0}, selected = 2000.00 ms
+0x01010005) active-count = 2; sampling_period(ms) = {250.0, 250.0}, selected = 250.00 ms; batching_period(ms) = {0.0, 0.0}, selected = 0.00 ms
+0x0101000e) active-count = 1; sampling_period(ms) = {1.0}, selected = 1.00 ms; batching_period(ms) = {0.0}, selected = 0.00 ms
+0x01010014) active-count = 1; sampling_period(ms) = {66.7}, selected = 66.67 ms; batching_period(ms) = {0.0}, selected = 0.00 ms
+0x01010022) active-count = 3; sampling_period(ms) = {1000.0, 1000.0, 1000.0}, selected = 1000.00 ms; batching_period(ms) = {0.0, 0.0, 0.0}, selected = 0.00 ms
+Sensor List:
+0x00000001) Dynamic Sensor Manager    | Google          | ver: 1 | type: android.sensor.dynamic_sensor_meta(32) | perm: n/a | flags: 0x00000007
+	special-trigger | minRate=1000.00Hz | maxRate=1000.00Hz | no batching | wakeUp | 
+0x01010001) LSM6DSR Accelerometer     | STMicro         | ver: 1 | type: android.sensor.accelerometer(1) | perm: n/a | flags: 0x000009c0
+	continuous | minRate=1.62Hz | maxRate=415.97Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | has-additional-info, 
+	highest rate level = 3, support shared mem: gralloc, 
+0x01010002) MMC56X3X Magnetometer     | MEMSIC          | ver: 1 | type: android.sensor.magnetic_field(2) | perm: n/a | flags: 0x00000880
+	continuous | minRate=1.25Hz | maxRate=100.00Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+	highest rate level = 1, support shared mem: gralloc, 
+0x01010003) Orientation Sensor        | Google          | ver: 1 | type: android.sensor.orientation(3) | perm: n/a | flags: 0x00000000
+	continuous | minRate=5.00Hz | maxRate=200.00Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x01010004) LSM6DSR Gyroscope         | STMicro         | ver: 1 | type: android.sensor.gyroscope(4) | perm: n/a | flags: 0x000009c0
+	continuous | minRate=1.62Hz | maxRate=415.97Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | has-additional-info, 
+	highest rate level = 3, support shared mem: gralloc, 
+0x01010005) TMD3719 Ambient Light     | AMS             | ver: 1 | type: android.sensor.light(5) | perm: n/a | flags: 0x00000002
+	on-change | minRate=1.00Hz | minDelay=0us | FIFO (max,reserved) = (100, 100) events | non-wakeUp | 
+0x01010006) ICP10101 Pressure Sensor  | InvenSense      | ver: 1 | type: android.sensor.pressure(6) | perm: n/a | flags: 0x00000000
+	continuous | minRate=0.10Hz | maxRate=50.00Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x01010007) TMD3719 Proximity (wake-up) | AMS             | ver: 1 | type: android.sensor.proximity(8) | perm: n/a | flags: 0x00000003
+	on-change | minRate=1.00Hz | minDelay=0us | FIFO (max,reserved) = (100, 100) events | wakeUp | 
+0x01010008) Gravity Sensor            | Google          | ver: 1 | type: android.sensor.gravity(9) | perm: n/a | flags: 0x00000000
+	continuous | minRate=5.00Hz | maxRate=200.00Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x01010009) Linear Acceleration Sensor | Google          | ver: 1 | type: android.sensor.linear_acceleration(10) | perm: n/a | flags: 0x00000000
+	continuous | minRate=5.00Hz | maxRate=50.00Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x0101000a) Rotation Vector Sensor    | Google          | ver: 1 | type: android.sensor.rotation_vector(11) | perm: n/a | flags: 0x00000000
+	continuous | minRate=5.00Hz | maxRate=200.00Hz | FIFO (max,reserved) = (100, 100) events | non-wakeUp | 
+0x0101000b) MMC56X3X Magnetometer-Uncalibrated | MEMSIC          | ver: 1 | type: android.sensor.magnetic_field_uncalibrated(14) | perm: n/a | flags: 0x00000880
+	continuous | minRate=1.25Hz | maxRate=100.00Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+	highest rate level = 1, support shared mem: gralloc, 
+0x0101000c) Game Rotation Vector Sensor | Google          | ver: 1 | type: android.sensor.game_rotation_vector(15) | perm: n/a | flags: 0x00000000
+	continuous | minRate=5.00Hz | maxRate=200.00Hz | FIFO (max,reserved) = (100, 100) events | non-wakeUp | 
+0x0101000d) LSM6DSR Gyroscope-Uncalibrated | STMicro         | ver: 1 | type: android.sensor.gyroscope_uncalibrated(16) | perm: n/a | flags: 0x000009c0
+	continuous | minRate=1.62Hz | maxRate=415.97Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | has-additional-info, 
+	highest rate level = 3, support shared mem: gralloc, 
+0x0101000e) Significant Motion (wake-up) | Google          | ver: 1 | type: android.sensor.significant_motion(17) | perm: n/a | flags: 0x00000005
+	one-shot | maxDelay=0us | minDelay=-1us | no batching | wakeUp | 
+0x0101000f) Step Detector             | Google          | ver: 1 | type: android.sensor.step_detector(18) | perm: android.permission.ACTIVITY_RECOGNITION | flags: 0x00000006
+	special-trigger | maxDelay=0us | minDelay=0us | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x01010010) Step Counter              | Google          | ver: 1 | type: android.sensor.step_counter(19) | perm: android.permission.ACTIVITY_RECOGNITION | flags: 0x00000002
+	on-change | minRate=1.00Hz | minDelay=0us | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x01010011) Geomagnetic Rotation Vector Sensor | Google          | ver: 1 | type: android.sensor.geomagnetic_rotation_vector(20) | perm: n/a | flags: 0x00000000
+	continuous | minRate=5.00Hz | maxRate=200.00Hz | FIFO (max,reserved) = (100, 100) events | non-wakeUp | 
+0x01010012) Tilt Sensor (wake-up)     | Google          | ver: 1 | type: android.sensor.tilt_detector(22) | perm: n/a | flags: 0x00000007
+	special-trigger | maxDelay=0us | minDelay=0us | FIFO (max,reserved) = (3000, 3000) events | wakeUp | 
+0x01010013) Device Pickup Sensor (wake-up) | Google          | ver: 1 | type: android.sensor.pick_up_gesture(25) | perm: n/a | flags: 0x00000005
+	one-shot | maxDelay=0us | minDelay=-1us | no batching | wakeUp | 
+0x01010014) Device Orientation        | Google          | ver: 1 | type: android.sensor.device_orientation(27) | perm: n/a | flags: 0x00000002
+	on-change | minRate=1.00Hz | minDelay=0us | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x01010015) LSM6DSR Accelerometer-Uncalibrated | STMicro         | ver: 1 | type: android.sensor.accelerometer_uncalibrated(35) | perm: n/a | flags: 0x000009c0
+	continuous | minRate=1.62Hz | maxRate=415.97Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | has-additional-info, 
+	highest rate level = 3, support shared mem: gralloc, 
+0x01010016) LSM6DSR Temperature       | STMicro         | ver: 1 | type: com.google.sensor.gyro_temperature(65538) | perm: n/a | flags: 0x00000000
+	continuous | minRate=1.62Hz | maxRate=52.00Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x01010017) ICP10101 Temperature      | InvenSense      | ver: 1 | type: com.google.sensor.pressure_temp(65539) | perm: n/a | flags: 0x00000000
+	continuous | minRate=0.10Hz | maxRate=50.00Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x01010018) Camera V-Sync 0           | Google          | ver: 1 | type: com.google.sensor.camera_vsync(65541) | perm: n/a | flags: 0x00000002
+	on-change | minRate=1.00Hz | minDelay=0us | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x01010019) Camera V-Sync 1           | Google          | ver: 1 | type: com.google.sensor.camera_vsync(65541) | perm: n/a | flags: 0x00000002
+	on-change | minRate=1.00Hz | minDelay=0us | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x0101001a) Camera V-Sync 2           | Google          | ver: 1 | type: com.google.sensor.camera_vsync(65541) | perm: n/a | flags: 0x00000002
+	on-change | minRate=1.00Hz | minDelay=0us | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x0101001b) Camera V-Sync 3           | Google          | ver: 1 | type: com.google.sensor.camera_vsync(65541) | perm: n/a | flags: 0x00000002
+	on-change | minRate=1.00Hz | minDelay=0us | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x0101001c) VD6282 Rear Light Sensor  | STMicro         | ver: 1 | type: com.google.sensor.rear_light(65545) | perm: n/a | flags: 0x00000000
+	continuous | minRate=2.44Hz | maxRate=62.50Hz | FIFO (max,reserved) = (3000, 3000) events | non-wakeUp | 
+0x0101001d) Double Twist (wake-up)    | Google          | ver: 1 | type: com.google.sensor.double_twist(131073) | perm: n/a | flags: 0x00000007
+	special-trigger | maxDelay=0us | minDelay=0us | FIFO (max,reserved) = (3000, 3000) events | wakeUp | 
+0x0101001e) Binned Brightness (wake-up) | Google          | ver: 1 | type: com.google.sensor.binned_brightness(131077) | perm: n/a | flags: 0x00000003
+	on-change | minRate=1.00Hz | minDelay=0us | FIFO (max,reserved) = (3000, 3000) events | wakeUp | 
+0x0101001f) Proximity Gated Single Tap Gesture (wake-up) | Google          | ver: 1 | type: com.google.sensor.single_touch(131083) | perm: n/a | flags: 0x00000005
+	one-shot | maxDelay=0us | minDelay=-1us | no batching | wakeUp | 
+0x01010020) Proximity Gated Long Press Gesture (wake-up) | Google          | ver: 1 | type: com.google.sensor.long_press(131085) | perm: n/a | flags: 0x00000005
+	one-shot | maxDelay=0us | minDelay=-1us | no batching | wakeUp | 
+0x01010021) Quick Pickup Sensor (wake-up) | Google          | ver: 1 | type: com.google.sensor.quick_pickup(131087) | perm: n/a | flags: 0x00000005
+	one-shot | maxDelay=0us | minDelay=-1us | no batching | wakeUp | 
+0x01010022) Auto Brightness           | Google          | ver: 1 | type: com.google.sensor.auto_brightness(131088) | perm: n/a | flags: 0x00000000
+	continuous | minRate=1.00Hz | maxRate=1.00Hz | FIFO (max,reserved) = (100, 100) events | non-wakeUp | 
+0x5f636779) Corrected Gyroscope Sensor | AOSP            | ver: 1 | type: android.sensor.gyroscope(4) | perm: n/a | flags: 0x00000000
+	continuous | maxDelay=0us | maxRate=415.97Hz | no batching | non-wakeUp | 
+0x5f676172) Game Rotation Vector Sensor | AOSP            | ver: 3 | type: android.sensor.game_rotation_vector(15) | perm: n/a | flags: 0x00000000
+	continuous | maxDelay=0us | maxRate=415.97Hz | no batching | non-wakeUp | 
+0x5f676273) Gyroscope Bias (debug)    | AOSP            | ver: 1 | type: android.sensor.accelerometer(1) | perm: n/a | flags: 0x00000000
+	continuous | maxDelay=0us | maxRate=415.97Hz | no batching | non-wakeUp | 
+0x5f67656f) GeoMag Rotation Vector Sensor | AOSP            | ver: 3 | type: android.sensor.geomagnetic_rotation_vector(20) | perm: n/a | flags: 0x00000000
+	continuous | maxDelay=0us | maxRate=415.97Hz | no batching | non-wakeUp | 
+0x5f677276) Gravity Sensor            | AOSP            | ver: 3 | type: android.sensor.gravity(9) | perm: n/a | flags: 0x00000000
+	continuous | maxDelay=0us | maxRate=415.97Hz | no batching | non-wakeUp | 
+0x5f6c696e) Linear Acceleration Sensor | AOSP            | ver: 3 | type: android.sensor.linear_acceleration(10) | perm: n/a | flags: 0x00000000
+	continuous | maxDelay=0us | maxRate=415.97Hz | no batching | non-wakeUp | 
+0x5f726f76) Rotation Vector Sensor    | AOSP            | ver: 3 | type: android.sensor.rotation_vector(11) | perm: n/a | flags: 0x00000000
+	continuous | maxDelay=0us | maxRate=415.97Hz | no batching | non-wakeUp | 
+0x5f797072) Orientation Sensor        | AOSP            | ver: 1 | type: android.sensor.orientation(3) | perm: n/a | flags: 0x00000000
+	continuous | maxDelay=0us | maxRate=415.97Hz | no batching | non-wakeUp | 
+Fusion States:
+9-axis fusion disabled (0 clients), gyro-rate= 200.00Hz, q=< 0, 0, 0, 0 > (0), b=< 0, 0, 0 >
+game fusion(no mag) disabled (0 clients), gyro-rate= 200.00Hz, q=< 0, 0, 0, 0 > (0), b=< 0, 0, 0 >
+geomag fusion (no gyro) disabled (0 clients), gyro-rate= 200.00Hz, q=< 0, 0, 0, 0 > (0), b=< 0, 0, 0 >
+Recent Sensor events:
+Auto Brightness: last 10 events
+	 1 (ts=608139.157989681, wall=17:14:44.420) 237.39, 237.42, 0.09, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 2 (ts=608140.167394467, wall=17:14:45.429) 240.64, 241.04, 0.09, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 3 (ts=608141.201694027, wall=17:14:46.463) 241.11, 241.17, 0.09, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 4 (ts=608142.233676693, wall=17:14:47.495) 240.87, 240.94, 0.09, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 5 (ts=608143.248350765, wall=17:14:48.511) 240.74, 241.15, 0.09, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 6 (ts=608144.282775570, wall=17:14:49.545) 240.82, 240.91, 0.09, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 7 (ts=608145.308736263, wall=17:14:50.572) 240.92, 241.01, 0.09, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 8 (ts=608146.342998226, wall=17:14:51.605) 240.79, 240.97, 0.09, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 9 (ts=608147.374647884, wall=17:14:52.637) 240.72, 240.92, 0.09, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	10 (ts=608148.389720638, wall=17:14:53.652) 240.69, 241.02, 0.09, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+LSM6DSR Temperature: last 10 events
+	 1 (ts=603868.908189815, wall=16:03:34.169) 26.48, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 2 (ts=603868.926168147, wall=16:03:34.187) 26.48, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 3 (ts=603868.944133785, wall=16:03:34.205) 26.48, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 4 (ts=603868.962121151, wall=16:03:34.223) 26.48, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 5 (ts=603868.980105770, wall=16:03:34.241) 26.47, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 6 (ts=603868.998080684, wall=16:03:34.259) 26.46, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 7 (ts=603869.016058956, wall=16:03:34.277) 26.46, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 8 (ts=603869.034024715, wall=16:03:34.295) 26.46, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	 9 (ts=603869.052012142, wall=16:03:34.313) 26.43, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+	10 (ts=603869.069996517, wall=16:03:34.331) 26.46, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 
+LSM6DSR Gyroscope-Uncalibrated: last 10 events
+	 1 (ts=603868.917178768, wall=16:03:34.178) 0.01, 0.01, -0.00, 0.00, -0.00, -0.00, 
+	 2 (ts=603868.935154476, wall=16:03:34.196) 0.00, -0.02, -0.01, 0.00, -0.00, -0.00, 
+	 3 (ts=603868.953137935, wall=16:03:34.214) 0.00, -0.01, -0.01, 0.00, -0.00, -0.00, 
+	 4 (ts=603868.971098568, wall=16:03:34.232) 0.00, -0.01, -0.01, 0.00, -0.00, -0.00, 
+	 5 (ts=603868.989093929, wall=16:03:34.250) 0.01, -0.01, -0.01, 0.00, -0.00, -0.00, 
+	 6 (ts=603869.007065792, wall=16:03:34.268) 0.01, -0.00, -0.01, 0.00, -0.00, -0.00, 
+	 7 (ts=603869.025052303, wall=16:03:34.286) 0.01, -0.00, -0.01, 0.00, -0.00, -0.00, 
+	 8 (ts=603869.043026547, wall=16:03:34.304) 0.01, -0.00, -0.00, 0.00, -0.00, -0.00, 
+	 9 (ts=603869.061003963, wall=16:03:34.322) 0.01, -0.00, -0.00, 0.00, -0.00, -0.00, 
+	10 (ts=603869.078982784, wall=16:03:34.342) 0.00, -0.00, -0.00, 0.00, -0.00, -0.00, 
+Game Rotation Vector Sensor: last 10 events
+	 1 (ts=603868.422767269, wall=16:03:33.685) -0.02, 0.04, -0.67, 0.74, 
+	 2 (ts=603868.494692378, wall=16:03:33.757) -0.02, 0.04, -0.67, 0.74, 
+	 3 (ts=603868.566604916, wall=16:03:33.829) -0.02, 0.04, -0.67, 0.74, 
+	 4 (ts=603868.638517636, wall=16:03:33.900) -0.02, 0.04, -0.67, 0.74, 
+	 5 (ts=603868.710430354, wall=16:03:33.972) -0.02, 0.04, -0.67, 0.74, 
+	 6 (ts=603868.782343074, wall=16:03:34.044) -0.02, 0.04, -0.67, 0.74, 
+	 7 (ts=603868.854255429, wall=16:03:34.116) -0.02, 0.04, -0.67, 0.74, 
+	 8 (ts=603868.926168147, wall=16:03:34.188) -0.02, 0.04, -0.67, 0.74, 
+	 9 (ts=603868.998080684, wall=16:03:34.260) -0.02, 0.04, -0.67, 0.74, 
+	10 (ts=603869.069996517, wall=16:03:34.332) -0.02, 0.04, -0.67, 0.74, 
+Gravity Sensor: last 10 events
+	 1 (ts=607505.752925045, wall=17:04:11.016) -0.27, -0.77, 9.78, 
+	 2 (ts=607505.896739741, wall=17:04:11.160) -0.27, -0.77, 9.78, 
+	 3 (ts=607506.040559811, wall=17:04:11.305) -0.27, -0.77, 9.78, 
+	 4 (ts=607506.184379818, wall=17:04:11.447) -0.27, -0.77, 9.78, 
+	 5 (ts=607506.328199641, wall=17:04:11.592) -0.27, -0.77, 9.78, 
+	 6 (ts=607506.472019772, wall=17:04:11.734) -0.27, -0.77, 9.78, 
+	 7 (ts=607506.615843075, wall=17:04:11.879) -0.27, -0.77, 9.78, 
+	 8 (ts=607506.759659602, wall=17:04:12.023) -0.27, -0.77, 9.78, 
+	 9 (ts=607506.903476315, wall=17:04:12.167) -0.27, -0.77, 9.78, 
+	10 (ts=607507.047299496, wall=17:04:12.309) -0.27, -0.77, 9.78, 
+ICP10101 Pressure Sensor: last 10 events
+	 1 (ts=607501.021160580, wall=17:04:06.283) 999.04, 0.00, 0.00, 
+	 2 (ts=607501.661008236, wall=17:04:06.924) 999.04, 0.00, 0.00, 
+	 3 (ts=607502.300670101, wall=17:04:07.564) 999.04, 0.00, 0.00, 
+	 4 (ts=607502.940669613, wall=17:04:08.203) 999.04, 0.00, 0.00, 
+	 5 (ts=607503.580669369, wall=17:04:08.843) 999.04, 0.00, 0.00, 
+	 6 (ts=607504.221150814, wall=17:04:09.483) 999.04, 0.00, 0.00, 
+	 7 (ts=607504.861014584, wall=17:04:10.123) 999.04, 0.00, 0.00, 
+	 8 (ts=607505.500669125, wall=17:04:10.763) 999.04, 0.00, 0.00, 
+	 9 (ts=607506.140669369, wall=17:04:11.403) 999.03, 0.00, 0.00, 
+	10 (ts=607506.780723324, wall=17:04:12.044) 999.04, 0.00, 0.00, 
+TMD3719 Ambient Light: last 50 events
+	 1 (ts=526647.348027309, wall=18:36:35.436) 2.78, 0.00, 0.00, 
+	 2 (ts=526927.672684780, wall=18:41:15.760) 2.21, 0.00, 0.00, 
+	 3 (ts=527211.340836880, wall=18:45:59.428) 1.62, 0.00, 0.00, 
+	 4 (ts=527563.698132778, wall=18:51:51.787) 1.10, 0.00, 0.00, 
+	 5 (ts=528055.868354946, wall=19:00:03.956) 0.53, 0.00, 0.00, 
+	 6 (ts=528644.102941128, wall=19:09:52.191) 0.00, 0.00, 0.00, 
+	 7 (ts=535093.030078335, wall=20:57:21.117) 6.34, 0.00, 0.00, 
+	 8 (ts=535093.218751919, wall=20:57:21.306) 38.31, 0.00, 0.00, 
+	 9 (ts=535200.495567837, wall=20:59:08.584) 11.53, 0.00, 0.00, 
+	10 (ts=535200.551053188, wall=20:59:08.639) 0.00, 0.00, 0.00, 
+	11 (ts=541009.456594936, wall=22:35:57.545) 0.63, 0.00, 0.00, 
+	12 (ts=541034.483096157, wall=22:36:22.571) 0.00, 0.00, 0.00, 
+	13 (ts=547919.519085415, wall=00:31:07.607) 6.84, 0.00, 0.00, 
+	14 (ts=547919.718768764, wall=00:31:07.807) 38.27, 0.00, 0.00, 
+	15 (ts=548102.489455776, wall=00:34:10.577) 11.22, 0.00, 0.00, 
+	16 (ts=548102.544958462, wall=00:34:10.632) 0.00, 0.00, 0.00, 
+	17 (ts=549346.820426422, wall=00:54:54.908) 6.15, 0.00, 0.00, 
+	18 (ts=549346.997984057, wall=00:54:55.086) 38.25, 0.00, 0.00, 
+	19 (ts=549671.141246761, wall=01:00:19.229) 12.35, 0.00, 0.00, 
+	20 (ts=549671.207828549, wall=01:00:19.296) 0.00, 0.00, 0.00, 
+	21 (ts=567653.069775814, wall=06:00:01.157) 0.50, 0.00, 0.00, 
+	22 (ts=568167.731688412, wall=06:08:35.819) 1.04, 0.00, 0.00, 
+	23 (ts=568533.414147152, wall=06:14:41.502) 1.55, 0.00, 0.00, 
+	24 (ts=568845.667160336, wall=06:19:53.755) 2.09, 0.00, 0.00, 
+	25 (ts=569096.853518978, wall=06:24:04.941) 2.59, 0.00, 0.00, 
+	26 (ts=569356.135851986, wall=06:28:24.224) 3.10, 0.00, 0.00, 
+	27 (ts=569589.029408871, wall=06:32:17.117) 3.61, 0.00, 0.00, 
+	28 (ts=569803.246848812, wall=06:35:51.335) 4.17, 0.00, 0.00, 
+	29 (ts=570080.910347836, wall=06:40:28.998) 4.68, 0.00, 0.00, 
+	30 (ts=570498.346798031, wall=06:47:26.436) 5.21, 0.00, 0.00, 
+	31 (ts=570605.733096127, wall=06:49:13.820) 5.78, 0.00, 0.00, 
+	32 (ts=570709.413623470, wall=06:50:57.501) 6.37, 0.00, 0.00, 
+	33 (ts=570912.778814633, wall=06:54:20.867) 6.92, 0.00, 0.00, 
+	34 (ts=571093.972933529, wall=06:57:22.060) 7.56, 0.00, 0.00, 
+	35 (ts=571558.118287533, wall=07:05:06.206) 8.17, 0.00, 0.00, 
+	36 (ts=571996.475649838, wall=07:12:24.563) 8.84, 0.00, 0.00, 
+	37 (ts=572362.329842220, wall=07:18:30.418) 9.54, 0.00, 0.00, 
+	38 (ts=572447.403529476, wall=07:19:55.491) 10.26, 0.00, 0.00, 
+	39 (ts=572525.353077328, wall=07:21:13.441) 11.15, 0.00, 0.00, 
+	40 (ts=572634.677110775, wall=07:23:02.764) 12.13, 0.00, 0.00, 
+	41 (ts=572777.342517269, wall=07:25:25.431) 13.15, 0.00, 0.00, 
+	42 (ts=573130.039729183, wall=07:31:18.127) 12.14, 0.00, 0.00, 
+	43 (ts=573308.852176937, wall=07:34:16.941) 25.22, 0.00, 0.00, 
+	44 (ts=573309.262576351, wall=07:34:17.351) 50.05, 0.00, 0.00, 
+	45 (ts=575255.194975521, wall=08:06:43.282) 53.95, 0.00, 0.00, 
+	46 (ts=576436.436908383, wall=08:26:24.524) 75.24, 0.00, 0.00, 
+	47 (ts=576436.558914730, wall=08:26:24.646) 284.45, 0.00, 0.00, 
+	48 (ts=589665.106403744, wall=12:06:53.194) 235.37, 0.00, 0.00, 
+	49 (ts=596282.370840267, wall=13:57:07.633) 255.30, 0.00, 0.00, 
+	50 (ts=597894.758016049, wall=14:24:00.021) 234.89, 0.00, 0.00, 
+Orientation Sensor: last 10 events
+	 1 (ts=603868.746386531, wall=16:03:34.008) 347.93, 4.48, -1.56, 
+	 2 (ts=603868.782343074, wall=16:03:34.044) 347.93, 4.48, -1.56, 
+	 3 (ts=603868.818299496, wall=16:03:34.080) 347.93, 4.48, -1.56, 
+	 4 (ts=603868.854255429, wall=16:03:34.116) 347.94, 4.47, -1.59, 
+	 5 (ts=603868.890211788, wall=16:03:34.152) 347.94, 4.47, -1.61, 
+	 6 (ts=603868.926168147, wall=16:03:34.188) 347.94, 4.46, -1.60, 
+	 7 (ts=603868.962121151, wall=16:03:34.224) 347.94, 4.46, -1.56, 
+	 8 (ts=603868.998080684, wall=16:03:34.260) 347.94, 4.45, -1.55, 
+	 9 (ts=603869.034024715, wall=16:03:34.296) 347.95, 4.44, -1.54, 
+	10 (ts=603869.069996517, wall=16:03:34.331) 347.94, 4.43, -1.54, 
+MMC56X3X Magnetometer: last 10 events
+	 1 (ts=607499.197786068, wall=17:04:04.459) 21.39, 61.59, -112.45, 
+	 2 (ts=607499.997773617, wall=17:04:05.259) 21.33, 61.34, -111.75, 
+	 3 (ts=607500.797786312, wall=17:04:06.060) 21.46, 61.18, -111.43, 
+	 4 (ts=607501.597774105, wall=17:04:06.860) 21.19, 60.96, -111.63, 
+	 5 (ts=607502.397786068, wall=17:04:07.660) 21.63, 61.43, -111.91, 
+	 6 (ts=607503.197786312, wall=17:04:08.460) 21.63, 61.52, -111.73, 
+	 7 (ts=607503.997786068, wall=17:04:09.260) 21.51, 61.32, -111.75, 
+	 8 (ts=607504.797786312, wall=17:04:10.060) 21.42, 61.20, -111.47, 
+	 9 (ts=607505.597786312, wall=17:04:10.861) 20.91, 61.09, -112.41, 
+	10 (ts=607506.397786068, wall=17:04:11.660) 21.65, 61.37, -111.46, 
+LSM6DSR Accelerometer: last 50 events
+	 1 (ts=608139.707991634, wall=17:14:46.086) -0.26, -0.76, 9.68, 
+	 2 (ts=608139.852028193, wall=17:14:46.086) -0.26, -0.76, 9.68, 
+	 3 (ts=608139.995852594, wall=17:14:46.086) -0.27, -0.76, 9.68, 
+	 4 (ts=608140.139393611, wall=17:14:46.086) -0.27, -0.76, 9.68, 
+	 5 (ts=608140.283664729, wall=17:14:46.086) -0.26, -0.76, 9.68, 
+	 6 (ts=608140.427323237, wall=17:14:46.086) -0.26, -0.76, 9.68, 
+	 7 (ts=608140.571143184, wall=17:14:46.086) -0.26, -0.76, 9.68, 
+	 8 (ts=608140.714950496, wall=17:14:46.086) -0.27, -0.76, 9.68, 
+	 9 (ts=608140.858774103, wall=17:14:48.063) -0.27, -0.76, 9.68, 
+	10 (ts=608141.002334224, wall=17:14:48.063) -0.27, -0.76, 9.68, 
+	11 (ts=608141.146470943, wall=17:14:48.063) -0.26, -0.76, 9.68, 
+	12 (ts=608141.290234308, wall=17:14:48.063) -0.26, -0.76, 9.68, 
+	13 (ts=608141.434055475, wall=17:14:48.063) -0.27, -0.76, 9.68, 
+	14 (ts=608141.577875605, wall=17:14:48.063) -0.27, -0.76, 9.68, 
+	15 (ts=608141.721907832, wall=17:14:48.064) -0.27, -0.76, 9.68, 
+	16 (ts=608141.865464350, wall=17:14:48.064) -0.27, -0.76, 9.68, 
+	17 (ts=608142.009388057, wall=17:14:48.064) -0.26, -0.76, 9.68, 
+	18 (ts=608142.152897517, wall=17:14:48.064) -0.26, -0.76, 9.68, 
+	19 (ts=608142.296982905, wall=17:14:48.064) -0.26, -0.76, 9.68, 
+	20 (ts=608142.440846369, wall=17:14:48.064) -0.27, -0.76, 9.68, 
+	21 (ts=608142.584362239, wall=17:14:48.064) -0.27, -0.76, 9.68, 
+	22 (ts=608142.728495111, wall=17:14:48.064) -0.27, -0.75, 9.68, 
+	23 (ts=608142.872198360, wall=17:14:50.040) -0.27, -0.76, 9.68, 
+	24 (ts=608143.016133967, wall=17:14:50.040) -0.26, -0.76, 9.68, 
+	25 (ts=608143.159906122, wall=17:14:50.040) -0.26, -0.76, 9.68, 
+	26 (ts=608143.303726375, wall=17:14:50.040) -0.27, -0.76, 9.68, 
+	27 (ts=608143.447280940, wall=17:14:50.040) -0.27, -0.75, 9.68, 
+	28 (ts=608143.591420344, wall=17:14:50.041) -0.27, -0.76, 9.68, 
+	29 (ts=608143.735179989, wall=17:14:50.041) -0.26, -0.75, 9.68, 
+	30 (ts=608143.879010127, wall=17:14:50.041) -0.26, -0.76, 9.68, 
+	31 (ts=608144.022834102, wall=17:14:50.042) -0.26, -0.76, 9.68, 
+	32 (ts=608144.166643429, wall=17:14:50.042) -0.26, -0.76, 9.68, 
+	33 (ts=608144.310416315, wall=17:14:50.042) -0.27, -0.76, 9.68, 
+	34 (ts=608144.454423396, wall=17:14:50.042) -0.27, -0.75, 9.68, 
+	35 (ts=608144.598028499, wall=17:14:50.042) -0.27, -0.76, 9.68, 
+	36 (ts=608144.741924067, wall=17:14:50.042) -0.27, -0.76, 9.68, 
+	37 (ts=608144.885744076, wall=17:14:52.018) -0.26, -0.76, 9.68, 
+	38 (ts=608145.029583247, wall=17:14:52.018) -0.26, -0.76, 9.68, 
+	39 (ts=608145.173386591, wall=17:14:52.018) -0.26, -0.76, 9.68, 
+	40 (ts=608145.316986200, wall=17:14:52.018) -0.27, -0.76, 9.68, 
+	41 (ts=608145.461033076, wall=17:14:52.018) -0.27, -0.76, 9.68, 
+	42 (ts=608145.604842769, wall=17:14:52.019) -0.27, -0.76, 9.68, 
+	43 (ts=608145.748667109, wall=17:14:52.019) -0.27, -0.76, 9.68, 
+	44 (ts=608145.892305599, wall=17:14:52.019) -0.26, -0.76, 9.68, 
+	45 (ts=608146.036268306, wall=17:14:52.019) -0.27, -0.76, 9.68, 
+	46 (ts=608146.179848995, wall=17:14:52.019) -0.27, -0.76, 9.68, 
+	47 (ts=608146.324001644, wall=17:14:52.020) -0.26, -0.76, 9.68, 
+	48 (ts=608146.467769893, wall=17:14:52.020) -0.27, -0.76, 9.68, 
+	49 (ts=608146.611589351, wall=17:14:52.020) -0.27, -0.76, 9.68, 
+	50 (ts=608146.755411922, wall=17:14:52.020) -0.27, -0.76, 9.68, 
+LSM6DSR Gyroscope: last 10 events
+	 1 (ts=607501.582139828, wall=17:04:06.844) -0.00, -0.00, -0.00, 
+	 2 (ts=607502.157420039, wall=17:04:07.420) -0.00, 0.00, 0.00, 
+	 3 (ts=607502.732699703, wall=17:04:07.995) -0.00, -0.00, 0.00, 
+	 4 (ts=607503.307979977, wall=17:04:08.571) 0.00, 0.00, 0.00, 
+	 5 (ts=607503.883259762, wall=17:04:09.146) -0.00, -0.00, -0.00, 
+	 6 (ts=607504.458543941, wall=17:04:09.722) 0.00, 0.00, 0.00, 
+	 7 (ts=607505.033819760, wall=17:04:10.297) 0.00, 0.00, 0.00, 
+	 8 (ts=607505.609099606, wall=17:04:10.872) 0.00, 0.00, 0.00, 
+	 9 (ts=607506.184379818, wall=17:04:11.447) 0.00, 0.00, 0.00, 
+	10 (ts=607506.759659602, wall=17:04:12.023) -0.00, -0.00, -0.00, 
+MMC56X3X Magnetometer-Uncalibrated: last 10 events
+	 1 (ts=603868.894930111, wall=16:03:34.156) 19.97, 144.14, -158.21, 6.44, 85.16, -31.29, 
+	 2 (ts=603868.914942562, wall=16:03:34.176) 19.31, 143.87, -158.31, 6.44, 85.16, -31.29, 
+	 3 (ts=603868.934942562, wall=16:03:34.196) 21.47, 145.05, -155.11, 6.44, 85.16, -31.29, 
+	 4 (ts=603868.954942562, wall=16:03:34.216) 21.57, 144.81, -158.49, 6.44, 85.16, -31.29, 
+	 5 (ts=603868.974942806, wall=16:03:34.236) 20.95, 144.55, -157.62, 6.44, 85.16, -31.29, 
+	 6 (ts=603868.994941830, wall=16:03:34.256) 21.59, 144.86, -156.55, 6.44, 85.16, -31.29, 
+	 7 (ts=603869.014942562, wall=16:03:34.276) 23.84, 146.08, -153.67, 6.44, 85.16, -31.29, 
+	 8 (ts=603869.034930111, wall=16:03:34.296) 22.84, 145.17, -154.59, 6.44, 85.16, -31.29, 
+	 9 (ts=603869.054942806, wall=16:03:34.316) 24.56, 145.86, -146.30, 6.44, 85.16, -31.29, 
+	10 (ts=603869.074929867, wall=16:03:34.339) 22.86, 144.75, -154.16, 6.44, 85.16, -31.29, 
+Active sensors:
+Dynamic Sensor Manager (handle=0x00000001, connections=1)
+LSM6DSR Accelerometer (handle=0x01010001, connections=1)
+TMD3719 Ambient Light (handle=0x01010005, connections=2)
+Significant Motion (wake-up) (handle=0x0101000e, connections=1)
+Device Orientation (handle=0x01010014, connections=1)
+Auto Brightness (handle=0x01010022, connections=3)
+Socket Buffer size = 984 events
+WakeLock Status: not held 
+Mode : NORMAL
+Sensor Privacy: disabled
+9 active connections
+Connection Number: 0 
+	Operating Mode: NORMAL
+	 com.android.server.wm.WindowOrientationListener | WakeLockRefCount 0 | uid 1000 | cache size 0 | max cache size 0
+	 Device Orientation 0x01010014 | status: active | pending flush events 0 
+Connection Number: 1 
+	Operating Mode: NORMAL
+	 com.android.server.display.BrightnessTracker | WakeLockRefCount 0 | uid 1000 | cache size 0 | max cache size 0
+	 Auto Brightness 0x01010022 | status: active | pending flush events 0 
+Connection Number: 2 
+	Operating Mode: NORMAL
+	 com.android.server.display.AutomaticBrightnessController | WakeLockRefCount 0 | uid 1000 | cache size 0 | max cache size 0
+	 Auto Brightness 0x01010022 | status: active | pending flush events 0 
+Connection Number: 3 
+	Operating Mode: NORMAL
+	 com.android.hbmsvmanager.HbmSvManager$LightSensorManager$AmbientBrightnessObserver | WakeLockRefCount 0 | uid 10214 | cache size 0 | max cache size 0
+	 TMD3719 Ambient Light 0x01010005 | status: active | pending flush events 0 
+Connection Number: 4 
+	Operating Mode: NORMAL
+	 com.android.hbmsvmanager.HbmSvManager$LightSensorManager$AmbientBrightnessObserver | WakeLockRefCount 0 | uid 10214 | cache size 0 | max cache size 0
+	 TMD3719 Ambient Light 0x01010005 | status: active | pending flush events 0 
+Connection Number: 5 
+	Operating Mode: NORMAL
+	 com.android.server.display.DisplayModeDirector$BrightnessObserver | WakeLockRefCount 0 | uid 1000 | cache size 0 | max cache size 0
+	 Auto Brightness 0x01010022 | status: active | pending flush events 0 
+Connection Number: 6 
+	Operating Mode: NORMAL
+	 com.android.server.power.FaceDownDetector | WakeLockRefCount 0 | uid 1000 | cache size 0 | max cache size 0
+	 LSM6DSR Accelerometer 0x01010001 | status: active | pending flush events 0 
+Connection Number: 7 
+	Operating Mode: NORMAL
+	 com.android.server.DeviceIdleController | WakeLockRefCount 0 | uid 1000 | cache size 0 | max cache size 0
+	 Significant Motion (wake-up) 0x0101000e | status: active | pending flush events 0 
+Connection Number: 8 
+	Operating Mode: NORMAL
+	 com.android.server.SensorNotificationService | WakeLockRefCount 0 | uid 1000 | cache size 0 | max cache size 0
+	 Dynamic Sensor Manager 0x00000001 | status: active | pending flush events 0 
+0 direct connections
+Previous Registrations:
+17:04:12 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+17:04:12 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+17:04:12 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+17:04:12 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+17:04:12 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+17:02:12 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+17:02:12 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+17:02:12 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+17:02:12 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+17:02:12 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+16:49:02 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+16:49:02 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+16:49:02 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+16:49:02 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+16:49:02 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+16:47:02 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+16:47:02 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+16:47:02 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+16:47:02 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+16:47:02 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+16:33:52 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+16:33:52 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+16:33:52 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+16:33:52 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+16:33:52 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+16:31:52 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+16:31:52 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+16:31:52 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+16:31:52 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+16:31:52 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+16:18:42 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+16:18:42 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+16:18:42 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+16:18:42 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+16:18:42 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+16:16:42 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+16:16:42 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+16:16:42 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+16:16:42 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+16:16:42 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+16:03:38 - 0x01010001 pid=13139 uid=10207 package=android.view.OrientationEventListener
+16:03:37 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+16:03:37 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+16:03:37 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+16:03:37 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+16:03:37 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+16:03:34 + 0x01010001 pid=13139 uid=10207 package=android.view.OrientationEventListener samplingPeriod=200000us batchingPeriod=0us
+16:03:34 - 0x01010016 pid=32305 uid=10279 package=ny0
+16:03:34 - 0x0101000d pid=32305 uid=10279 package=ny0
+16:03:34 - 0x0101000c pid=32305 uid=10279 package=ny0
+16:03:34 - 0x0101000b pid=32305 uid=10279 package=ny0
+16:03:34 - 0x01010003 pid=32305 uid=10279 package=ny0
+16:03:34 - 0x01010001 pid=32305 uid=10279 package=ny0
+16:01:37 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+16:01:37 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+16:01:37 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+16:01:37 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+16:01:37 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+15:48:32 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+15:48:32 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+15:48:32 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+15:48:32 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+15:48:32 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+15:46:32 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+15:46:32 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+15:46:32 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+15:46:32 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+15:46:32 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+15:33:27 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+15:33:27 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+15:33:27 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+15:33:27 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+15:33:27 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+15:31:27 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+15:31:27 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+15:31:27 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+15:31:27 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+15:31:27 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+15:18:22 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+15:18:22 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+15:18:22 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+15:18:22 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+15:18:22 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+15:16:22 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+15:16:22 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+15:16:22 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+15:16:22 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+15:16:22 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+15:03:12 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+15:03:12 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+15:03:12 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+15:03:12 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+15:03:12 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+15:01:12 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+15:01:12 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+15:01:12 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+15:01:12 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+15:01:12 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+14:48:07 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+14:48:07 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+14:48:07 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+14:48:07 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+14:48:07 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+14:46:07 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+14:46:07 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+14:46:07 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+14:46:07 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+14:46:07 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+14:32:57 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+14:32:57 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+14:32:57 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+14:32:57 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+14:32:57 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+14:30:57 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+14:30:57 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+14:30:57 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+14:30:57 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+14:30:57 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+14:17:52 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+14:17:52 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+14:17:52 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+14:17:52 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+14:17:52 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+14:15:52 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+14:15:52 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+14:15:52 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+14:15:52 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+14:15:52 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+14:02:42 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+14:02:42 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+14:02:42 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+14:02:42 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+14:02:42 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+14:00:42 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+14:00:42 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+14:00:42 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+14:00:42 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+14:00:42 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+13:47:32 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+13:47:32 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+13:47:32 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+13:47:32 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+13:47:32 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+13:45:32 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+13:45:32 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+13:45:32 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+13:45:32 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+13:45:32 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+13:32:22 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+13:32:22 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+13:32:22 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+13:32:22 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+13:32:22 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+13:30:25 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+13:30:25 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+13:30:25 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+13:30:25 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+13:30:25 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+13:17:20 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+13:17:20 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+13:17:20 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+13:17:20 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+13:17:20 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+13:15:20 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+13:15:20 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+13:15:20 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+13:15:20 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+13:15:20 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+13:02:10 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+13:02:10 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+13:02:10 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+13:02:10 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+13:02:10 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+13:00:10 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+13:00:10 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+13:00:10 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+13:00:10 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+13:00:10 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+12:47:00 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+12:47:00 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+12:47:00 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+12:47:00 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+12:47:00 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+12:45:00 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+12:45:00 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+12:45:00 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+12:45:00 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+12:45:00 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+12:31:50 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+12:31:50 - 0x01010006 pid=14109 uid=10263 package=vu.d0
+12:31:50 - 0x01010005 pid=14109 uid=10263 package=vu.d0
+12:31:50 - 0x01010004 pid=14109 uid=10263 package=vu.d0
+12:31:50 - 0x01010002 pid=14109 uid=10263 package=vu.d0
+12:29:50 + 0x01010002 pid=14109 uid=10263 package=vu.d0 samplingPeriod=800000us batchingPeriod=0us
+12:29:50 + 0x01010004 pid=14109 uid=10263 package=vu.d0 samplingPeriod=615385us batchingPeriod=0us
+12:29:50 + 0x01010008 pid=14109 uid=10263 package=vu.d0 samplingPeriod=200000us batchingPeriod=0us
+12:29:50 + 0x01010006 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+12:29:50 + 0x01010005 pid=14109 uid=10263 package=vu.d0 samplingPeriod=1000000us batchingPeriod=0us
+12:16:45 - 0x01010008 pid=14109 uid=10263 package=vu.d0
+12:16:45 - 0x01010006 pid=14109 uid=10263 package=vu.d0

@@ -90,6 +90,15 @@ public class EnvSlotsRuntimeTest {
             assertNotNull(file);
             assertEquals(" 0.01 0.02 0.03\n",
                     new String(hook.drainPopen(file.longValue()), StandardCharsets.UTF_8));
+            MemoryBlock line = emulator.getMemory().malloc(64, true);
+            int nline = hook.tryFgets(file.longValue(), line.getPointer(), 64);
+            assertTrue(nline > 0);
+            assertEquals(" 0.01 0.02 0.03\n",
+                    new String(line.getPointer().getByteArray(0, nline), StandardCharsets.UTF_8));
+            assertEquals(-1, hook.tryFgets(file.longValue(), line.getPointer(), 64));
+            assertEquals(1, hook.tryFeof(file.longValue()));
+            assertTrue(hook.tryFclose(file.longValue()));
+            line.free();
             assertEquals(Integer.valueOf(0), hook.trySystem(emulator, "uptime"));
             assertNull(hook.trySystem(emulator, "missing"));
 

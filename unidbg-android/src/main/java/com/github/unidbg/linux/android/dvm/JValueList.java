@@ -43,7 +43,10 @@ class JValueList extends VaList {
                     break;
                 }
                 case 'F': {
-                    args.add((float) pointer.getDouble(0));
+                    // jvalue.f is a 32-bit IEEE float in the first 4 bytes of the 8-byte slot.
+                    // Reading it as double (8 bytes) with the high half zero yields a denormal
+                    // that casts to 0.0f — that broke ASensor_getResolution → String.valueOf(F).
+                    args.add(pointer.getFloat(0));
                     break;
                 }
                 case 'D': {

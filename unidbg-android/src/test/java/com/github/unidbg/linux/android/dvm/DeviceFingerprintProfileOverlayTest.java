@@ -854,6 +854,93 @@ public class DeviceFingerprintProfileOverlayTest {
         return null;
     }
 
+    @Test
+    public void testOverlayRootListingMarksDirectories() throws Exception {
+        File dir = Files.createTempDirectory("traceai-profile-root-").toFile();
+        File fonts = new File(dir, "files/system/fonts");
+        assertTrue(fonts.mkdirs());
+        Files.write(new File(fonts, "Roboto.ttf").toPath(), new byte[] {1, 2, 3, 4});
+        File json = new File(dir, "device-fingerprint.json");
+        Files.write(json.toPath(), ("{"
+                + "\"schemaVersion\":\"traceai-device-fingerprint/v1\","
+                + "\"fileOverlayRoot\":\"files\""
+                + "}").getBytes(StandardCharsets.UTF_8));
+
+        AndroidEmulator emulator = null;
+        List<MemoryBlock> blocks = new ArrayList<MemoryBlock>();
+        try {
+            emulator = AndroidEmulatorBuilder.for64Bit().setEnvironmentProfile(json).build();
+            FileResult<AndroidFileIO> root = emulator.getFileSystem()
+                    .open("/", IOConstants.O_RDONLY);
+            assertTrue(root.isSuccess());
+            MemoryBlock rootBuf = emulator.getMemory().malloc(1024, true);
+            blocks.add(rootBuf);
+            int rootN = root.io.getdents64(rootBuf.getPointer(), 1024);
+            assertTrue(rootN > 0);
+            String rootNames = new String(rootBuf.getPointer().getByteArray(0, rootN),
+                    StandardCharsets.UTF_8);
+            assertTrue(rootNames.contains("system"));
+
+            FileResult<AndroidFileIO> system = emulator.getFileSystem()
+                    .open("/system", IOConstants.O_RDONLY);
+            assertTrue(system.isSuccess());
+            MemoryBlock sysBuf = emulator.getMemory().malloc(1024, true);
+            blocks.add(sysBuf);
+            int sysN = system.io.getdents64(sysBuf.getPointer(), 1024);
+            assertTrue(sysN > 0);
+            byte[] sysBytes = sysBuf.getPointer().getByteArray(0, sysN);
+            String sysNames = new String(sysBytes, StandardCharsets.UTF_8);
+            assertTrue(sysNames.contains("fonts"));
+            // d_type sits at offset 18 of each dirent; DT_DIR=4 for fonts.
+            assertTrue(direntTypeFor(sysBytes, sysN, "fonts") == 4);
+
+            FileResult<AndroidFileIO> fontDir = emulator.getFileSystem()
+                    .open("/system/fonts", IOConstants.O_RDONLY);
+            assertTrue(fontDir.isSuccess());
+            MemoryBlock fontBuf = emulator.getMemory().malloc(1024, true);
+            blocks.add(fontBuf);
+            int fontN = fontDir.io.getdents64(fontBuf.getPointer(), 1024);
+            assertTrue(fontN > 0);
+            byte[] fontBytes = fontBuf.getPointer().getByteArray(0, fontN);
+            assertTrue(new String(fontBytes, StandardCharsets.UTF_8).contains("Roboto.ttf"));
+            assertTrue(direntTypeFor(fontBytes, fontN, "Roboto.ttf") == 8);
+        } finally {
+            for (MemoryBlock block : blocks) {
+                block.free();
+            }
+            if (emulator != null) {
+                emulator.close();
+            }
+        }
+    }
+
+    private static int direntTypeFor(byte[] buf, int length, String name) {
+        byte[] needle = name.getBytes(StandardCharsets.UTF_8);
+        int offset = 0;
+        while (offset + 24 <= length) {
+            int reclen = (buf[offset + 16] & 0xff) | ((buf[offset + 17] & 0xff) << 8);
+            if (reclen < 24) {
+                break;
+            }
+            int type = buf[offset + 18] & 0xff;
+            int nameOff = offset + 19;
+            boolean match = nameOff + needle.length <= offset + reclen;
+            if (match) {
+                for (int i = 0; i < needle.length; i++) {
+                    if (buf[nameOff + i] != needle[i]) {
+                        match = false;
+                        break;
+                    }
+                }
+            }
+            if (match) {
+                return type;
+            }
+            offset += reclen;
+        }
+        return -1;
+    }
+
     private static final class EmptyVarArg extends VarArg {
         EmptyVarArg(BaseVM vm, DvmMethod method) {
             super(vm, method);

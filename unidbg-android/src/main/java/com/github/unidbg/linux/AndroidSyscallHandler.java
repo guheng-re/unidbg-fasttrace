@@ -1224,6 +1224,10 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
         Pointer pathname_p = context.getPointerArg(1);
         int mode = context.getIntArg(2);
         int flags = context.getIntArg(3);
+        if (pathname_p == null) {
+            emulator.getMemory().setErrno(UnixEmulator.EFAULT);
+            return -1;
+        }
         String pathname = pathname_p.getString(0);
         if (log.isDebugEnabled()) {
             log.debug("fchmodat dirfd={}, pathname={}, mode=0x{}, flags=0x{}", dirfd, pathname, Integer.toHexString(mode), Integer.toHexString(flags));
@@ -1238,6 +1242,10 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
         int owner = context.getIntArg(2);
         int group = context.getIntArg(3);
         int flags = context.getIntArg(4);
+        if (pathname_p == null) {
+            emulator.getMemory().setErrno(UnixEmulator.EFAULT);
+            return -1;
+        }
         String pathname = pathname_p.getString(0);
         if (log.isDebugEnabled()) {
             log.debug("fchownat dirfd={}, pathname={}, owner={}, group={}, flags=0x{}", dirfd, pathname, owner, group, Integer.toHexString(flags));
@@ -1250,6 +1258,10 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
         int dirfd = context.getIntArg(0);
         Pointer pathname_p = context.getPointerArg(1);
         int mode = context.getIntArg(2);
+        if (pathname_p == null) {
+            emulator.getMemory().setErrno(UnixEmulator.EFAULT);
+            return -1;
+        }
         String pathname = pathname_p.getString(0);
         if (log.isDebugEnabled()) {
             log.debug("mkdirat dirfd={}, pathname={}, mode={}", dirfd, pathname, Integer.toHexString(mode));
@@ -1323,6 +1335,10 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
         int dirfd = context.getIntArg(0);
         Pointer pathname = context.getPointerArg(1);
         int flags = context.getIntArg(2);
+        if (pathname == null) {
+            emulator.getMemory().setErrno(UnixEmulator.EFAULT);
+            return -1;
+        }
         emulator.getFileSystem().unlink(pathname.getString(0));
         if (log.isDebugEnabled()) {
             log.info("unlinkat dirfd={}, pathname={}, flags={}", dirfd, pathname.getString(0), flags);
@@ -1478,6 +1494,15 @@ public abstract class AndroidSyscallHandler extends UnixSyscallHandler<AndroidFi
         TimeSpec timeSpec = TimeSpec.createTimeSpec(emulator, req);
         if (log.isDebugEnabled()) {
             log.debug("nanosleep req={}, rem={}, timeSpec={}", req, rem, timeSpec);
+        }
+        TraceEnvironmentConfig config = TraceEnvironmentConfig.get(emulator);
+        if (config != null && config.getMonotonicNanos() != null
+                && config.isNanosleepAdvancesVirtualTime()) {
+            long ms = timeSpec.toMillis();
+            if (ms > 0L) {
+                config.addVirtualTime(ms);
+            }
+            return 0;
         }
         RunnableTask runningTask = emulator.getThreadDispatcher().getRunningTask();
         if (threadDispatcherEnabled && runningTask != null) {

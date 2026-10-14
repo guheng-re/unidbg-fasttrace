@@ -1,0 +1,51 @@
+Name:	.huiyan.envdump
+Umask:	0077
+State:	S (sleeping)
+Tgid:	8156
+Ngid:	0
+Pid:	8156
+PPid:	914
+TracerPid:	0
+Uid:	10246	10246	10246	10246
+Gid:	10246	10246	10246	10246
+FDSize:	256
+Groups:	3002 9997 20246 50246 
+VmPeak:	15121848 kB
+VmSize:	14996900 kB
+VmLck:	       0 kB
+VmPin:	       0 kB
+VmHWM:	  406340 kB
+VmRSS:	  150888 kB
+RssAnon:	   53072 kB
+RssFile:	   94276 kB
+RssShmem:	    3540 kB
+VmData:	 1256568 kB
+VmStk:	    8192 kB
+VmExe:	       4 kB
+VmLib:	  167088 kB
+VmPTE:	    1764 kB
+VmSwap:	   10652 kB
+CoreDumping:	0
+THP_enabled:	1
+Threads:	37
+SigQ:	0/27734
+SigPnd:	0000000000000000
+ShdPnd:	0000000000000000
+SigBlk:	0000000080001204
+SigIgn:	0000000000000001
+SigCgt:	0000006e400084f8
+CapInh:	0000000000000000
+CapPrm:	0000000000000000
+CapEff:	0000000000000000
+CapBnd:	0000000000000000
+CapAmb:	0000000000000000
+NoNewPrivs:	0
+Seccomp:	2
+Seccomp_filters:	1
+Speculation_Store_Bypass:	thread vulnerable
+Cpus_allowed:	ff
+Cpus_allowed_list:	0-7
+Mems_allowed:	1
+Mems_allowed_list:	0
+voluntary_ctxt_switches:	146
+nonvoluntary_ctxt_switches:	60

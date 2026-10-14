@@ -159,6 +159,9 @@ public class LinuxModule extends Module {
     @Override
     public Symbol findSymbolByName(String name, boolean withDependencies) {
         try {
+            if (dynsym == null) {
+                return withDependencies ? findDependencySymbolByName(name) : null;
+            }
             ElfSymbol elfSymbol = dynsym.getELFSymbolByName(name);
             if (elfSymbol != null && !elfSymbol.isUndef()) {
                 return new LinuxSymbol(this, elfSymbol);
@@ -174,7 +177,7 @@ public class LinuxModule extends Module {
     }
 
     public ElfSymbol getELFSymbolByName(String name) throws IOException {
-        return dynsym.getELFSymbolByName(name);
+        return dynsym == null ? null : dynsym.getELFSymbolByName(name);
     }
 
     @Override

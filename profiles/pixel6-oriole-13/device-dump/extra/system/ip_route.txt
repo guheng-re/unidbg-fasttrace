@@ -1,0 +1,1 @@
+10.41.16.0/21 dev wlan0 proto kernel scope link src 10.41.20.63 

@@ -1,0 +1,19 @@
+Bluetooth Status
+  enabled: false
+  state: OFF
+  address: 74:74:46:B5:45:DC
+  name: Pixel 6
+
+Bluetooth never enabled!
+
+Bluetooth crashed 0 times
+
+0 BLE apps registered
+
+BluetoothManagerService:
+  mEnable:false
+  mQuietEnable:false
+  mEnableExternal:false
+  mQuietEnableExternal:false
+
+Bluetooth Service not connected
